@@ -21,10 +21,8 @@ export default function RootLayout({
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <AuthProvider>
             <Navbar />
-            <main className="flex-grow container mx-auto px-4 py-6">
-              <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
-                {children}
-              </div>
+            <main className="flex-grow">
+              {children}
             </main>
             <Footer />
           </AuthProvider>
