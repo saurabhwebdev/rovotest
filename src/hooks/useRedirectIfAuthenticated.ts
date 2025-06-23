@@ -1,17 +1,27 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 
-export function useRedirectIfAuthenticated(redirectTo: string = '/dashboard') {
+export function useRedirectIfAuthenticated() {
   const { user, loading } = useAuth();
+  const router = useRouter();
+  const [isRedirecting, setIsRedirecting] = useState(false);
 
   useEffect(() => {
-    if (!loading && user) {
-      // Force a hard redirect to ensure the page is fully reloaded
-      window.location.href = redirectTo;
+    // Wait for auth to be loaded and only redirect if not already redirecting
+    if (!loading && user && !isRedirecting) {
+      setIsRedirecting(true);
+      
+      // Add a small delay to prevent rapid redirects
+      const timer = setTimeout(() => {
+        router.push('/dashboard');
+      }, 300);
+      
+      return () => clearTimeout(timer);
     }
-  }, [user, loading, redirectTo]);
+  }, [user, loading, router, isRedirecting]);
 
-  return { user, loading };
+  return { loading: loading || isRedirecting };
 }
