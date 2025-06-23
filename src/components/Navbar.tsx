@@ -197,6 +197,13 @@ export default function Navbar() {
                         >
                           LED Screen Settings
                         </Link>
+                        <Link
+                          href="/admin/role-management"
+                          className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                          role="menuitem"
+                        >
+                          Role Management
+                        </Link>
                         <div className="relative">
                           <div 
                             className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center justify-between cursor-pointer"
@@ -425,6 +432,13 @@ export default function Navbar() {
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     LED Screen Settings
+                  </Link>
+                  <Link
+                    href="/admin/role-management"
+                    className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 pl-6"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Role Management
                   </Link>
                   <div className="px-3 py-2 text-base font-medium text-gray-800 dark:text-gray-200 pl-6">
                     Audit
