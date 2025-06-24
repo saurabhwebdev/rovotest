@@ -9,9 +9,15 @@ import SchedulingEffectivenessKPI from "@/components/reports/SchedulingEffective
 import EntryProcessingEfficiencyKPI from "@/components/reports/EntryProcessingEfficiencyKPI";
 import SecurityComplianceKPI from "@/components/reports/SecurityComplianceKPI";
 import GateUtilizationKPI from "@/components/reports/GateUtilizationKPI";
+import WeighbridgeKPIDetails from "@/components/reports/WeighbridgeKPIDetails";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 export default function ReportsPage() {
+  const [dateRange] = useState({
+    startDate: new Date(new Date().setDate(new Date().getDate() - 30)), // Last 30 days
+    endDate: new Date()
+  });
+
   return (
     <PagePermissionWrapper pageId="admin-reports">
       <div className="container mx-auto p-6">
@@ -22,6 +28,7 @@ export default function ReportsPage() {
             <TabsTrigger value="transporter">Transporter</TabsTrigger>
             <TabsTrigger value="dock">Dock</TabsTrigger>
             <TabsTrigger value="gate">Gate</TabsTrigger>
+            <TabsTrigger value="weighbridge">Weighbridge</TabsTrigger>
           </TabsList>
 
           <TabsContent value="transporter" className="space-y-6">
@@ -38,6 +45,13 @@ export default function ReportsPage() {
             <EntryProcessingEfficiencyKPI moduleSlug="entry-processing-efficiency" />
             <SecurityComplianceKPI moduleSlug="security-compliance" />
             <GateUtilizationKPI moduleSlug="gate-utilization" />
+          </TabsContent>
+
+          <TabsContent value="weighbridge" className="space-y-6">
+            <WeighbridgeKPIDetails 
+              startDate={dateRange.startDate}
+              endDate={dateRange.endDate}
+            />
           </TabsContent>
         </Tabs>
       </div>
