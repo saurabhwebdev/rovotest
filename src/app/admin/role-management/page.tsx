@@ -42,9 +42,11 @@ export default function RoleManagement() {
     { id: 'admin-master-data', name: 'Master Data Management', path: '/admin/master-data' },
     { id: 'admin-dock-management', name: 'Dock Management', path: '/admin/dock-management' },
     { id: 'admin-led-settings', name: 'LED Screen Settings', path: '/admin/led-settings' },
+    { id: 'admin-shift-handover', name: 'Shift Handover', path: '/admin/shift-handover' },
     { id: 'admin-weighbridge-audit', name: 'Weighbridge Audit', path: '/admin/weighbridge-audit' },
     { id: 'admin-gate-guard-audit', name: 'Gate Guard Audit', path: '/admin/gate-guard-audit' },
     { id: 'admin-truck-scheduling-audit', name: 'Truck Scheduling Audit', path: '/admin/truck-scheduling-audit' },
+    { id: 'admin-shift-handover-audit', name: 'Shift Handover Audit', path: '/admin/shift-handover-audit' },
     { id: 'admin-role-management', name: 'Role Management', path: '/admin/role-management' },
   ];
 

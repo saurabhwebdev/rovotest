@@ -221,7 +221,7 @@ export default function Navbar() {
                           >
                             Audit
                             <svg
-                              className={`w-4 h-4 transition-transform ${isAuditOpen ? 'rotate-180' : ''}`}
+                              className={`w-4 h-4 transition-transform ${isAuditOpen ? 'rotate-90' : ''}`}
                               fill="none"
                               stroke="currentColor"
                               viewBox="0 0 24 24"
@@ -236,10 +236,10 @@ export default function Navbar() {
                             </svg>
                           </div>
                           {isAuditOpen && (
-                            <div className="absolute right-0 top-full mt-1 py-1 rounded-md shadow-lg bg-white dark:bg-gray-800 ring-1 ring-black ring-opacity-5 z-50 flex">
+                            <div className="absolute left-full top-0 ml-1 py-1 rounded-md shadow-lg bg-white dark:bg-gray-800 ring-1 ring-black ring-opacity-5 z-50 w-56">
                               <Link
                                 href="/admin/weighbridge-audit"
-                                className="px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 whitespace-nowrap"
+                                className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                                 role="menuitem"
                                 onClick={(e) => e.stopPropagation()}
                               >
@@ -247,7 +247,7 @@ export default function Navbar() {
                               </Link>
                               <Link
                                 href="/admin/gate-guard-audit"
-                                className="px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 whitespace-nowrap border-l border-gray-200 dark:border-gray-700"
+                                className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                                 role="menuitem"
                                 onClick={(e) => e.stopPropagation()}
                               >
@@ -255,11 +255,19 @@ export default function Navbar() {
                               </Link>
                               <Link
                                 href="/admin/truck-scheduling-audit"
-                                className="px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 whitespace-nowrap border-l border-gray-200 dark:border-gray-700"
+                                className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                                 role="menuitem"
                                 onClick={(e) => e.stopPropagation()}
                               >
                                 Truck Scheduling Audit
+                              </Link>
+                              <Link
+                                href="/admin/shift-handover-audit"
+                                className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                                role="menuitem"
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                Shift Handover Audit
                               </Link>
                             </div>
                           )}
@@ -277,6 +285,16 @@ export default function Navbar() {
                   }`}
                 >
                   LED Screen
+                </Link>
+                <Link 
+                  href="/admin/shift-handover" 
+                  className={`px-3 py-2 rounded-md text-sm font-medium ${
+                    isActive('/admin/shift-handover') 
+                      ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-200' 
+                      : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800'
+                  }`}
+                >
+                  Shift Handover
                 </Link>
               </div>
             ) : (
@@ -479,6 +497,13 @@ export default function Navbar() {
                     >
                       Truck Scheduling
                     </Link>
+                    <Link
+                      href="/admin/shift-handover-audit"
+                      className="px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      Shift Handover
+                    </Link>
                   </div>
                 </div>
                 <div className="border-t border-gray-200 dark:border-gray-800 pt-2 mt-2">
@@ -496,17 +521,28 @@ export default function Navbar() {
                   </button>
                 </div>
                 <div className="border-t border-gray-200 dark:border-gray-800 pt-2 mt-2">
-                  <Link 
-                    href="/led-screen" 
-                    className={`block px-3 py-2 rounded-md text-base font-medium ${
-                      isActive('/led-screen') 
-                        ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-200' 
-                        : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800'
-                    }`}
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    LED Screen
-                  </Link>
+                                  <Link 
+                  href="/led-screen" 
+                  className={`block px-3 py-2 rounded-md text-base font-medium ${
+                    isActive('/led-screen') 
+                      ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-200' 
+                      : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800'
+                  }`}
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  LED Screen
+                </Link>
+                <Link 
+                  href="/admin/shift-handover" 
+                  className={`block px-3 py-2 rounded-md text-base font-medium ${
+                    isActive('/admin/shift-handover') 
+                      ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-200' 
+                      : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800'
+                  }`}
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  Shift Handover
+                </Link>
                 </div>
               </>
             ) : (
