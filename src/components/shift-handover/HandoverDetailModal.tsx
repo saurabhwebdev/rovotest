@@ -25,9 +25,10 @@ interface HandoverDetailModalProps {
   record: HandoverRecord | null;
   onClose: () => void;
   onUpdate: () => void;
+  hideApprovalButtons?: boolean;
 }
 
-export default function HandoverDetailModal({ record, onClose, onUpdate }: HandoverDetailModalProps) {
+export default function HandoverDetailModal({ record, onClose, onUpdate, hideApprovalButtons = false }: HandoverDetailModalProps) {
   const [isUpdating, setIsUpdating] = useState(false);
   
   if (!record) return null;
@@ -149,7 +150,7 @@ export default function HandoverDetailModal({ record, onClose, onUpdate }: Hando
         </div>
         
         <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700 flex justify-end">
-          {record.status === 'Pending' && (
+          {!hideApprovalButtons && record.status === 'Pending' && (
             <button
               onClick={markAsCompleted}
               disabled={isUpdating}

@@ -195,6 +195,7 @@ export default function ShiftHandoverPage() {
             record={selectedRecord}
             onClose={() => setSelectedRecord(null)}
             onUpdate={fetchHandoverRecords}
+            hideApprovalButtons={true}
           />
         )}
 

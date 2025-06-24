@@ -32,6 +32,7 @@ export default function Navbar() {
     { id: 'admin-dock-management', name: 'Dock Management', path: '/admin/dock-management' },
     { id: 'admin-led-settings', name: 'LED Screen Settings', path: '/admin/led-settings' },
     { id: 'admin-shift-handover', name: 'Shift Handover', path: '/admin/shift-handover' },
+    { id: 'admin-shift-handover-approval', name: 'Shift Handover Approval', path: '/admin/shift-handover-approval' },
     { id: 'admin-role-management', name: 'Role Management', path: '/admin/role-management' },
     { id: 'admin-user-management', name: 'User Management', path: '/admin/user-management' },
   ];
