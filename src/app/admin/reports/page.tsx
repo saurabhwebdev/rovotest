@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import PagePermissionWrapper from "@/components/PagePermissionWrapper";
 import TransporterKPISummary from "@/components/reports/TransporterKPISummary";
+import DockKPISummary from "@/components/reports/DockKPISummary";
 import OperationalEfficiencyKPI from "@/components/reports/OperationalEfficiencyKPI";
 import SchedulingEffectivenessKPI from "@/components/reports/SchedulingEffectivenessKPI";
 import EntryProcessingEfficiencyKPI from "@/components/reports/EntryProcessingEfficiencyKPI";
@@ -14,42 +15,29 @@ export default function ReportsPage() {
   return (
     <PagePermissionWrapper pageId="admin-reports">
       <div className="container mx-auto p-6">
-        <h1 className="text-2xl font-bold mb-6">Reports Dashboard</h1>
+        <h1 className="text-2xl font-bold mb-6">Performance Reports</h1>
         
-        <Tabs defaultValue="transporter" className="w-full">
-          <TabsList className="mb-6">
-            <TabsTrigger value="transporter">Transporter Module</TabsTrigger>
-            <TabsTrigger value="gate">Gate Operations</TabsTrigger>
-            <TabsTrigger value="dock" disabled>Dock Operations</TabsTrigger>
-            <TabsTrigger value="weighbridge" disabled>Weighbridge</TabsTrigger>
+        <Tabs defaultValue="transporter" className="space-y-6">
+          <TabsList>
+            <TabsTrigger value="transporter">Transporter</TabsTrigger>
+            <TabsTrigger value="dock">Dock</TabsTrigger>
+            <TabsTrigger value="gate">Gate</TabsTrigger>
           </TabsList>
 
           <TabsContent value="transporter" className="space-y-6">
-            <div className="grid gap-6">
-              <TransporterKPISummary moduleSlug="transporter" />
-              <OperationalEfficiencyKPI moduleSlug="operational-efficiency" />
-              <SchedulingEffectivenessKPI moduleSlug="scheduling-effectiveness" />
-            </div>
+            <TransporterKPISummary moduleSlug="transporter" />
+            <OperationalEfficiencyKPI moduleSlug="operational-efficiency" />
+            <SchedulingEffectivenessKPI moduleSlug="scheduling-effectiveness" />
+          </TabsContent>
+
+          <TabsContent value="dock" className="space-y-6">
+            <DockKPISummary moduleSlug="dock" />
           </TabsContent>
 
           <TabsContent value="gate" className="space-y-6">
-            <div className="grid gap-6">
-              <EntryProcessingEfficiencyKPI moduleSlug="entry-processing-efficiency" />
-              <SecurityComplianceKPI moduleSlug="security-compliance" />
-              <GateUtilizationKPI moduleSlug="gate-utilization" />
-            </div>
-          </TabsContent>
-
-          <TabsContent value="dock">
-            <div className="text-center py-8 text-gray-500">
-              Dock Operations KPIs coming soon
-            </div>
-          </TabsContent>
-
-          <TabsContent value="weighbridge">
-            <div className="text-center py-8 text-gray-500">
-              Weighbridge KPIs coming soon
-            </div>
+            <EntryProcessingEfficiencyKPI moduleSlug="entry-processing-efficiency" />
+            <SecurityComplianceKPI moduleSlug="security-compliance" />
+            <GateUtilizationKPI moduleSlug="gate-utilization" />
           </TabsContent>
         </Tabs>
       </div>

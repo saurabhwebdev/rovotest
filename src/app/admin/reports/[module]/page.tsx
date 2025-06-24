@@ -3,6 +3,7 @@
 import { useParams } from 'next/navigation';
 import PagePermissionWrapper from "@/components/PagePermissionWrapper";
 import TransporterKPIDetails from "@/components/reports/TransporterKPIDetails";
+import DockKPIDetails from "@/components/reports/DockKPIDetails";
 import { OperationalEfficiencyDetails } from "@/components/reports/OperationalEfficiencyKPI";
 import { SchedulingEffectivenessDetails } from "@/components/reports/SchedulingEffectivenessKPI";
 import { EntryProcessingEfficiencyDetails } from "@/components/reports/EntryProcessingEfficiencyKPI";
@@ -22,6 +23,10 @@ export default function ModuleKPIDetailsPage() {
         return <OperationalEfficiencyDetails />;
       case 'scheduling-effectiveness':
         return <SchedulingEffectivenessDetails />;
+        
+      // Dock Module KPIs
+      case 'dock':
+        return <DockKPIDetails />;
         
       // Gate Operations KPIs  
       case 'entry-processing-efficiency':
