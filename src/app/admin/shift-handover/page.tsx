@@ -2,9 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { collection, addDoc, getDocs, query, where, orderBy, Timestamp } from 'firebase/firestore';
+import { collection, getDocs, query, orderBy, Timestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import HandoverDetailModal from '@/components/shift-handover/HandoverDetailModal';
+import NewHandoverModal from '@/components/shift-handover/NewHandoverModal';
 import { useRouter } from 'next/navigation';
 import PagePermissionWrapper from '@/components/PagePermissionWrapper';
 
@@ -33,29 +34,6 @@ export default function ShiftHandoverPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [selectedRecord, setSelectedRecord] = useState<HandoverRecord | null>(null);
   const [isAuthorized, setIsAuthorized] = useState(false);
-  
-  // Form states
-  const [shiftType, setShiftType] = useState<'Morning' | 'Afternoon' | 'Night'>('Morning');
-  const [handoverDate, setHandoverDate] = useState('');
-  const [handoverTime, setHandoverTime] = useState('');
-  const [receivedBy, setReceivedBy] = useState('');
-  const [receivedByEmail, setReceivedByEmail] = useState('');
-  const [department, setDepartment] = useState('');
-  const [pendingTasks, setPendingTasks] = useState('');
-  const [completedTasks, setCompletedTasks] = useState('');
-  const [notes, setNotes] = useState('');
-  
-  // Departments list
-  const departments = [
-    'Gate Operations',
-    'Weighbridge',
-    'Dock Operations',
-    'Warehouse',
-    'Security',
-    'Administration',
-    'IT Support',
-    'Maintenance'
-  ];
 
   useEffect(() => {
     if (!loading) {
@@ -90,59 +68,6 @@ export default function ShiftHandoverPage() {
       setIsLoading(false);
     }
   };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!user) {
-      alert('You must be logged in to submit a handover record');
-      return;
-    }
-    
-    if (!handoverDate || !handoverTime || !receivedBy || !department || !pendingTasks) {
-      alert('Please fill in all required fields');
-      return;
-    }
-    
-    try {
-      const handoverData = {
-        shiftType,
-        handoverDate: Timestamp.fromDate(new Date(handoverDate)),
-        handoverTime,
-        handoverBy: user.displayName || 'Unknown User',
-        handoverByEmail: user.email || '',
-        receivedBy,
-        receivedByEmail,
-        department,
-        pendingTasks,
-        completedTasks,
-        notes,
-        status: 'Pending' as const,
-        createdAt: Timestamp.now()
-      };
-      
-      await addDoc(collection(db, 'shiftHandovers'), handoverData);
-      resetForm();
-      fetchHandoverRecords();
-      alert('Shift handover record submitted successfully');
-    } catch (error) {
-      console.error('Error adding handover record:', error);
-      alert('Failed to submit handover record');
-    }
-  };
-  
-  const resetForm = () => {
-    setShiftType('Morning');
-    setHandoverDate('');
-    setHandoverTime('');
-    setReceivedBy('');
-    setReceivedByEmail('');
-    setDepartment('');
-    setPendingTasks('');
-    setCompletedTasks('');
-    setNotes('');
-    setIsAddingRecord(false);
-  };
   
   const formatDate = (timestamp: Timestamp) => {
     const date = timestamp.toDate();
@@ -155,6 +80,11 @@ export default function ShiftHandoverPage() {
   
   const openRecordDetails = (record: HandoverRecord) => {
     setSelectedRecord(record);
+  };
+
+  const handleModalSuccess = () => {
+    setIsAddingRecord(false);
+    fetchHandoverRecords();
   };
 
   if (loading) {
@@ -181,177 +111,14 @@ export default function ShiftHandoverPage() {
       <div className="container mx-auto px-4 py-8">
         <h1 className="text-2xl font-bold mb-6">Shift Handover & Takeover</h1>
         
-        {!isAddingRecord ? (
-          <div className="mb-6">
-            <button
-              onClick={() => setIsAddingRecord(true)}
-              className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 transition-colors"
-            >
-              Create New Handover
-            </button>
-          </div>
-        ) : (
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 mb-6">
-            <h2 className="text-xl font-semibold mb-4">Create Shift Handover Record</h2>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Shift Type*
-                  </label>
-                  <select
-                    value={shiftType}
-                    onChange={(e) => setShiftType(e.target.value as any)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:border-gray-600"
-                    required
-                  >
-                    <option value="Morning">Morning Shift</option>
-                    <option value="Afternoon">Afternoon Shift</option>
-                    <option value="Night">Night Shift</option>
-                  </select>
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Department*
-                  </label>
-                  <select
-                    value={department}
-                    onChange={(e) => setDepartment(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:border-gray-600"
-                    required
-                  >
-                    <option value="">Select Department</option>
-                    {departments.map((dept) => (
-                      <option key={dept} value={dept}>{dept}</option>
-                    ))}
-                  </select>
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Handover Date*
-                  </label>
-                  <input
-                    type="date"
-                    value={handoverDate}
-                    onChange={(e) => setHandoverDate(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:border-gray-600"
-                    required
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Handover Time*
-                  </label>
-                  <input
-                    type="time"
-                    value={handoverTime}
-                    onChange={(e) => setHandoverTime(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:border-gray-600"
-                    required
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Handed Over By
-                  </label>
-                  <input
-                    type="text"
-                    value={user?.displayName || user?.email || ''}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-100 dark:bg-gray-600 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                    disabled
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Received By*
-                  </label>
-                  <input
-                    type="text"
-                    value={receivedBy}
-                    onChange={(e) => setReceivedBy(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:border-gray-600"
-                    placeholder="Name of person receiving handover"
-                    required
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Receiver's Email
-                  </label>
-                  <input
-                    type="email"
-                    value={receivedByEmail}
-                    onChange={(e) => setReceivedByEmail(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:border-gray-600"
-                    placeholder="Email of person receiving handover"
-                  />
-                </div>
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Pending Tasks / Issues*
-                </label>
-                <textarea
-                  value={pendingTasks}
-                  onChange={(e) => setPendingTasks(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:border-gray-600"
-                  placeholder="List all pending tasks, issues or follow-ups"
-                  rows={4}
-                  required
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Completed Tasks
-                </label>
-                <textarea
-                  value={completedTasks}
-                  onChange={(e) => setCompletedTasks(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:border-gray-600"
-                  placeholder="List all tasks completed during your shift"
-                  rows={4}
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Additional Notes
-                </label>
-                <textarea
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:border-gray-600"
-                  placeholder="Any additional information or notes"
-                  rows={3}
-                />
-              </div>
-              
-              <div className="flex space-x-3">
-                <button
-                  type="submit"
-                  className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 transition-colors"
-                >
-                  Submit Handover
-                </button>
-                <button
-                  type="button"
-                  onClick={resetForm}
-                  className="px-4 py-2 bg-gray-300 text-gray-700 dark:bg-gray-600 dark:text-gray-200 rounded hover:bg-gray-400 dark:hover:bg-gray-700 transition-colors"
-                >
-                  Cancel
-                </button>
-              </div>
-            </form>
-          </div>
-        )}
+        <div className="mb-6">
+          <button
+            onClick={() => setIsAddingRecord(true)}
+            className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 transition-colors"
+          >
+            Create New Handover
+          </button>
+        </div>
 
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
           <div className="px-4 py-5 sm:px-6">
@@ -428,6 +195,13 @@ export default function ShiftHandoverPage() {
             record={selectedRecord}
             onClose={() => setSelectedRecord(null)}
             onUpdate={fetchHandoverRecords}
+          />
+        )}
+
+        {isAddingRecord && (
+          <NewHandoverModal
+            onClose={() => setIsAddingRecord(false)}
+            onSuccess={handleModalSuccess}
           />
         )}
       </div>
