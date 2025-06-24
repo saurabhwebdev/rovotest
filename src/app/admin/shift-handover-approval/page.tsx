@@ -256,10 +256,12 @@ export default function ShiftHandoverApprovalPage() {
                         {record.department}
                       </td>
                       <td className="px-2 py-1.5 whitespace-nowrap text-xs">
-                        {record.handoverBy}
+                        <div>{record.handoverBy}</div>
+                        <div className="text-xs text-gray-400">{record.handoverByEmail}</div>
                       </td>
                       <td className="px-2 py-1.5 whitespace-nowrap text-xs">
-                        {record.receivedBy}
+                        <div>{record.receivedBy}</div>
+                        <div className="text-xs text-gray-400">{record.receivedByEmail}</div>
                       </td>
                       <td className="px-2 py-1.5 whitespace-nowrap text-xs">
                         <span className={`px-2 py-0.5 inline-flex text-xs leading-5 font-semibold rounded-full ${

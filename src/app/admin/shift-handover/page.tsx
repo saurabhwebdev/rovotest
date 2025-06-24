@@ -168,10 +168,12 @@ export default function ShiftHandoverPage() {
                         {record.department}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                        {record.handoverBy}
+                        <div>{record.handoverBy}</div>
+                        <div className="text-xs text-gray-400">{record.handoverByEmail}</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                        {record.receivedBy}
+                        <div>{record.receivedBy}</div>
+                        <div className="text-xs text-gray-400">{record.receivedByEmail}</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${

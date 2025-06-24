@@ -119,7 +119,7 @@ export default function NewHandoverModal({ onClose, onSuccess }: NewHandoverModa
         shiftType,
         handoverDate: Timestamp.fromDate(new Date(handoverDate)),
         handoverTime,
-        handoverBy: user.displayName || 'Unknown User',
+        handoverBy: user.displayName || user.email || '',
         handoverByEmail: user.email || '',
         receivedBy,
         receivedByEmail,
@@ -280,8 +280,8 @@ export default function NewHandoverModal({ onClose, onSuccess }: NewHandoverModa
                               className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer"
                               onClick={() => handleUserSelect(user)}
                             >
-                              <div className="font-medium">{user.displayName || 'Unnamed User'}</div>
-                              <div className="text-sm text-gray-500">{user.email}</div>
+                              <div className="font-medium">{user.displayName || user.email}</div>
+                              {user.displayName && <div className="text-sm text-gray-500">{user.email}</div>}
                             </li>
                           ))}
                         </ul>
