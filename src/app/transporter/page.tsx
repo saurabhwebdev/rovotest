@@ -8,6 +8,7 @@ import TruckSchedulingForm from '@/components/transporter/TruckSchedulingForm';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import HelpIcon from '@/components/ui/HelpIcon';
 import { transporterHelp } from '@/lib/helpContent';
+import PagePermissionWrapper from '@/components/PagePermissionWrapper';
 
 export default function TransporterPage() {
   const { user, loading: authLoading } = useAuth();
@@ -58,16 +59,17 @@ export default function TransporterPage() {
   }
   
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="flex justify-between items-center mb-6">
-        <div className="flex items-center">
-          <h1 className="text-2xl font-bold">Transporter Dashboard</h1>
-          <HelpIcon moduleHelp={transporterHelp} />
-        </div>
-        <button
-          onClick={() => setShowScheduleModal(true)}
-          className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md transition-colors duration-200 flex items-center"
-        >
+    <PagePermissionWrapper pageId="transporter">
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex justify-between items-center mb-6">
+          <div className="flex items-center">
+            <h1 className="text-2xl font-bold">Transporter Dashboard</h1>
+            <HelpIcon moduleHelp={transporterHelp} />
+          </div>
+          <button
+            onClick={() => setShowScheduleModal(true)}
+            className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md transition-colors duration-200 flex items-center"
+          >
           <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
           </svg>
@@ -114,6 +116,7 @@ export default function TransporterPage() {
           </div>
         </div>
       )}
-    </div>
+      </div>
+    </PagePermissionWrapper>
   );
 }

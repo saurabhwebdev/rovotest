@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { collection, query, where, onSnapshot, orderBy, doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import useSound from 'use-sound';
+import PagePermissionWrapper from '@/components/PagePermissionWrapper';
 
 interface TruckStatus {
   id: string;
@@ -401,154 +402,156 @@ export default function LEDScreen() {
   const trucksInGroup = currentGroup.trucks;
 
   return (
-    <div className={`min-h-screen bg-black text-white font-mono ${isFullscreen ? 'fixed inset-0 z-50 p-0' : 'p-8'} relative`}>
-      {/* Fullscreen toggle button - always visible */}
-      <button 
-        onClick={toggleFullscreen}
-        className="absolute top-4 right-4 z-10 bg-gray-800 hover:bg-gray-700 text-white p-3 rounded-full shadow-lg transition-all duration-300 focus:outline-none"
-        aria-label={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
-      >
-        {isFullscreen ? (
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        ) : (
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5v-4m0 4h-4m4 0l-5-5" />
-          </svg>
-        )}
-      </button>
+    <PagePermissionWrapper pageId="led-screen">
+      <div className={`min-h-screen bg-black text-white font-mono ${isFullscreen ? 'fixed inset-0 z-50 p-0' : 'p-8'} relative`}>
+        {/* Fullscreen toggle button - always visible */}
+        <button 
+          onClick={toggleFullscreen}
+          className="absolute top-4 right-4 z-10 bg-gray-800 hover:bg-gray-700 text-white p-3 rounded-full shadow-lg transition-all duration-300 focus:outline-none"
+          aria-label={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
+        >
+          {isFullscreen ? (
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          ) : (
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5v-4m0 4h-4m4 0l-5-5" />
+            </svg>
+          )}
+        </button>
 
-      <div className={`${isFullscreen ? 'pt-8' : 'mb-8'} text-center`}>
-        <h1 className="text-6xl font-bold text-blue-500 mb-2">TRUCK STATUS BOARD</h1>
-        <p className="text-2xl text-yellow-400">
-          {new Date().toLocaleDateString()} | {new Date().toLocaleTimeString()}
-        </p>
-        {useDummyData && (
-          <div className="mt-2 text-red-400 text-xl">
-            * DEMO MODE - NO ACTIVE TRUCKS *
-          </div>
-        )}
-      </div>
-
-      <div className="bg-gray-900 border-2 border-blue-500 rounded-lg p-8 max-w-6xl mx-auto shadow-lg shadow-blue-500/50">
-        {/* Group Header */}
-        <div className="flex justify-between items-center border-b-2 border-blue-400 pb-4 mb-6">
-          <div className="text-4xl font-bold">{currentLocation}</div>
-          <div className={`text-3xl font-bold ${getStatusColor(currentGroup.status)}`}>
-            {currentStatus}
-          </div>
+        <div className={`${isFullscreen ? 'pt-8' : 'mb-8'} text-center`}>
+          <h1 className="text-6xl font-bold text-blue-500 mb-2">TRUCK STATUS BOARD</h1>
+          <p className="text-2xl text-yellow-400">
+            {new Date().toLocaleDateString()} | {new Date().toLocaleTimeString()}
+          </p>
+          {useDummyData && (
+            <div className="mt-2 text-red-400 text-xl">
+              * DEMO MODE - NO ACTIVE TRUCKS *
+            </div>
+          )}
         </div>
 
-        {/* Truck Display - Single or Table View based on truck density */}
-        {trucksInGroup.length <= 3 ? (
-          // Single truck view (or small group)
-          <div className="grid grid-cols-1 gap-8">
-            {trucksInGroup.map((truck, idx) => (
-              <div key={truck.id} className={`${idx > 0 ? 'mt-8 pt-8 border-t border-gray-700' : ''}`}>
-                <div className="flex justify-between items-center mb-4">
-                  <div className="text-4xl font-bold">{truck.truckNumber}</div>
-                  <div className="text-xl text-gray-400">
-                    {truck.lastUpdated.toLocaleTimeString()}
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-6 text-xl">
-                  <div>
-                    <p className="text-gray-400">Transporter</p>
-                    <p className="text-2xl text-white">{truck.transporterName}</p>
-                  </div>
-                  
-                  {truck.dockName && (
-                    <div>
-                      <p className="text-gray-400">Dock</p>
-                      <p className="text-2xl text-white">{truck.dockName}</p>
-                    </div>
-                  )}
-                  
-                  {truck.grossWeight && (
-                    <div>
-                      <p className="text-gray-400">Weight</p>
-                      <p className="text-2xl text-white">{truck.grossWeight} kg (Gross)</p>
-                      {truck.netWeight && (
-                        <p className="text-xl text-green-400">{truck.netWeight} kg (Net)</p>
-                      )}
-                    </div>
-                  )}
-                </div>
-              </div>
-            ))}
+        <div className="bg-gray-900 border-2 border-blue-500 rounded-lg p-8 max-w-6xl mx-auto shadow-lg shadow-blue-500/50">
+          {/* Group Header */}
+          <div className="flex justify-between items-center border-b-2 border-blue-400 pb-4 mb-6">
+            <div className="text-4xl font-bold">{currentLocation}</div>
+            <div className={`text-3xl font-bold ${getStatusColor(currentGroup.status)}`}>
+              {currentStatus}
+            </div>
           </div>
-        ) : (
-          // Table view for larger groups
-          <div className="overflow-x-auto">
-            <table className="w-full text-left">
-              <thead>
-                <tr className="text-blue-400 border-b border-gray-700">
-                  <th className="pb-3 text-xl">Truck Number</th>
-                  <th className="pb-3 text-xl">Transporter</th>
-                  {trucksInGroup.some(t => t.dockName) && (
-                    <th className="pb-3 text-xl">Dock</th>
-                  )}
-                  {trucksInGroup.some(t => t.grossWeight) && (
-                    <th className="pb-3 text-xl">Weight (kg)</th>
-                  )}
-                  <th className="pb-3 text-xl text-right">Updated</th>
-                </tr>
-              </thead>
-              <tbody>
-                {trucksInGroup.map((truck) => (
-                  <tr key={truck.id} className="border-b border-gray-800">
-                    <td className="py-3 text-xl font-bold">{truck.truckNumber}</td>
-                    <td className="py-3">{truck.transporterName}</td>
+
+          {/* Truck Display - Single or Table View based on truck density */}
+          {trucksInGroup.length <= 3 ? (
+            // Single truck view (or small group)
+            <div className="grid grid-cols-1 gap-8">
+              {trucksInGroup.map((truck, idx) => (
+                <div key={truck.id} className={`${idx > 0 ? 'mt-8 pt-8 border-t border-gray-700' : ''}`}>
+                  <div className="flex justify-between items-center mb-4">
+                    <div className="text-4xl font-bold">{truck.truckNumber}</div>
+                    <div className="text-xl text-gray-400">
+                      {truck.lastUpdated.toLocaleTimeString()}
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-6 text-xl">
+                    <div>
+                      <p className="text-gray-400">Transporter</p>
+                      <p className="text-2xl text-white">{truck.transporterName}</p>
+                    </div>
+                    
+                    {truck.dockName && (
+                      <div>
+                        <p className="text-gray-400">Dock</p>
+                        <p className="text-2xl text-white">{truck.dockName}</p>
+                      </div>
+                    )}
+                    
+                    {truck.grossWeight && (
+                      <div>
+                        <p className="text-gray-400">Weight</p>
+                        <p className="text-2xl text-white">{truck.grossWeight} kg (Gross)</p>
+                        {truck.netWeight && (
+                          <p className="text-xl text-green-400">{truck.netWeight} kg (Net)</p>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            // Table view for larger groups
+            <div className="overflow-x-auto">
+              <table className="w-full text-left">
+                <thead>
+                  <tr className="text-blue-400 border-b border-gray-700">
+                    <th className="pb-3 text-xl">Truck Number</th>
+                    <th className="pb-3 text-xl">Transporter</th>
                     {trucksInGroup.some(t => t.dockName) && (
-                      <td className="py-3">{truck.dockName || '-'}</td>
+                      <th className="pb-3 text-xl">Dock</th>
                     )}
                     {trucksInGroup.some(t => t.grossWeight) && (
-                      <td className="py-3">
-                        {truck.grossWeight ? (
-                          <>
-                            <span className="text-white">{truck.grossWeight} (G)</span>
-                            {truck.netWeight && (
-                              <span className="text-green-400 ml-2">{truck.netWeight} (N)</span>
-                            )}
-                          </>
-                        ) : '-'}
-                      </td>
+                      <th className="pb-3 text-xl">Weight (kg)</th>
                     )}
-                    <td className="py-3 text-gray-400 text-right">
-                      {truck.lastUpdated.toLocaleTimeString()}
-                    </td>
+                    <th className="pb-3 text-xl text-right">Updated</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {trucksInGroup.map((truck) => (
+                    <tr key={truck.id} className="border-b border-gray-800">
+                      <td className="py-3 text-xl font-bold">{truck.truckNumber}</td>
+                      <td className="py-3">{truck.transporterName}</td>
+                      {trucksInGroup.some(t => t.dockName) && (
+                        <td className="py-3">{truck.dockName || '-'}</td>
+                      )}
+                      {trucksInGroup.some(t => t.grossWeight) && (
+                        <td className="py-3">
+                          {truck.grossWeight ? (
+                            <>
+                              <span className="text-white">{truck.grossWeight} (G)</span>
+                              {truck.netWeight && (
+                                <span className="text-green-400 ml-2">{truck.netWeight} (N)</span>
+                              )}
+                            </>
+                          ) : '-'}
+                        </td>
+                      )}
+                      <td className="py-3 text-gray-400 text-right">
+                        {truck.lastUpdated.toLocaleTimeString()}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+
+        {/* Pagination Indicator */}
+        <div className="mt-8 text-center">
+          <div className="flex justify-center space-x-2">
+            {truckGroups.map((_, index) => (
+              <div 
+                key={index} 
+                className={`h-3 w-3 rounded-full ${index === currentIndex ? 'bg-blue-500' : 'bg-gray-600'}`}
+              />
+            ))}
+          </div>
+          <p className="mt-2 text-gray-400">
+            Showing {currentIndex + 1} of {truckGroups.length} groups | 
+            {trucksInGroup.length} truck{trucksInGroup.length !== 1 ? 's' : ''} at {currentLocation}
+          </p>
+        </div>
+        
+        {/* Instructions for fullscreen - only show when not in fullscreen */}
+        {!isFullscreen && (
+          <div className="text-center mt-6 text-gray-500 text-sm">
+            Click the <span className="text-blue-400">expand icon</span> in the top right corner for fullscreen mode
           </div>
         )}
       </div>
-
-      {/* Pagination Indicator */}
-      <div className="mt-8 text-center">
-        <div className="flex justify-center space-x-2">
-          {truckGroups.map((_, index) => (
-            <div 
-              key={index} 
-              className={`h-3 w-3 rounded-full ${index === currentIndex ? 'bg-blue-500' : 'bg-gray-600'}`}
-            />
-          ))}
-        </div>
-        <p className="mt-2 text-gray-400">
-          Showing {currentIndex + 1} of {truckGroups.length} groups | 
-          {trucksInGroup.length} truck{trucksInGroup.length !== 1 ? 's' : ''} at {currentLocation}
-        </p>
-      </div>
-      
-      {/* Instructions for fullscreen - only show when not in fullscreen */}
-      {!isFullscreen && (
-        <div className="text-center mt-6 text-gray-500 text-sm">
-          Click the <span className="text-blue-400">expand icon</span> in the top right corner for fullscreen mode
-        </div>
-      )}
-    </div>
+    </PagePermissionWrapper>
   );
 } 

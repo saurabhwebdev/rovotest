@@ -7,12 +7,41 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useRouter, usePathname } from 'next/navigation';
 
 export default function Navbar() {
-  const { user, logout } = useAuth();
+  const { user, logout, hasPermission, userRole } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
   const [isAdminOpen, setIsAdminOpen] = useState(false);
   const [isAuditOpen, setIsAuditOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  // Define all available pages with their IDs and paths
+  const mainPages = [
+    { id: 'dashboard', name: 'Dashboard', path: '/dashboard' },
+    { id: 'transporter', name: 'Truck Scheduling', path: '/transporter' },
+    { id: 'gate-guard', name: 'Gate Guard', path: '/gate-guard' },
+    { id: 'weighbridge', name: 'Weighbridge', path: '/weighbridge' },
+    { id: 'dock-operations', name: 'Dock Operations', path: '/dock-operations' },
+    { id: 'led-screen', name: 'LED Screen', path: '/led-screen' },
+  ];
+
+  const adminPages = [
+    { id: 'gate-guard-plant-tracking', name: 'Plant Tracking', path: '/gate-guard/plant-tracking' },
+    { id: 'dashboard-approvals', name: 'Approvals', path: '/dashboard/approvals' },
+    { id: 'admin-weighbridge-management', name: 'Weighbridge Management', path: '/admin/weighbridge-management' },
+    { id: 'admin-master-data', name: 'Master Data Management', path: '/admin/master-data' },
+    { id: 'admin-dock-management', name: 'Dock Management', path: '/admin/dock-management' },
+    { id: 'admin-led-settings', name: 'LED Screen Settings', path: '/admin/led-settings' },
+    { id: 'admin-shift-handover', name: 'Shift Handover', path: '/admin/shift-handover' },
+    { id: 'admin-role-management', name: 'Role Management', path: '/admin/role-management' },
+    { id: 'admin-user-management', name: 'User Management', path: '/admin/user-management' },
+  ];
+
+  const auditPages = [
+    { id: 'admin-weighbridge-audit', name: 'Weighbridge Audit', path: '/admin/weighbridge-audit' },
+    { id: 'admin-gate-guard-audit', name: 'Gate Guard Audit', path: '/admin/gate-guard-audit' },
+    { id: 'admin-truck-scheduling-audit', name: 'Truck Scheduling Audit', path: '/admin/truck-scheduling-audit' },
+    { id: 'admin-shift-handover-audit', name: 'Shift Handover Audit', path: '/admin/shift-handover-audit' },
+  ];
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -41,6 +70,40 @@ export default function Navbar() {
   const isActive = (path: string) => {
     return pathname === path || pathname?.startsWith(path + '/');
   };
+
+  // Check if user has access to any admin pages
+  const hasAdminAccess = adminPages.some(page => hasPermission(page.id)) || 
+                         auditPages.some(page => hasPermission(page.id));
+
+  // Check if user has access to any audit pages
+  const hasAuditAccess = auditPages.some(page => hasPermission(page.id));
+
+  // Filter admin pages based on permissions
+  const accessibleAdminPages = adminPages.filter(page => hasPermission(page.id));
+  
+  // Filter audit pages based on permissions
+  const accessibleAuditPages = auditPages.filter(page => hasPermission(page.id));
+  
+  // Filter main pages based on permissions
+  const accessibleMainPages = mainPages.filter(page => hasPermission(page.id));
+
+  // Special case for admin users
+  const isAdminUser = userRole?.permissions?.includes('*');
+
+  // Determine if we should show the admin dropdown based on actual accessible admin pages
+  // Only show if there are ACTUAL pages the user can access
+  const filteredAdminPages = accessibleAdminPages.filter(page => page.id !== 'admin-shift-handover');
+  const showAdminDropdown = (filteredAdminPages.length > 0 || accessibleAuditPages.length > 0);
+  
+  // Debug information
+  console.log('Navbar Debug:', {
+    isAdminUser,
+    userRole: userRole?.name,
+    accessibleAdminPages: accessibleAdminPages.map(p => p.id),
+    filteredAdminPages: filteredAdminPages.map(p => p.id),
+    accessibleAuditPages: accessibleAuditPages.map(p => p.id),
+    showAdminDropdown
+  });
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900 shadow-sm">
@@ -76,531 +139,248 @@ export default function Navbar() {
           <nav className="hidden md:flex md:flex-1 md:items-center md:justify-center">
             {user ? (
               <div className="flex space-x-1">
-                <Link 
-                  href="/dashboard" 
-                  className={`px-3 py-2 rounded-md text-sm font-medium ${
-                    isActive('/dashboard') 
-                      ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-200' 
-                      : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800'
-                  }`}
-                >
-                  Dashboard
-                </Link>
-                <Link 
-                  href="/transporter" 
-                  className={`px-3 py-2 rounded-md text-sm font-medium ${
-                    isActive('/transporter') 
-                      ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-200' 
-                      : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800'
-                  }`}
-                >
-                  Truck Scheduling
-                </Link>
-                <Link 
-                  href="/gate-guard" 
-                  className={`px-3 py-2 rounded-md text-sm font-medium ${
-                    isActive('/gate-guard') 
-                      ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-200' 
-                      : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800'
-                  }`}
-                >
-                  Gate Guard
-                </Link>
-                <Link 
-                  href="/weighbridge" 
-                  className={`px-3 py-2 rounded-md text-sm font-medium ${
-                    isActive('/weighbridge') 
-                      ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-200' 
-                      : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800'
-                  }`}
-                >
-                  Weighbridge
-                </Link>
-                <Link 
-                  href="/dock-operations" 
-                  className={`px-3 py-2 rounded-md text-sm font-medium ${
-                    isActive('/dock-operations') 
-                      ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-200' 
-                      : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800'
-                  }`}
-                >
-                  Dock Operations
-                </Link>
-                <div className="relative">
-                  <button
-                    onClick={() => setIsAdminOpen(!isAdminOpen)}
-                    onBlur={() => setTimeout(() => setIsAdminOpen(false), 200)}
-                    className={`px-3 py-2 rounded-md text-sm font-medium flex items-center ${
-                      isActive('/admin') 
+                {/* Main navigation links - only show if user has permission */}
+                {accessibleMainPages.map(page => (
+                  <Link 
+                    key={page.id}
+                    href={page.path} 
+                    className={`px-3 py-2 rounded-md text-sm font-medium ${
+                      isActive(page.path) 
                         ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-200' 
                         : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800'
                     }`}
                   >
-                    Admin
-                    <svg
-                      className={`ml-1 w-4 h-4 transition-transform ${isAdminOpen ? 'rotate-180' : ''}`}
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                      xmlns="http://www.w3.org/2000/svg"
+                    {page.name}
+                  </Link>
+                ))}
+
+                {/* Shift Handover in main menu */}
+                {hasPermission('admin-shift-handover') && (
+                  <Link 
+                    href="/admin/shift-handover" 
+                    className={`px-3 py-2 rounded-md text-sm font-medium ${
+                      isActive('/admin/shift-handover') 
+                        ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-200' 
+                        : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800'
+                    }`}
+                  >
+                    Shift Handover
+                  </Link>
+                )}
+
+                {/* Admin dropdown - only show if user has permission to any admin pages */}
+                {showAdminDropdown && (
+                  <div className="relative">
+                    <button
+                      onClick={() => setIsAdminOpen(!isAdminOpen)}
+                      onBlur={() => setTimeout(() => setIsAdminOpen(false), 200)}
+                      className={`px-3 py-2 rounded-md text-sm font-medium flex items-center ${
+                        isActive('/admin') 
+                          ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-200' 
+                          : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800'
+                      }`}
                     >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M19 9l-7 7-7-7"
-                      />
-                    </svg>
-                  </button>
-                  {isAdminOpen && (
-                    <div className="absolute top-full right-0 mt-1 w-56 rounded-md shadow-lg bg-white dark:bg-gray-800 ring-1 ring-black ring-opacity-5 z-50">
-                      <div className="py-1" role="menu" aria-orientation="vertical">
-                        <Link
-                          href="/gate-guard/plant-tracking"
-                          className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                          role="menuitem"
-                        >
-                          Plant Tracking
-                        </Link>
-                        <Link
-                          href="/dashboard/approvals"
-                          className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                          role="menuitem"
-                        >
-                          Approvals
-                        </Link>
-                        <Link
-                          href="/admin/weighbridge-management"
-                          className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                          role="menuitem"
-                        >
-                          Weighbridge Management
-                        </Link>
-                        <Link
-                          href="/admin/master-data"
-                          className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                          role="menuitem"
-                        >
-                          Master Data Management
-                        </Link>
-                        <Link
-                          href="/admin/dock-management"
-                          className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                          role="menuitem"
-                        >
-                          Dock Management
-                        </Link>
-                        <Link
-                          href="/admin/led-settings"
-                          className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                          role="menuitem"
-                        >
-                          LED Screen Settings
-                        </Link>
-                        <Link
-                          href="/admin/role-management"
-                          className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                          role="menuitem"
-                        >
-                          Role Management
-                        </Link>
-                        <Link
-                          href="/admin/user-management"
-                          className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                          role="menuitem"
-                        >
-                          User Management
-                        </Link>
-                        <div className="relative">
-                          <div 
-                            className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center justify-between cursor-pointer"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setIsAuditOpen(!isAuditOpen);
-                            }}
-                          >
-                            Audit
-                            <svg
-                              className={`w-4 h-4 transition-transform ${isAuditOpen ? 'rotate-90' : ''}`}
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                              xmlns="http://www.w3.org/2000/svg"
+                      Admin
+                      <svg
+                        className={`ml-1 w-4 h-4 transition-transform ${isAdminOpen ? 'rotate-180' : ''}`}
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M19 9l-7 7-7-7"
+                        />
+                      </svg>
+                    </button>
+                    {isAdminOpen && (
+                      <div className="absolute top-full right-0 mt-1 w-56 rounded-md shadow-lg bg-white dark:bg-gray-800 ring-1 ring-black ring-opacity-5 z-50">
+                        <div className="py-1" role="menu" aria-orientation="vertical">
+                          {/* Filter admin menu items based on permissions */}
+                          {filteredAdminPages.map(page => (
+                            <Link
+                              key={page.id}
+                              href={page.path}
+                              className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                              role="menuitem"
                             >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M9 5l7 7-7 7"
-                              />
-                            </svg>
-                          </div>
-                          {isAuditOpen && (
-                            <div className="absolute left-full top-0 ml-1 py-1 rounded-md shadow-lg bg-white dark:bg-gray-800 ring-1 ring-black ring-opacity-5 z-50 w-56">
-                              <Link
-                                href="/admin/weighbridge-audit"
-                                className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                                role="menuitem"
-                                onClick={(e) => e.stopPropagation()}
+                              {page.name}
+                            </Link>
+                          ))}
+
+                          {/* Audit submenu - only show if user has permission to any audit pages */}
+                          {(accessibleAuditPages.length > 0 || isAdminUser) && (
+                            <div className="relative">
+                              <div 
+                                className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center justify-between cursor-pointer"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setIsAuditOpen(!isAuditOpen);
+                                }}
                               >
-                                Weighbridge Audit
-                              </Link>
-                              <Link
-                                href="/admin/gate-guard-audit"
-                                className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                                role="menuitem"
-                                onClick={(e) => e.stopPropagation()}
-                              >
-                                Gate Guard Audit
-                              </Link>
-                              <Link
-                                href="/admin/truck-scheduling-audit"
-                                className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                                role="menuitem"
-                                onClick={(e) => e.stopPropagation()}
-                              >
-                                Truck Scheduling Audit
-                              </Link>
-                              <Link
-                                href="/admin/shift-handover-audit"
-                                className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                                role="menuitem"
-                                onClick={(e) => e.stopPropagation()}
-                              >
-                                Shift Handover Audit
-                              </Link>
+                                Audit
+                                <svg
+                                  className={`w-4 h-4 transition-transform ${isAuditOpen ? 'rotate-90' : ''}`}
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                  xmlns="http://www.w3.org/2000/svg"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M9 5l7 7-7 7"
+                                  />
+                                </svg>
+                              </div>
+                              {isAuditOpen && (
+                                <div className="absolute left-full top-0 ml-1 py-1 rounded-md shadow-lg bg-white dark:bg-gray-800 ring-1 ring-black ring-opacity-5 z-50 w-56">
+                                  {/* Filter audit menu items based on permissions */}
+                                  {accessibleAuditPages.map(page => (
+                                    <Link
+                                      key={page.id}
+                                      href={page.path}
+                                      className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                                      role="menuitem"
+                                      onClick={(e) => e.stopPropagation()}
+                                    >
+                                      {page.name}
+                                    </Link>
+                                  ))}
+                                </div>
+                              )}
                             </div>
                           )}
                         </div>
                       </div>
-                    </div>
-                  )}
-                </div>
-                <Link 
-                  href="/led-screen" 
-                  className={`px-3 py-2 rounded-md text-sm font-medium ${
-                    isActive('/led-screen') 
-                      ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-200' 
-                      : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800'
-                  }`}
-                >
-                  LED Screen
-                </Link>
-                <Link 
-                  href="/admin/shift-handover" 
-                  className={`px-3 py-2 rounded-md text-sm font-medium ${
-                    isActive('/admin/shift-handover') 
-                      ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-200' 
-                      : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800'
-                  }`}
-                >
-                  Shift Handover
-                </Link>
+                    )}
+                  </div>
+                )}
               </div>
             ) : (
               <div className="flex space-x-1">
-                <Link 
-                  href="/" 
-                  className={`px-3 py-2 rounded-md text-sm font-medium ${
-                    pathname === '/' 
-                      ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-200' 
-                      : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800'
-                  }`}
-                >
-                  Home
-                </Link>
-                <Link 
-                  href="#features" 
+                <Link
+                  href="/auth/signin"
                   className="px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
                 >
-                  Features
-                </Link>
-                <Link 
-                  href="#testimonials" 
-                  className="px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
-                >
-                  Testimonials
+                  Sign In
                 </Link>
               </div>
             )}
           </nav>
           
-          <div className="hidden md:flex items-center gap-4">
+          {/* User menu */}
+          <div className="flex items-center">
             <ThemeToggle />
+            
             {user ? (
-              <div className="flex items-center gap-4">
-                <div className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                  {user.email}
+              <div className="ml-4 relative">
+                <div className="flex items-center">
+                  <button
+                    type="button"
+                    onClick={handleLogout}
+                    className="ml-3 text-sm text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400"
+                  >
+                    Sign Out
+                  </button>
                 </div>
-                <button 
-                  onClick={handleLogout}
-                  className="px-4 py-2 rounded-md text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-700 dark:hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-900"
-                >
-                  Logout
-                </button>
               </div>
             ) : (
-              <Link 
-                href="/auth/signin"
-                className="px-4 py-2 rounded-md text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-700 dark:hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-900"
-              >
-                Login
-              </Link>
+              <div className="ml-4 md:hidden">
+                <Link
+                  href="/auth/signin"
+                  className="text-sm text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400"
+                >
+                  Sign In
+                </Link>
+              </div>
             )}
           </div>
         </div>
       </div>
-
-      {/* Mobile menu, show/hide based on menu state */}
+      
+      {/* Mobile menu */}
       {isMobileMenuOpen && (
-        <div className="md:hidden bg-white dark:bg-gray-900 shadow-lg border-t border-gray-200 dark:border-gray-800">
-          <div className="px-2 pt-2 pb-3 space-y-1">
+        <div className="md:hidden">
+          <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+            {/* Filter mobile menu items based on permissions */}
             {user ? (
               <>
-                <Link 
-                  href="/dashboard" 
-                  className={`block px-3 py-2 rounded-md text-base font-medium ${
-                    isActive('/dashboard') 
-                      ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-200' 
-                      : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800'
-                  }`}
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  Dashboard
-                </Link>
-                <Link 
-                  href="/transporter" 
-                  className={`block px-3 py-2 rounded-md text-base font-medium ${
-                    isActive('/transporter') 
-                      ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-200' 
-                      : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800'
-                  }`}
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  Truck Scheduling
-                </Link>
-                <Link 
-                  href="/gate-guard" 
-                  className={`block px-3 py-2 rounded-md text-base font-medium ${
-                    isActive('/gate-guard') 
-                      ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-200' 
-                      : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800'
-                  }`}
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  Gate Guard
-                </Link>
-                <Link 
-                  href="/weighbridge" 
-                  className={`block px-3 py-2 rounded-md text-base font-medium ${
-                    isActive('/weighbridge') 
-                      ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-200' 
-                      : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800'
-                  }`}
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  Weighbridge
-                </Link>
-                <Link 
-                  href="/dock-operations" 
-                  className={`block px-3 py-2 rounded-md text-base font-medium ${
-                    isActive('/dock-operations') 
-                      ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-200' 
-                      : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800'
-                  }`}
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  Dock Operations
-                </Link>
-                <div className="border-t border-gray-200 dark:border-gray-800 pt-2 mt-2">
-                  <div className="px-3 py-2 text-base font-medium text-gray-800 dark:text-gray-200">
-                    Admin
-                  </div>
+                {accessibleMainPages.map(page => (
                   <Link
-                    href="/gate-guard/plant-tracking"
-                    className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 pl-6"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    Plant Tracking
-                  </Link>
-                  <Link
-                    href="/dashboard/approvals"
-                    className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 pl-6"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    Approvals
-                  </Link>
-                  <Link
-                    href="/admin/weighbridge-management"
-                    className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 pl-6"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    Weighbridge Management
-                  </Link>
-                  <Link
-                    href="/admin/master-data"
-                    className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 pl-6"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    Master Data Management
-                  </Link>
-                  <Link
-                    href="/admin/dock-management"
-                    className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 pl-6"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    Dock Management
-                  </Link>
-                  <Link
-                    href="/admin/led-settings"
-                    className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 pl-6"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    LED Screen Settings
-                  </Link>
-                  <Link
-                    href="/admin/role-management"
-                    className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 pl-6"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    Role Management
-                  </Link>
-                  <Link
-                    href="/admin/user-management"
-                    className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 pl-6"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    User Management
-                  </Link>
-                  <div className="px-3 py-2 text-base font-medium text-gray-800 dark:text-gray-200 pl-6">
-                    Audit
-                  </div>
-                  <div className="flex flex-wrap pl-6">
-                    <Link
-                      href="/admin/weighbridge-audit"
-                      className="px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
-                      onClick={() => setIsMobileMenuOpen(false)}
-                    >
-                      Weighbridge
-                    </Link>
-                    <Link
-                      href="/admin/gate-guard-audit"
-                      className="px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
-                      onClick={() => setIsMobileMenuOpen(false)}
-                    >
-                      Gate Guard
-                    </Link>
-                    <Link
-                      href="/admin/truck-scheduling-audit"
-                      className="px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
-                      onClick={() => setIsMobileMenuOpen(false)}
-                    >
-                      Truck Scheduling
-                    </Link>
-                    <Link
-                      href="/admin/shift-handover-audit"
-                      className="px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
-                      onClick={() => setIsMobileMenuOpen(false)}
-                    >
-                      Shift Handover
-                    </Link>
-                  </div>
-                </div>
-                <div className="border-t border-gray-200 dark:border-gray-800 pt-2 mt-2">
-                  <div className="flex items-center justify-between px-3 py-2">
-                    <div className="text-base font-medium text-gray-800 dark:text-gray-200">
-                      {user.email}
-                    </div>
-                    <ThemeToggle />
-                  </div>
-                  <button 
-                    onClick={handleLogout}
-                    className="mt-2 w-full px-4 py-2 text-base font-medium text-white bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-700 dark:hover:bg-indigo-600 focus:outline-none"
-                  >
-                    Logout
-                  </button>
-                </div>
-                <div className="border-t border-gray-200 dark:border-gray-800 pt-2 mt-2">
-                                  <Link 
-                  href="/led-screen" 
-                  className={`block px-3 py-2 rounded-md text-base font-medium ${
-                    isActive('/led-screen') 
-                      ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-200' 
-                      : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800'
-                  }`}
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  LED Screen
-                </Link>
-                <Link 
-                  href="/admin/shift-handover" 
-                  className={`block px-3 py-2 rounded-md text-base font-medium ${
-                    isActive('/admin/shift-handover') 
-                      ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-200' 
-                      : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800'
-                  }`}
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  Shift Handover
-                </Link>
-                </div>
-              </>
-            ) : (
-              <>
-                <Link 
-                  href="/" 
-                  className={`block px-3 py-2 rounded-md text-base font-medium ${
-                    pathname === '/' 
-                      ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-200' 
-                      : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800'
-                  }`}
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  Home
-                </Link>
-                <Link 
-                  href="#features" 
-                  className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  Features
-                </Link>
-                <Link 
-                  href="#testimonials" 
-                  className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  Testimonials
-                </Link>
-                <div className="border-t border-gray-200 dark:border-gray-800 pt-2 mt-2">
-                  <div className="flex items-center justify-between px-3 py-2">
-                    <div className="text-base font-medium text-gray-800 dark:text-gray-200">
-                      Theme
-                    </div>
-                    <ThemeToggle />
-                  </div>
-                  <Link 
-                    href="/auth/signin"
-                    className="mt-2 block w-full px-4 py-2 text-base font-medium text-center text-white bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-700 dark:hover:bg-indigo-600 focus:outline-none"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    Login
-                  </Link>
-                </div>
-                <div className="border-t border-gray-200 dark:border-gray-800 pt-2 mt-2">
-                  <Link 
-                    href="/led-screen" 
+                    key={page.id}
+                    href={page.path}
                     className={`block px-3 py-2 rounded-md text-base font-medium ${
-                      isActive('/led-screen') 
-                        ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-200' 
+                      isActive(page.path)
+                        ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-200'
                         : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800'
                     }`}
-                    onClick={() => setIsMobileMenuOpen(false)}
                   >
-                    LED Screen
+                    {page.name}
                   </Link>
-                </div>
+                ))}
+
+                {/* Show admin section header if user has admin access */}
+                {showAdminDropdown && (
+                  <div className="pt-4 pb-2">
+                    <div className="border-t border-gray-200 dark:border-gray-700"></div>
+                    <div className="mt-2 text-xs font-semibold text-gray-500 dark:text-gray-400 px-3">
+                      ADMIN
+                    </div>
+                  </div>
+                )}
+
+                {/* Show admin pages the user has access to */}
+                {filteredAdminPages.map(page => (
+                  <Link
+                    key={page.id}
+                    href={page.path}
+                    className={`block px-3 py-2 rounded-md text-base font-medium ${
+                      isActive(page.path)
+                        ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-200'
+                        : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800'
+                    }`}
+                  >
+                    {page.name}
+                  </Link>
+                ))}
+
+                {/* Show audit section header if user has audit access */}
+                {(accessibleAuditPages.length > 0 || isAdminUser) && (
+                  <div className="pt-4 pb-2">
+                    <div className="border-t border-gray-200 dark:border-gray-700"></div>
+                    <div className="mt-2 text-xs font-semibold text-gray-500 dark:text-gray-400 px-3">
+                      AUDIT
+                    </div>
+                  </div>
+                )}
+
+                {/* Show audit pages the user has access to */}
+                {accessibleAuditPages.map(page => (
+                  <Link
+                    key={page.id}
+                    href={page.path}
+                    className={`block px-3 py-2 rounded-md text-base font-medium ${
+                      isActive(page.path)
+                        ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-200'
+                        : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800'
+                    }`}
+                  >
+                    {page.name}
+                  </Link>
+                ))}
               </>
+            ) : (
+              <Link
+                href="/auth/signin"
+                className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
+              >
+                Sign In
+              </Link>
             )}
           </div>
         </div>

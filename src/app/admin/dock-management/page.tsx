@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { db } from '@/lib/firebase';
 import { collection, addDoc, getDocs, doc, updateDoc, deleteDoc, query, orderBy } from 'firebase/firestore';
+import PagePermissionWrapper from '@/components/PagePermissionWrapper';
 
 type DockType = 'LOADING' | 'UNLOADING' | 'BOTH';
 
@@ -108,8 +109,9 @@ export default function DockManagementPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <PagePermissionWrapper pageId="admin-dock-management">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Dock Management</h1>
           <button
@@ -283,5 +285,6 @@ export default function DockManagementPage() {
         </div>
       </div>
     </div>
+    </PagePermissionWrapper>
   );
 } 

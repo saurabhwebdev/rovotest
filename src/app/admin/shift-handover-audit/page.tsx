@@ -1,44 +1,32 @@
 'use client';
 
-import ShiftHandoverAuditTrail from '@/components/shift-handover/ShiftHandoverAuditTrail';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import ShiftHandoverAuditTrail from '@/components/shift-handover/ShiftHandoverAuditTrail';
+import PagePermissionWrapper from '@/components/PagePermissionWrapper';
 
 export default function ShiftHandoverAuditPage() {
-  const { user, loading } = useAuth();
-  const router = useRouter();
-  const [isAuthorized, setIsAuthorized] = useState(false);
+  const { user } = useAuth();
 
-  useEffect(() => {
-    if (!loading) {
-      if (!user) {
-        router.push('/auth/signin');
-      } else {
-        // In a real app, you would check user permissions here
-        setIsAuthorized(true);
-      }
-    }
-  }, [user, loading, router]);
+  return (
+    <PagePermissionWrapper pageId="admin-shift-handover-audit">
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+          <div>
+            <h1 className="text-2xl font-bold">Shift Handover Audit Trail</h1>
+            <p className="text-gray-600 dark:text-gray-400 mt-1">
+              Complete history of all shift handover operations
+            </p>
+          </div>
+        </div>
 
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
-      </div>
-    );
-  }
-
-  if (!isAuthorized) {
-    return (
-      <div className="flex justify-center items-center min-h-screen">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-red-600 mb-2">Access Denied</h1>
-          <p className="text-gray-600">You do not have permission to access this page.</p>
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden">
+          <div className="p-6">
+            <ShiftHandoverAuditTrail showFullHistoryByDefault={true} />
+          </div>
         </div>
       </div>
-    );
-  }
-
-  return <ShiftHandoverAuditTrail />;
+    </PagePermissionWrapper>
+  );
 } 

@@ -2,12 +2,12 @@
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { useRouter } from 'next/navigation';
 import WeighbridgeTruckList from '@/components/weighbridge/WeighbridgeTruckList';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import HelpIcon from '@/components/ui/HelpIcon';
 import { weighbridgeHelp } from '@/lib/helpContent';
+import PagePermissionWrapper from '@/components/PagePermissionWrapper';
 
 interface Weighbridge {
   id: string;
@@ -17,17 +17,10 @@ interface Weighbridge {
 }
 
 export default function WeighbridgePage() {
-  const { user, loading: authLoading } = useAuth();
-  const router = useRouter();
+  const { user } = useAuth();
   const [activeWeighbridge, setActiveWeighbridge] = useState<Weighbridge | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-
-  useEffect(() => {
-    if (!authLoading && !user) {
-      window.location.href = '/auth/signin';
-    }
-  }, [user, authLoading]);
 
   // Fetch active weighbridge
   useEffect(() => {
@@ -64,58 +57,62 @@ export default function WeighbridgePage() {
     }
   }, [user]);
 
-  if (authLoading || loading) {
+  if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-500"></div>
-      </div>
+      <PagePermissionWrapper pageId="weighbridge">
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-500"></div>
+        </div>
+      </PagePermissionWrapper>
     );
   }
 
-  if (!user) return null;
-
   if (error) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="bg-red-50 dark:bg-red-900 border border-red-200 dark:border-red-700 rounded-lg p-6 text-center">
-          <h2 className="text-xl font-semibold text-red-800 dark:text-red-200 mb-2">
-            Weighbridge Not Available
-          </h2>
-          <p className="text-red-600 dark:text-red-300">{error}</p>
+      <PagePermissionWrapper pageId="weighbridge">
+        <div className="container mx-auto px-4 py-8">
+          <div className="bg-red-50 dark:bg-red-900 border border-red-200 dark:border-red-700 rounded-lg p-6 text-center">
+            <h2 className="text-xl font-semibold text-red-800 dark:text-red-200 mb-2">
+              Weighbridge Not Available
+            </h2>
+            <p className="text-red-600 dark:text-red-300">{error}</p>
+          </div>
         </div>
-      </div>
+      </PagePermissionWrapper>
     );
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
-        <div>
-          <div className="flex items-center">
-            <h1 className="text-2xl font-bold">Weighbridge Dashboard</h1>
-            <HelpIcon moduleHelp={weighbridgeHelp} />
-          </div>
-          {activeWeighbridge && (
-            <p className="text-gray-600 dark:text-gray-400 mt-1">
-              {activeWeighbridge.name} - {activeWeighbridge.location}
-            </p>
-          )}
-        </div>
-      </div>
-
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden">
-        <div className="p-6">
+    <PagePermissionWrapper pageId="weighbridge">
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
           <div>
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-lg font-semibold">Truck Weighing Management</h2>
-              <div className="text-sm text-gray-500 dark:text-gray-400">
-                All truck weighing operations
-              </div>
+            <div className="flex items-center">
+              <h1 className="text-2xl font-bold">Weighbridge Dashboard</h1>
+              <HelpIcon moduleHelp={weighbridgeHelp} />
             </div>
-            <WeighbridgeTruckList />
+            {activeWeighbridge && (
+              <p className="text-gray-600 dark:text-gray-400 mt-1">
+                {activeWeighbridge.name} - {activeWeighbridge.location}
+              </p>
+            )}
+          </div>
+        </div>
+
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden">
+          <div className="p-6">
+            <div>
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-lg font-semibold">Truck Weighing Management</h2>
+                <div className="text-sm text-gray-500 dark:text-gray-400">
+                  All truck weighing operations
+                </div>
+              </div>
+              <WeighbridgeTruckList />
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </PagePermissionWrapper>
   );
 } 

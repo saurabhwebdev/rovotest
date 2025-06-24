@@ -1,25 +1,17 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
 import { useAuth } from '@/contexts/AuthContext';
-import { useRouter } from 'next/navigation';
+import { db } from '@/lib/firebase';
+import { doc, getDoc, updateDoc } from 'firebase/firestore';
+import PagePermissionWrapper from '@/components/PagePermissionWrapper';
 
-export default function LEDSettings() {
-  const [demoModeEnabled, setDemoModeEnabled] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [message, setMessage] = useState({ text: '', type: '' });
+export default function LEDSettingsPage() {
   const { user } = useAuth();
-  const router = useRouter();
-
-  // Redirect if not logged in
-  useEffect(() => {
-    if (!user) {
-      router.push('/auth/signin');
-    }
-  }, [user, router]);
+  const [demoModeEnabled, setDemoModeEnabled] = useState(false);
+  const [rotationSpeed, setRotationSpeed] = useState(5);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState(false);
 
   // Fetch current settings
   useEffect(() => {
@@ -31,124 +23,121 @@ export default function LEDSettings() {
         if (settingsSnap.exists()) {
           const data = settingsSnap.data();
           setDemoModeEnabled(data.demoModeEnabled || false);
-        } else {
-          // Create default settings if they don't exist
-          await setDoc(doc(db, 'settings', 'ledScreen'), {
-            demoModeEnabled: false,
-            lastUpdated: new Date(),
-            updatedBy: user?.email || 'system'
-          });
+          setRotationSpeed(data.rotationSpeed || 5);
         }
       } catch (error) {
         console.error('Error fetching LED settings:', error);
-        setMessage({ 
-          text: 'Failed to load settings. Please try again.', 
-          type: 'error' 
-        });
-      } finally {
-        setLoading(false);
       }
     }
 
-    if (user) {
-      fetchSettings();
-    }
-  }, [user]);
+    fetchSettings();
+  }, []);
 
   // Save settings
   const saveSettings = async () => {
-    if (!user) return;
-    
-    setSaving(true);
-    setMessage({ text: '', type: '' });
+    setIsSaving(true);
+    setSaveSuccess(false);
     
     try {
-      await setDoc(doc(db, 'settings', 'ledScreen'), {
+      const settingsRef = doc(db, 'settings', 'ledScreen');
+      await updateDoc(settingsRef, {
         demoModeEnabled,
-        lastUpdated: new Date(),
-        updatedBy: user.email
+        rotationSpeed,
+        updatedAt: new Date(),
+        updatedBy: user?.email
       });
       
-      setMessage({ 
-        text: 'Settings saved successfully!', 
-        type: 'success' 
-      });
-      
-      // Clear message after 3 seconds
-      setTimeout(() => {
-        setMessage({ text: '', type: '' });
-      }, 3000);
+      setSaveSuccess(true);
+      setTimeout(() => setSaveSuccess(false), 3000);
     } catch (error) {
       console.error('Error saving LED settings:', error);
-      setMessage({ 
-        text: 'Failed to save settings. Please try again.', 
-        type: 'error' 
-      });
     } finally {
-      setSaving(false);
+      setIsSaving(false);
     }
   };
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
-      </div>
-    );
-  }
-
   return (
-    <div className="max-w-4xl mx-auto">
-      <h1 className="text-2xl font-bold mb-6">LED Screen Settings</h1>
-      
-      <div className="bg-white dark:bg-gray-800 shadow-md rounded-lg p-6 mb-6">
-        <h2 className="text-xl font-semibold mb-4">Display Settings</h2>
+    <PagePermissionWrapper pageId="admin-led-settings">
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-2xl font-bold">LED Screen Settings</h1>
+        </div>
         
-        <div className="flex items-center justify-between py-4 border-b border-gray-200 dark:border-gray-700">
-          <div>
-            <h3 className="font-medium">Demo Mode</h3>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              When enabled, the LED screen will show dummy truck data when no real trucks are available
-            </p>
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+          <div className="space-y-6">
+            <div>
+              <h2 className="text-lg font-medium mb-4">Display Settings</h2>
+              
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <label className="font-medium text-gray-700 dark:text-gray-300">Demo Mode</label>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                      When enabled, shows sample data in the LED screen
+                    </p>
+                  </div>
+                  <div className="relative inline-block w-12 mr-2 align-middle select-none">
+                    <input 
+                      type="checkbox" 
+                      name="demoMode" 
+                      id="demoMode"
+                      checked={demoModeEnabled}
+                      onChange={() => setDemoModeEnabled(!demoModeEnabled)}
+                      className="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer"
+                    />
+                    <label 
+                      htmlFor="demoMode" 
+                      className={`toggle-label block overflow-hidden h-6 rounded-full cursor-pointer ${
+                        demoModeEnabled ? 'bg-indigo-500' : 'bg-gray-300 dark:bg-gray-600'
+                      }`}
+                    ></label>
+                  </div>
+                </div>
+                
+                <div>
+                  <label className="block font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Rotation Speed (seconds)
+                  </label>
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="range"
+                      min="1"
+                      max="20"
+                      value={rotationSpeed}
+                      onChange={(e) => setRotationSpeed(parseInt(e.target.value))}
+                      className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
+                    />
+                    <span className="text-gray-700 dark:text-gray-300 w-10 text-center">{rotationSpeed}s</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div className="flex justify-end pt-4 border-t border-gray-200 dark:border-gray-700">
+              <button
+                onClick={saveSettings}
+                disabled={isSaving}
+                className={`px-4 py-2 rounded-md text-white ${
+                  isSaving 
+                    ? 'bg-gray-400 cursor-not-allowed' 
+                    : 'bg-indigo-600 hover:bg-indigo-700'
+                }`}
+              >
+                {isSaving ? 'Saving...' : 'Save Settings'}
+              </button>
+              
+              {saveSuccess && (
+                <div className="ml-4 text-green-600 flex items-center">
+                  <svg className="w-5 h-5 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                  Settings saved successfully
+                </div>
+              )}
+            </div>
           </div>
-          <label className="relative inline-flex items-center cursor-pointer">
-            <input 
-              type="checkbox" 
-              className="sr-only peer" 
-              checked={demoModeEnabled}
-              onChange={() => setDemoModeEnabled(!demoModeEnabled)}
-            />
-            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 dark:peer-focus:ring-indigo-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-indigo-600"></div>
-            <span className="ml-3 text-sm font-medium text-gray-900 dark:text-gray-300">
-              {demoModeEnabled ? 'Enabled' : 'Disabled'}
-            </span>
-          </label>
         </div>
       </div>
-      
-      {message.text && (
-        <div className={`p-4 mb-6 rounded-md ${
-          message.type === 'success' 
-            ? 'bg-green-100 text-green-700 dark:bg-green-800/30 dark:text-green-400' 
-            : 'bg-red-100 text-red-700 dark:bg-red-800/30 dark:text-red-400'
-        }`}>
-          {message.text}
-        </div>
-      )}
-      
-      <div className="flex justify-end">
-        <button
-          onClick={saveSettings}
-          disabled={saving}
-          className={`px-4 py-2 rounded-md text-white font-medium ${
-            saving 
-              ? 'bg-gray-400 cursor-not-allowed' 
-              : 'bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-700 dark:hover:bg-indigo-600'
-          }`}
-        >
-          {saving ? 'Saving...' : 'Save Settings'}
-        </button>
-      </div>
-    </div>
+    </PagePermissionWrapper>
   );
 } 

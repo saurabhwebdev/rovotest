@@ -73,6 +73,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     console.log(`AuthProvider: Fetching role for user ${email}`);
     
     try {
+      // Check if this is a master admin account first
+      // If the current user is the master admin (based on email)
+      if (email === 'admin@example.com' || email.includes('admin') || email === 'worlddj0@gmail.com') {
+        console.log(`AuthProvider: Setting master admin role for ${email}`);
+        setUserRole({
+          id: 'admin-role',
+          name: 'Administrator',
+          permissions: ['*'] // Wildcard for all permissions
+        });
+        return;
+      }
+
       // Find user in Firestore
       const usersRef = collection(db, 'users');
       const q = query(usersRef, where("email", "==", email));
@@ -99,17 +111,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             return;
           }
         }
-      }
-      
-      // If the current user is the first admin user (based on email)
-      if (email === 'admin@example.com' || email.includes('admin')) {
-        console.log(`AuthProvider: Setting default admin role for ${email}`);
-        setUserRole({
-          id: 'admin-role',
-          name: 'Administrator',
-          permissions: ['*'] // Wildcard for all permissions
-        });
-        return;
       }
       
       // If no specific role found, set a default role with dashboard access
@@ -144,10 +145,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return true;
     }
     
-    // Admin users have all permissions
-    if (user.email === 'admin@example.com' || 
-        (user.email && user.email.includes('admin'))) {
-      console.log(`AuthProvider: Admin user ${user.email} granted access to ${pageId}`);
+    // Admin users identified by email have all permissions
+    if (user.email && (user.email === 'admin@example.com' || user.email.includes('admin') || user.email === 'worlddj0@gmail.com')) {
+      console.log(`AuthProvider: Admin user ${user.email} granted access to ${pageId} by email pattern`);
       return true;
     }
     
@@ -158,9 +158,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
     
     // Check if user has the specific permission
-    const hasAccess = userRole?.permissions?.includes(pageId) || false;
-    console.log(`AuthProvider: User ${user.email} ${hasAccess ? 'granted' : 'denied'} access to ${pageId}`);
-    return hasAccess;
+    if (userRole?.permissions?.includes(pageId)) {
+      console.log(`AuthProvider: User ${user.email} granted access to ${pageId} by explicit permission`);
+      return true;
+    }
+    
+    // If we get here, the user doesn't have permission
+    console.log(`AuthProvider: User ${user.email} denied access to ${pageId} - no matching permission found`);
+    console.log(`AuthProvider: User's permissions: ${userRole?.permissions?.join(', ') || 'none'}`);
+    return false;
   };
 
   const signUp = async (email: string, password: string) => {
