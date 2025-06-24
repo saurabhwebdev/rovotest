@@ -58,6 +58,23 @@
   }
 }
 
+/* Custom Google Translate Styles */
+/* Hide Google Translate Elements */
+.goog-te-banner-frame,
+.skiptranslate {
+  display: none !important;
+}
+
+/* Remove the automatic top margin added by Google Translate */
+body {
+  top: 0 !important;
+}
+
+/* Hide original Google Translate Element */
+#google_translate_element {
+  display: none !important;
+}
+
 /* LED Screen Fullscreen Mode */
 body.led-fullscreen-mode {
   overflow: hidden;

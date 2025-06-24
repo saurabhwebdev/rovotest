@@ -274,31 +274,23 @@ export default function Navbar() {
           </nav>
           
           {/* User menu */}
-          <div className="flex items-center">
-            <ThemeToggle />
-            
+          <div className="flex items-center space-x-4">
             {user ? (
-              <div className="ml-4 relative">
-                <div className="flex items-center">
-                  <button
-                    type="button"
-                    onClick={handleLogout}
-                    className="ml-3 text-sm text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400"
-                  >
-                    Sign Out
-                  </button>
-                </div>
-              </div>
+              <button
+                onClick={handleLogout}
+                className="px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
+              >
+                Logout
+              </button>
             ) : (
-              <div className="ml-4 md:hidden">
-                <Link
-                  href="/auth/signin"
-                  className="text-sm text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400"
-                >
-                  Sign In
-                </Link>
-              </div>
+              <Link
+                href="/auth/signin"
+                className="px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
+              >
+                Login
+              </Link>
             )}
+            <ThemeToggle />
           </div>
         </div>
       </div>
