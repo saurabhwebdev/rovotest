@@ -196,57 +196,80 @@ export default function WeighbridgeTruckList() {
 
   return (
     <div className="overflow-x-auto">
-      <table className="min-w-full bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-        <thead className="bg-gray-50 dark:bg-gray-700">
+      <table className="min-w-full border-collapse">
+        <thead className="bg-gray-50 dark:bg-gray-800/50">
           <tr>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-              Truck Number
+            <th className="px-2 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 cursor-pointer" onClick={() => {}}>
+              <div className="flex items-center">
+                <span>Truck Number</span>
+              </div>
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-              Transporter
+            <th className="px-2 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 cursor-pointer" onClick={() => {}}>
+              <div className="flex items-center">
+                <span>Transporter</span>
+              </div>
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-              In Time
+            <th className="px-2 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 cursor-pointer" onClick={() => {}}>
+              <div className="flex items-center">
+                <span>Date</span>
+              </div>
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-              Weight Info
+            <th className="px-2 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 cursor-pointer" onClick={() => {}}>
+              <div className="flex items-center">
+                <span>Time</span>
+              </div>
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-              Current Milestone
+            <th className="px-2 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 cursor-pointer" onClick={() => {}}>
+              <div className="flex items-center">
+                <span>Gross Weight</span>
+              </div>
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+            <th className="px-2 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 cursor-pointer" onClick={() => {}}>
+              <div className="flex items-center">
+                <span>Tare Weight</span>
+              </div>
+            </th>
+            <th className="px-2 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 cursor-pointer" onClick={() => {}}>
+              <div className="flex items-center">
+                <span>Net Weight</span>
+              </div>
+            </th>
+            <th className="px-2 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 cursor-pointer" onClick={() => {}}>
+              <div className="flex items-center">
+                <span>Status</span>
+              </div>
+            </th>
+            <th className="px-2 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-300">
               Actions
             </th>
           </tr>
         </thead>
         <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
           {entries.map((entry) => (
-            <tr key={entry.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
-              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
+            <tr key={entry.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50">
+              <td className="px-2 py-1.5 whitespace-nowrap text-xs font-medium">
                 {entry.truckNumber}
               </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
+              <td className="px-2 py-1.5 whitespace-nowrap text-xs">
                 {entry.transporterName}
               </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
-                {entry.inTime.toDate().toLocaleString()}
+              <td className="px-2 py-1.5 whitespace-nowrap text-xs">
+                {entry.inTime.toDate().toLocaleDateString()}
               </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
-                {entry.grossWeight ? (
-                  <>
-                    <div>Gross: {entry.grossWeight} kg</div>
-                    <div>Tare: {entry.tareWeight} kg</div>
-                    <div>Net: {entry.netWeight} kg</div>
-                    <div className="text-xs text-gray-400">
-                      {entry.weighingTime?.toDate().toLocaleString()}
-                    </div>
-                  </>
-                ) : (
-                  'Not weighed'
-                )}
+              <td className="px-2 py-1.5 whitespace-nowrap text-xs">
+                {entry.inTime.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
               </td>
-              <td className="px-6 py-4 whitespace-nowrap">
-                <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${
+              <td className="px-2 py-1.5 whitespace-nowrap text-xs">
+                {entry.grossWeight ? `${entry.grossWeight} kg` : '-'}
+              </td>
+              <td className="px-2 py-1.5 whitespace-nowrap text-xs">
+                {entry.tareWeight ? `${entry.tareWeight} kg` : '-'}
+              </td>
+              <td className="px-2 py-1.5 whitespace-nowrap text-xs">
+                {entry.netWeight ? `${entry.netWeight} kg` : '-'}
+              </td>
+              <td className="px-2 py-1.5 whitespace-nowrap text-xs">
+                <span className={`px-2 py-0.5 inline-flex text-xs leading-5 font-semibold rounded-full ${
                   entry.currentMilestone === 'PENDING_WEIGHING' && entry.status === 'PENDING_APPROVAL' ? 'bg-orange-100 text-orange-800 dark:bg-orange-800 dark:text-orange-100' :
                   entry.currentMilestone === 'PENDING_WEIGHING' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100' :
                   entry.currentMilestone === 'WEIGHED' ? 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100' :
@@ -258,34 +281,43 @@ export default function WeighbridgeTruckList() {
                 {entry.status === 'WEIGHING_REJECTED' && (
                   <div className="mt-1">
                     <span className="text-xs text-red-600 dark:text-red-400">
-                      Rejected: {entry.rejectionRemarks}
+                      Rejected
                     </span>
                   </div>
                 )}
               </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                {entry.currentMilestone === 'PENDING_WEIGHING' && entry.status !== 'PENDING_APPROVAL' && (
-                  <button
-                    onClick={() => handleWeigh(entry)}
-                    className="px-3 py-1.5 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors"
-                    title="Weigh Truck"
-                  >
-                    Weigh Truck
-                  </button>
-                )}
-                {entry.status === 'PENDING_APPROVAL' && (
-                  <span className="text-sm text-orange-600 dark:text-orange-400">
-                    Awaiting Approval
-                  </span>
-                )}
-                {(entry.currentMilestone === 'WEIGHED' || entry.currentMilestone === 'AT_PARKING') && (
-                  <button
-                    onClick={() => handleOpenNextMilestoneModal(entry)}
-                    className="px-3 py-1.5 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-                  >
-                    Action
-                  </button>
-                )}
+              <td className="px-2 py-1.5 whitespace-nowrap text-xs">
+                <div className="flex space-x-1">
+                  {entry.currentMilestone === 'PENDING_WEIGHING' && entry.status !== 'PENDING_APPROVAL' && (
+                    <button
+                      onClick={() => handleWeigh(entry)}
+                      className="text-gray-500 hover:text-indigo-600 focus:outline-none"
+                      title="Weigh Truck"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3" />
+                      </svg>
+                    </button>
+                  )}
+                  
+                  {entry.status === 'PENDING_APPROVAL' && (
+                    <span className="text-xs text-orange-600 dark:text-orange-400">
+                      Awaiting
+                    </span>
+                  )}
+                  
+                  {(entry.currentMilestone === 'WEIGHED' || entry.currentMilestone === 'AT_PARKING') && (
+                    <button
+                      onClick={() => handleOpenNextMilestoneModal(entry)}
+                      className="text-gray-500 hover:text-blue-600 focus:outline-none"
+                      title="Next Action"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 5l7 7-7 7M5 5l7 7-7 7" />
+                      </svg>
+                    </button>
+                  )}
+                </div>
               </td>
             </tr>
           ))}
