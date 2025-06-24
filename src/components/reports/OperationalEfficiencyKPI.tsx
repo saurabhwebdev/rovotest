@@ -46,7 +46,7 @@ interface OperationalEfficiencyKPIProps {
   moduleSlug: string;
 }
 
-const OperationalEfficiencyDetails = () => {
+export const OperationalEfficiencyDetails = () => {
   const [dailyMetrics, setDailyMetrics] = useState<DailyMetrics[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');

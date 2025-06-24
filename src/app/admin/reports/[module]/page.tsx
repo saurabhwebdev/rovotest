@@ -3,8 +3,8 @@
 import { useParams } from 'next/navigation';
 import PagePermissionWrapper from "@/components/PagePermissionWrapper";
 import TransporterKPIDetails from "@/components/reports/TransporterKPIDetails";
-import OperationalEfficiencyDetails from "@/components/reports/OperationalEfficiencyKPI";
-import SchedulingEffectivenessDetails from "@/components/reports/SchedulingEffectivenessKPI";
+import { OperationalEfficiencyDetails } from "@/components/reports/OperationalEfficiencyKPI";
+import { SchedulingEffectivenessDetails } from "@/components/reports/SchedulingEffectivenessKPI";
 
 export default function ModuleKPIDetailsPage() {
   const params = useParams();

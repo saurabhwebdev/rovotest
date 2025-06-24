@@ -55,7 +55,7 @@ interface SchedulingEffectivenessKPIProps {
   moduleSlug: string;
 }
 
-const SchedulingEffectivenessDetails = () => {
+export const SchedulingEffectivenessDetails = () => {
   const [dailyMetrics, setDailyMetrics] = useState<DailyMetrics[]>([]);
   const [transporterMetrics, setTransporterMetrics] = useState<TransporterScheduleMetrics[]>([]);
   const [loading, setLoading] = useState(true);
