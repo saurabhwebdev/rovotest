@@ -35,6 +35,7 @@ export default function Navbar() {
     { id: 'admin-shift-handover-approval', name: 'Shift Handover Approval', path: '/admin/shift-handover-approval' },
     { id: 'admin-role-management', name: 'Role Management', path: '/admin/role-management' },
     { id: 'admin-user-management', name: 'User Management', path: '/admin/user-management' },
+    { id: 'admin-reports', name: 'Reports', path: '/admin/reports' },
   ];
 
   const auditPages = [
