@@ -5,6 +5,9 @@ import PagePermissionWrapper from "@/components/PagePermissionWrapper";
 import TransporterKPISummary from "@/components/reports/TransporterKPISummary";
 import OperationalEfficiencyKPI from "@/components/reports/OperationalEfficiencyKPI";
 import SchedulingEffectivenessKPI from "@/components/reports/SchedulingEffectivenessKPI";
+import EntryProcessingEfficiencyKPI from "@/components/reports/EntryProcessingEfficiencyKPI";
+import SecurityComplianceKPI from "@/components/reports/SecurityComplianceKPI";
+import GateUtilizationKPI from "@/components/reports/GateUtilizationKPI";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 export default function ReportsPage() {
@@ -16,7 +19,7 @@ export default function ReportsPage() {
         <Tabs defaultValue="transporter" className="w-full">
           <TabsList className="mb-6">
             <TabsTrigger value="transporter">Transporter Module</TabsTrigger>
-            <TabsTrigger value="gate" disabled>Gate Operations</TabsTrigger>
+            <TabsTrigger value="gate">Gate Operations</TabsTrigger>
             <TabsTrigger value="dock" disabled>Dock Operations</TabsTrigger>
             <TabsTrigger value="weighbridge" disabled>Weighbridge</TabsTrigger>
           </TabsList>
@@ -29,9 +32,11 @@ export default function ReportsPage() {
             </div>
           </TabsContent>
 
-          <TabsContent value="gate">
-            <div className="text-center py-8 text-gray-500">
-              Gate Operations KPIs coming soon
+          <TabsContent value="gate" className="space-y-6">
+            <div className="grid gap-6">
+              <EntryProcessingEfficiencyKPI moduleSlug="entry-processing-efficiency" />
+              <SecurityComplianceKPI moduleSlug="security-compliance" />
+              <GateUtilizationKPI moduleSlug="gate-utilization" />
             </div>
           </TabsContent>
 

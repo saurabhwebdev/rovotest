@@ -5,6 +5,9 @@ import PagePermissionWrapper from "@/components/PagePermissionWrapper";
 import TransporterKPIDetails from "@/components/reports/TransporterKPIDetails";
 import { OperationalEfficiencyDetails } from "@/components/reports/OperationalEfficiencyKPI";
 import { SchedulingEffectivenessDetails } from "@/components/reports/SchedulingEffectivenessKPI";
+import { EntryProcessingEfficiencyDetails } from "@/components/reports/EntryProcessingEfficiencyKPI";
+import { SecurityComplianceDetails } from "@/components/reports/SecurityComplianceKPI";
+import { GateUtilizationDetails } from "@/components/reports/GateUtilizationKPI";
 
 export default function ModuleKPIDetailsPage() {
   const params = useParams();
@@ -12,12 +15,22 @@ export default function ModuleKPIDetailsPage() {
 
   const getDetailsComponent = () => {
     switch (module) {
+      // Transporter Module KPIs
       case 'transporter':
         return <TransporterKPIDetails />;
       case 'operational-efficiency':
         return <OperationalEfficiencyDetails />;
       case 'scheduling-effectiveness':
         return <SchedulingEffectivenessDetails />;
+        
+      // Gate Operations KPIs  
+      case 'entry-processing-efficiency':
+        return <EntryProcessingEfficiencyDetails />;
+      case 'security-compliance':
+        return <SecurityComplianceDetails />;
+      case 'gate-utilization':
+        return <GateUtilizationDetails />;
+        
       default:
         return <div>Module not found</div>;
     }
