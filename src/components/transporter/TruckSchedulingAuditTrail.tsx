@@ -5,6 +5,7 @@ import { collection, query, where, orderBy, onSnapshot, limit } from 'firebase/f
 import { db } from '@/lib/firebase';
 import { format } from 'date-fns';
 import { useAuth } from '@/contexts/AuthContext';
+import TruckDetailsView from './TruckDetailsView';
 
 interface AuditTrailProps {
   truckId?: string;
@@ -29,6 +30,7 @@ export default function TruckSchedulingAuditTrail({ truckId, showFullHistoryByDe
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [showFullHistory, setShowFullHistory] = useState(showFullHistoryByDefault);
+  const [selectedEntry, setSelectedEntry] = useState<AuditEntry | null>(null);
   const { user } = useAuth();
 
   useEffect(() => {
@@ -116,6 +118,14 @@ export default function TruckSchedulingAuditTrail({ truckId, showFullHistoryByDe
     );
   }
 
+  const openDetailsModal = (entry: AuditEntry) => {
+    setSelectedEntry(entry);
+  };
+
+  const closeDetailsModal = () => {
+    setSelectedEntry(null);
+  };
+
   return (
     <div className="space-y-4">
       {!truckId && (
@@ -175,14 +185,12 @@ export default function TruckSchedulingAuditTrail({ truckId, showFullHistoryByDe
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
                     {entry.details && Object.keys(entry.details).length > 0 ? (
-                      <details className="cursor-pointer">
-                        <summary className="text-indigo-600 dark:text-indigo-400 hover:underline">View Details</summary>
-                        <div className="mt-2 text-xs bg-gray-50 dark:bg-gray-800 p-2 rounded">
-                          <pre className="whitespace-pre-wrap">
-                            {JSON.stringify(entry.details, null, 2)}
-                          </pre>
-                        </div>
-                      </details>
+                      <button 
+                        onClick={() => openDetailsModal(entry)}
+                        className="text-indigo-600 dark:text-indigo-400 hover:underline font-medium"
+                      >
+                        View Details
+                      </button>
                     ) : (
                       <span>No additional details</span>
                     )}
@@ -191,6 +199,63 @@ export default function TruckSchedulingAuditTrail({ truckId, showFullHistoryByDe
               ))}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {/* Details Modal */}
+      {selectedEntry && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center p-4 border-b border-gray-200 dark:border-gray-700">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                {selectedEntry.vehicleNumber} - {selectedEntry.action} Details
+              </h3>
+              <button
+                onClick={closeDetailsModal}
+                className="text-gray-400 hover:text-gray-500 focus:outline-none"
+              >
+                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <div className="p-4">
+              <div className="mb-4 grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Vehicle</p>
+                  <p className="font-medium">{selectedEntry.vehicleNumber}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Action</p>
+                  <p>
+                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getActionColor(selectedEntry.action)}`}>
+                      {selectedEntry.action}
+                    </span>
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Time</p>
+                  <p className="font-medium">{formatTimestamp(selectedEntry.timestamp)}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">User</p>
+                  <p className="font-medium">{selectedEntry.userName || 'Unknown User'}</p>
+                </div>
+              </div>
+              
+              {selectedEntry.details && Object.keys(selectedEntry.details).length > 0 && (
+                <TruckDetailsView details={selectedEntry.details} />
+              )}
+            </div>
+            <div className="p-4 border-t border-gray-200 dark:border-gray-700 flex justify-end">
+              <button
+                onClick={closeDetailsModal}
+                className="px-4 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 rounded-md transition-colors"
+              >
+                Close
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
