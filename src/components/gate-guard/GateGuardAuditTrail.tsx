@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { db } from '@/lib/firebase';
 import { collection, query, orderBy, getDocs, where, Timestamp, limit } from 'firebase/firestore';
+import { exportToCSV } from '@/lib/excelUtils';
 
 interface AuditEntry {
   id: string;
@@ -83,6 +84,25 @@ export default function GateGuardAuditTrail({ showFullHistoryByDefault = false }
     }
   };
 
+  const handleExportToCSV = () => {
+    const csvData = auditEntries.map(entry => ({
+      'Time': entry.timestamp.toDate().toLocaleString(),
+      'Truck Number': entry.truckNumber,
+      'Driver Name': entry.driverName,
+      'Transporter': entry.transporterName,
+      'Action': entry.action.replace(/_/g, ' '),
+      'Status': entry.details.status || '',
+      'Location': entry.details.location || '',
+      'Notes': entry.details.notes || '',
+      'Weighbridge': entry.details.weighbridgeName || '',
+      'Failed Checks': entry.details.failedChecks ? entry.details.failedChecks.join(', ') : '',
+      'Approval Reason': entry.details.approvalReason || '',
+      'Performed By': entry.performedByName || 'Unknown User'
+    }));
+    
+    exportToCSV(csvData, 'gate-guard-audit-trail');
+  };
+
   if (loading) {
     return <div className="text-center py-4">Loading audit trail...</div>;
   }
@@ -95,12 +115,23 @@ export default function GateGuardAuditTrail({ showFullHistoryByDefault = false }
     <div className="mt-8">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-lg font-semibold">Gate Guard Audit Trail</h2>
-        <button
-          onClick={() => setShowFullHistory(!showFullHistory)}
-          className="text-sm text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300"
-        >
-          {showFullHistory ? 'Show Less' : 'View Full History'}
-        </button>
+        <div className="flex space-x-2">
+          <button
+            onClick={() => setShowFullHistory(!showFullHistory)}
+            className="text-sm text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300"
+          >
+            {showFullHistory ? 'Show Less' : 'View Full History'}
+          </button>
+          <button
+            onClick={handleExportToCSV}
+            className="px-3 py-1 bg-green-600 hover:bg-green-700 text-white rounded-md text-sm flex items-center space-x-1"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
+            </svg>
+            <span>Export CSV</span>
+          </button>
+        </div>
       </div>
       
       <div className="overflow-x-auto">

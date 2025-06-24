@@ -6,6 +6,7 @@ import { db } from '@/lib/firebase';
 import { format } from 'date-fns';
 import { useAuth } from '@/contexts/AuthContext';
 import TruckDetailsView from './TruckDetailsView';
+import { exportToCSV } from '@/lib/excelUtils';
 
 interface AuditTrailProps {
   truckId?: string;
@@ -102,6 +103,37 @@ export default function TruckSchedulingAuditTrail({ truckId, showFullHistoryByDe
     }
   };
 
+  const handleExportToCSV = () => {
+    const csvData = auditEntries.map(entry => {
+      // Extract the most important details from the details object
+      const detailsObj = entry.details || {};
+      let detailsStr = '';
+      
+      // Join key details in a readable format for the CSV
+      if (Object.keys(detailsObj).length > 0) {
+        detailsStr = Object.entries(detailsObj)
+          .filter(([key]) => !key.includes('Id') && !key.includes('Ref')) // Filter out ID fields
+          .map(([key, value]) => {
+            if (typeof value === 'object' && value !== null) {
+              return `${key}: Complex data`;
+            }
+            return `${key}: ${value}`;
+          })
+          .join('; ');
+      }
+      
+      return {
+        'Time': formatTimestamp(entry.timestamp),
+        'Vehicle': entry.vehicleNumber,
+        'Action': entry.action,
+        'User': entry.userName || 'Unknown User',
+        'Details': detailsStr
+      };
+    });
+    
+    exportToCSV(csvData, 'truck-scheduling-audit-trail');
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center p-4">
@@ -131,12 +163,24 @@ export default function TruckSchedulingAuditTrail({ truckId, showFullHistoryByDe
       {!truckId && (
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-lg font-semibold">Truck Scheduling Audit Trail</h3>
-          <button
-            onClick={() => setShowFullHistory(!showFullHistory)}
-            className="text-sm text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300"
-          >
-            {showFullHistory ? 'Show Less' : 'Show Full History'}
-          </button>
+          <div className="flex space-x-2">
+            <button
+              onClick={() => setShowFullHistory(!showFullHistory)}
+              className="text-sm text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300"
+            >
+              {showFullHistory ? 'Show Less' : 'Show Full History'}
+            </button>
+            <button
+              onClick={handleExportToCSV}
+              disabled={auditEntries.length === 0 || loading}
+              className="px-3 py-1 bg-green-600 hover:bg-green-700 text-white rounded-md text-sm flex items-center space-x-1 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
+              </svg>
+              <span>Export CSV</span>
+            </button>
+          </div>
         </div>
       )}
 
@@ -260,4 +304,4 @@ export default function TruckSchedulingAuditTrail({ truckId, showFullHistoryByDe
       )}
     </div>
   );
-} 
+}

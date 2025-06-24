@@ -5,6 +5,7 @@ import { collection, query, orderBy, getDocs, Timestamp } from 'firebase/firesto
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/contexts/AuthContext';
 import HandoverDetailModal from './HandoverDetailModal';
+import { exportToCSV } from '@/lib/excelUtils';
 
 interface HandoverRecord {
   id: string;
@@ -105,9 +106,39 @@ export default function ShiftHandoverAuditTrail() {
     return matchesDepartment && matchesStatus && matchesShift;
   });
 
+  const handleExportToCSV = () => {
+    const csvData = filteredRecords.map(record => ({
+      'Date': formatDate(record.handoverDate),
+      'Shift': record.shiftType,
+      'Department': record.department,
+      'Handover By': record.handoverBy,
+      'Handover By Email': record.handoverByEmail,
+      'Received By': record.receivedBy,
+      'Received By Email': record.receivedByEmail,
+      'Status': record.status,
+      'Pending Tasks': record.pendingTasks,
+      'Completed Tasks': record.completedTasks,
+      'Notes': record.notes
+    }));
+    
+    exportToCSV(csvData, 'shift-handover-audit-trail');
+  };
+
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold mb-6">Shift Handover Audit Trail</h1>
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold">Shift Handover Audit Trail</h1>
+        <button
+          onClick={handleExportToCSV}
+          disabled={filteredRecords.length === 0 || isLoading}
+          className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+            <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
+          </svg>
+          <span>Export to CSV</span>
+        </button>
+      </div>
       
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 mb-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

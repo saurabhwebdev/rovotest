@@ -53,4 +53,40 @@ export const parseExcelFile = async (file: File): Promise<MasterDataRow[]> => {
 
     reader.readAsArrayBuffer(file);
   });
+};
+
+/**
+ * Export data to CSV file
+ * @param data Array of objects to export
+ * @param filename Name of the file without extension
+ */
+export const exportToCSV = (data: Record<string, any>[], filename: string) => {
+  try {
+    // Convert data to worksheet
+    const worksheet = XLSX.utils.json_to_sheet(data);
+    
+    // Create workbook and add worksheet
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Data');
+    
+    // Generate xlsx file
+    const excelBuffer = XLSX.write(workbook, { bookType: 'csv', type: 'array' });
+    
+    // Create blob and download
+    const blob = new Blob([excelBuffer], { type: 'text/csv;charset=utf-8;' });
+    
+    // Create download link
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `${filename}-${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    
+    // Trigger download and cleanup
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+  } catch (error) {
+    console.error('Error exporting to CSV:', error);
+  }
 }; 
