@@ -137,7 +137,7 @@ export default function Navbar() {
           
           {/* Desktop menu */}
           <nav className="hidden md:flex md:flex-1 md:items-center md:justify-center">
-            {user ? (
+            {user && (
               <div className="flex space-x-1">
                 {/* Main navigation links - only show if user has permission */}
                 {accessibleMainPages.map(page => (
@@ -261,15 +261,6 @@ export default function Navbar() {
                   </div>
                 )}
               </div>
-            ) : (
-              <div className="flex space-x-1">
-                <Link
-                  href="/auth/signin"
-                  className="px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
-                >
-                  Sign In
-                </Link>
-              </div>
             )}
           </nav>
           
@@ -371,7 +362,7 @@ export default function Navbar() {
                 href="/auth/signin"
                 className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
               >
-                Sign In
+                Login
               </Link>
             )}
           </div>
