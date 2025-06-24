@@ -51,6 +51,10 @@ interface TransporterScheduleMetrics {
   totalTrucks: number;
 }
 
+interface SchedulingEffectivenessKPIProps {
+  moduleSlug: string;
+}
+
 const SchedulingEffectivenessDetails = () => {
   const [dailyMetrics, setDailyMetrics] = useState<DailyMetrics[]>([]);
   const [transporterMetrics, setTransporterMetrics] = useState<TransporterScheduleMetrics[]>([]);
@@ -252,7 +256,7 @@ const SchedulingEffectivenessDetails = () => {
   );
 };
 
-export default function SchedulingEffectivenessKPI() {
+export default function SchedulingEffectivenessKPI({ moduleSlug }: SchedulingEffectivenessKPIProps) {
   const [metrics, setMetrics] = useState<SummaryMetrics>({
     scheduleAdherenceRate: 0,
     cancellationRate: 0
@@ -340,9 +344,9 @@ export default function SchedulingEffectivenessKPI() {
   return (
     <ModuleKPICard
       title="Scheduling Effectiveness"
-      description="Analysis of truck scheduling system effectiveness, adherence to schedules, and cancellation patterns"
+      description="Analysis of scheduling system performance and transporter adherence to schedules"
       metrics={kpiMetrics}
-      DetailComponent={SchedulingEffectivenessDetails}
+      moduleSlug={moduleSlug}
     />
   );
 } 

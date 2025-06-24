@@ -28,7 +28,11 @@ interface SummaryMetrics {
   scheduleAdherenceRate: number;
 }
 
-export default function TransporterKPISummary() {
+interface TransporterKPISummaryProps {
+  moduleSlug: string;
+}
+
+export default function TransporterKPISummary({ moduleSlug }: TransporterKPISummaryProps) {
   const [metrics, setMetrics] = useState<SummaryMetrics>({
     onTimeRate: 0,
     gateUtilization: 0,
@@ -177,7 +181,7 @@ export default function TransporterKPISummary() {
       title="Transporter Operations"
       description="Detailed analysis of transporter operations including daily trends, gate performance, and transporter-wise metrics"
       metrics={kpiMetrics}
-      DetailComponent={TransporterKPIDetails}
+      moduleSlug={moduleSlug}
     />
   );
 } 

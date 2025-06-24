@@ -11,9 +11,9 @@ export default function ReportsPage() {
       <div className="container mx-auto p-6">
         <h1 className="text-2xl font-bold mb-6">Reports Dashboard</h1>
         <div className="grid gap-6">
-          <TransporterKPISummary />
-          <OperationalEfficiencyKPI />
-          <SchedulingEffectivenessKPI />
+          <TransporterKPISummary moduleSlug="transporter" />
+          <OperationalEfficiencyKPI moduleSlug="operational-efficiency" />
+          <SchedulingEffectivenessKPI moduleSlug="scheduling-effectiveness" />
           {/* Other module KPIs will be added here */}
         </div>
       </div>

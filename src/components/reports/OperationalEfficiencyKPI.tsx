@@ -42,6 +42,10 @@ interface DailyMetrics {
   avgProcessingTime: number;
 }
 
+interface OperationalEfficiencyKPIProps {
+  moduleSlug: string;
+}
+
 const OperationalEfficiencyDetails = () => {
   const [dailyMetrics, setDailyMetrics] = useState<DailyMetrics[]>([]);
   const [loading, setLoading] = useState(true);
@@ -203,7 +207,7 @@ const OperationalEfficiencyDetails = () => {
   );
 };
 
-export default function OperationalEfficiencyKPI() {
+export default function OperationalEfficiencyKPI({ moduleSlug }: OperationalEfficiencyKPIProps) {
   const [metrics, setMetrics] = useState<SummaryMetrics>({
     onTimeRate: 0,
     gateUtilization: 0,
@@ -305,7 +309,7 @@ export default function OperationalEfficiencyKPI() {
       title="Operational Efficiency"
       description="Analysis of overall transportation operations efficiency, including time metrics and resource utilization"
       metrics={kpiMetrics}
-      DetailComponent={OperationalEfficiencyDetails}
+      moduleSlug={moduleSlug}
     />
   );
 } 
