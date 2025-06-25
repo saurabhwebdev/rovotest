@@ -9,9 +9,12 @@ export default function RegisterPage() {
   const params = useParams();
   const { hasPermission } = useAuth();
   const slug = Array.isArray(params.slug) ? params.slug[0] : params.slug;
+  
+  // Create a permission ID based on the register template slug
+  const registerTemplateId = `register-template-${slug}`;
 
   return (
-    <PagePermissionWrapper pageId="register-detail">
+    <PagePermissionWrapper pageId={registerTemplateId}>
       <div>
         <DynamicRegister slug={slug} />
       </div>

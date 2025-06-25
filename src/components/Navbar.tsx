@@ -24,8 +24,7 @@ export default function Navbar() {
     { id: 'gate-guard', name: 'Gate Guard', path: '/gate-guard' },
     { id: 'weighbridge', name: 'Weighbridge', path: '/weighbridge' },
     { id: 'dock-operations', name: 'Dock Operations', path: '/dock-operations' },
-    { id: 'led-screen', name: 'LED Screen', path: '/led-screen' },
-    { id: 'register', name: 'Registers', path: '/register' },
+    { id: 'led-screen', name: 'LED Screen', path: '/led-screen' }
   ];
 
   const adminPages = [

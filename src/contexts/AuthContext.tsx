@@ -162,6 +162,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       console.log(`AuthProvider: User ${user.email} granted access to ${pageId} by explicit permission`);
       return true;
     }
+
+    // Special handling for register templates
+    if (pageId.startsWith('register-template-')) {
+      // If user has general register access, they can access all registers
+      if (userRole?.permissions?.includes('register')) {
+        console.log(`AuthProvider: User ${user.email} granted access to ${pageId} via general register permission`);
+        return true;
+      }
+    }
     
     // If we get here, the user doesn't have permission
     console.log(`AuthProvider: User ${user.email} denied access to ${pageId} - no matching permission found`);
