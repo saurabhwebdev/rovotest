@@ -39,18 +39,18 @@ export default function Home() {
               >
                 <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight">
                   <span className="inline-block bg-clip-text text-transparent bg-[size:200%] bg-gradient-to-r from-white via-[#D01414] to-white animate-gradient">
-                    Enterprise Logistics
+                    Plant Truck Visibility
                   </span>
                   <br />
                   <span className="inline-block bg-clip-text text-transparent bg-[size:200%] bg-gradient-to-r from-[#502172] via-white to-[#D01414] animate-gradient">
-                    Management
+                    & Scheduling
                   </span>{' '}
                   <span className="inline-block bg-clip-text text-transparent bg-[size:200%] bg-gradient-to-r from-white via-[#502172] to-white animate-gradient">
                     Platform
                   </span>
                 </h1>
                 <p className="mt-6 text-lg md:text-xl text-white/90 max-w-lg leading-relaxed">
-                  Streamline operations, enhance visibility, and optimize your logistics park with our comprehensive enterprise solution.
+                  Streamline your plant operations with end-to-end truck visibility from scheduling to exit. Optimize gate entry, weighbridge, and dock operations in one unified platform.
                 </p>
               </motion.div>
               
@@ -122,27 +122,27 @@ export default function Home() {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
               {[
                 { 
-                  label: 'Active Clients', 
-                  value: '25+', 
-                  subtext: 'Growing monthly',
-                  icon: <Globe className="h-6 w-6 text-[#502172]" /> 
-                },
-                { 
-                  label: 'Daily Deliveries', 
-                  value: '150+', 
-                  subtext: 'Across 3 cities',
-                  icon: <Truck className="h-6 w-6 text-[#D01414]" /> 
-                },
-                { 
-                  label: 'Platform Uptime', 
-                  value: '99.9%', 
-                  subtext: 'Enterprise-grade',
+                  label: 'Processing Time', 
+                  value: '45%', 
+                  subtext: 'Reduction in TAT',
                   icon: <Clock className="h-6 w-6 text-[#502172]" /> 
                 },
                 { 
-                  label: 'Client Growth', 
+                  label: 'Daily Truck Entries', 
+                  value: '250+', 
+                  subtext: 'Efficiently processed',
+                  icon: <Truck className="h-6 w-6 text-[#D01414]" /> 
+                },
+                { 
+                  label: 'System Uptime', 
+                  value: '99.9%', 
+                  subtext: 'Enterprise reliability',
+                  icon: <Settings className="h-6 w-6 text-[#502172]" /> 
+                },
+                { 
+                  label: 'Dock Utilization', 
                   value: '38%', 
-                  subtext: 'Quarter over quarter',
+                  subtext: 'Increased efficiency',
                   icon: <BarChart3 className="h-6 w-6 text-[#D01414]" /> 
                 }
               ].map((stat, i) => (
@@ -172,10 +172,10 @@ export default function Home() {
           <ScrollRevealSection>
             <div className="text-center mb-16">
               <h2 className="text-3xl md:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-[#502172] to-[#D01414] mb-4">
-                Enterprise-Grade Solutions
+                End-to-End Truck Management
               </h2>
               <p className="text-lg text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-                Our comprehensive platform provides end-to-end visibility and control over your logistics operations, backed by enterprise-level security and scalability
+                Our comprehensive platform provides complete visibility and control over your plant's truck operations, from transporter scheduling to final exit
               </p>
             </div>
             
@@ -183,39 +183,39 @@ export default function Home() {
               {[
                 {
                   icon: <Truck className="h-8 w-8" />,
-                  title: "Fleet Management",
-                  description: "Real-time tracking, route optimization, and comprehensive fleet analytics for maximum efficiency.",
-                  features: ["Live GPS Tracking", "Route Optimization", "Fuel Efficiency Analysis"]
+                  title: "Transporter Scheduling",
+                  description: "Empower transporters to schedule truck arrivals, reducing congestion and optimizing plant operations.",
+                  features: ["Self-Service Scheduling", "Real-time Slot Availability", "Automated Notifications"]
+                },
+                {
+                  icon: <Shield className="h-8 w-8" />,
+                  title: "Gate Guard Operations",
+                  description: "Streamline entry verification with digital documentation and automated compliance checks.",
+                  features: ["QR Code Verification", "Digital Documentation", "Compliance Checks"]
                 },
                 {
                   icon: <BarChart3 className="h-8 w-8" />,
-                  title: "Advanced Analytics",
-                  description: "Powerful business intelligence with customizable dashboards and predictive insights.",
-                  features: ["Custom KPI Dashboards", "Predictive Analytics", "Performance Metrics"]
+                  title: "Weighbridge Management",
+                  description: "Automate weighing processes with digital records and real-time data synchronization.",
+                  features: ["Automated Weight Recording", "Digital Receipts", "Weight Compliance"]
+                },
+                {
+                  icon: <Clock className="h-8 w-8" />,
+                  title: "Dock Operations",
+                  description: "Optimize loading/unloading with real-time dock availability and status tracking.",
+                  features: ["Dock Assignment", "Loading Status Tracking", "Turnaround Time Analytics"]
                 },
                 {
                   icon: <FileText className="h-8 w-8" />,
                   title: "Documentation Control",
-                  description: "Centralized document management with automated workflows and compliance tracking.",
-                  features: ["Digital Documentation", "Automated Workflows", "Audit Trails"]
-                },
-                {
-                  icon: <Shield className="h-8 w-8" />,
-                  title: "Security & Compliance",
-                  description: "Enterprise-grade security with role-based access control and audit logging.",
-                  features: ["Role-Based Access", "Data Encryption", "Security Audits"]
-                },
-                {
-                  icon: <Clock className="h-8 w-8" />,
-                  title: "Real-time Monitoring",
-                  description: "Live tracking of all operations with instant alerts and notifications.",
-                  features: ["Live Status Updates", "Instant Notifications", "Performance Alerts"]
+                  description: "Centralize all truck-related documentation with digital workflows and compliance tracking.",
+                  features: ["Paperless Processing", "Automated Approvals", "Audit Trails"]
                 },
                 {
                   icon: <Settings className="h-8 w-8" />,
-                  title: "Integration Hub",
-                  description: "Seamless integration with your existing systems and third-party applications.",
-                  features: ["API Integration", "Custom Workflows", "Data Synchronization"]
+                  title: "Real-time Visibility",
+                  description: "Track every truck's journey through your facility with live status updates and notifications.",
+                  features: ["Live Truck Tracking", "Status Notifications", "Plant-wide Visibility"]
                 }
               ].map((feature, i) => (
                 <div 
@@ -265,30 +265,30 @@ export default function Home() {
                   name: "Global Manufacturing Corp",
                   role: "Manufacturing",
                   image: "M",
-                  quote: "The platform has revolutionized our logistics operations, providing unprecedented visibility and control across our supply chain.",
+                  quote: "The platform has transformed our plant logistics, providing complete visibility from truck scheduling to exit, reducing congestion and improving throughput.",
                   stats: {
                     improvement: "45%",
-                    metric: "reduction in processing time"
+                    metric: "reduction in truck turnaround time"
                   }
                 },
                 {
                   name: "International Logistics Ltd",
                   role: "Logistics",
                   image: "L",
-                  quote: "Real-time tracking and automated workflows have significantly improved our operational efficiency and customer satisfaction.",
+                  quote: "Self-service scheduling and real-time tracking have significantly improved our delivery efficiency and reduced detention charges.",
                   stats: {
-                    improvement: "99.9%",
-                    metric: "platform uptime"
+                    improvement: "60%",
+                    metric: "fewer scheduling conflicts"
                   }
                 },
                 {
                   name: "Enterprise Solutions Inc",
                   role: "Technology",
                   image: "T",
-                  quote: "The seamless integration capabilities and robust security features make this platform stand out in the logistics industry.",
+                  quote: "The end-to-end visibility from gate to dock to exit has eliminated information silos and dramatically improved our operational efficiency.",
                   stats: {
-                    improvement: "60%",
-                    metric: "faster dock operations"
+                    improvement: "38%",
+                    metric: "increase in dock utilization"
                   }
                 }
               ].map((testimonial, i) => (
@@ -361,10 +361,10 @@ export default function Home() {
           <ScrollRevealSection direction="up">
             <div className="max-w-4xl mx-auto text-center">
               <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
-                Ready to transform your logistics operations?
+                Ready to transform your plant logistics?
               </h2>
               <p className="text-xl text-white/90 mb-12 max-w-2xl mx-auto">
-                Join industry leaders who trust our enterprise platform for their mission-critical logistics operations.
+                Join industry leaders who trust our platform to streamline truck scheduling, gate processing, weighbridge operations, and dock management.
               </p>
               <div className="flex flex-wrap justify-center gap-6">
                 <Link 
