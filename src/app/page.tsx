@@ -72,58 +72,45 @@ export default function Home() {
               </motion.div>
             </div>
             
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.7, delay: 0.2 }}
-              className="relative animate-float"
-            >
-              <div className="bg-gradient-to-tr from-blue-600/20 to-indigo-600/20 rounded-2xl shadow-2xl overflow-hidden backdrop-blur-sm border border-white/10">
-                <div className="bg-white/5 p-6">
-                  <div className="bg-gradient-to-b from-gray-900/90 to-gray-800/90 rounded-xl shadow-lg overflow-hidden border border-white/10">
-                    <div className="p-4 border-b border-gray-700/50 flex justify-between items-center bg-gradient-to-r from-gray-900 to-gray-800">
-                      <h3 className="font-medium text-gray-200">Logistics Dashboard</h3>
-                      <div className="flex space-x-2">
-                        <div className="w-3 h-3 rounded-full bg-red-400 animate-pulse"></div>
-                        <div className="w-3 h-3 rounded-full bg-yellow-400 animate-pulse animation-delay-2000"></div>
-                        <div className="w-3 h-3 rounded-full bg-green-400 animate-pulse animation-delay-4000"></div>
+            <div className="relative hidden md:block">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.7, delay: 0.2 }}
+                className="relative animate-float"
+              >
+                <div className="bg-gradient-to-tr from-[#502172]/20 to-[#D01414]/20 rounded-2xl shadow-2xl overflow-hidden backdrop-blur-sm border border-white/10">
+                  <div className="bg-white/5 p-6">
+                    <div className="bg-gradient-to-b from-gray-900/90 to-gray-800/90 rounded-xl shadow-lg overflow-hidden border border-white/10">
+                      <div className="p-4 border-b border-gray-700/50 flex justify-between items-center bg-gradient-to-r from-gray-900 to-gray-800">
+                        <h3 className="font-medium text-gray-200">LPMS Dashboard</h3>
+                        <div className="flex space-x-2">
+                          <div className="w-3 h-3 rounded-full bg-red-400 animate-pulse"></div>
+                          <div className="w-3 h-3 rounded-full bg-yellow-400 animate-pulse animation-delay-2000"></div>
+                          <div className="w-3 h-3 rounded-full bg-green-400 animate-pulse animation-delay-4000"></div>
+                        </div>
                       </div>
-                    </div>
-                    
-                    <div className="p-6 space-y-6">
-                      <div className="space-y-3">
-                        {[
-                          { name: 'Dock A-12', status: 'Active', time: '12:42', color: 'bg-green-500' },
-                          { name: 'Dock B-05', status: 'Waiting', time: '13:15', color: 'bg-yellow-500' },
-                          { name: 'Dock C-03', status: 'Complete', time: '11:30', color: 'bg-blue-500' },
-                        ].map((dock, i) => (
-                          <motion.div
-                            key={i}
-                            initial={{ opacity: 0, x: -20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ duration: 0.5, delay: 0.5 + (i * 0.1) }}
-                            className="flex items-center justify-between p-3 bg-gray-800/50 border border-gray-700/30 rounded-lg backdrop-blur-sm hover:bg-gray-700/50 transition-colors"
-                          >
-                            <div className="flex items-center gap-3">
-                              <div className={`w-2 h-2 rounded-full ${dock.color} animate-pulse`}></div>
-                              <span className="text-gray-200">{dock.name}</span>
-                            </div>
-                            <div className="flex items-center gap-4">
-                              <span className="text-sm text-gray-400">{dock.status}</span>
-                              <span className="text-sm text-gray-300">{dock.time}</span>
-                            </div>
-                          </motion.div>
-                        ))}
+                      
+                      <div className="relative">
+                        <Image
+                          src="/appscreen.png"
+                          alt="LPMS Application Screenshot"
+                          width={800}
+                          height={600}
+                          className="w-full h-auto"
+                          priority
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-gray-900/20 to-transparent"></div>
                       </div>
                     </div>
                   </div>
                 </div>
-              </div>
-              
-              {/* Decorative elements */}
-              <div className="absolute -top-4 -right-4 w-32 h-32 bg-yellow-500/30 rounded-full blur-3xl animate-pulse"></div>
-              <div className="absolute -bottom-8 -left-8 w-48 h-48 bg-blue-500/30 rounded-full blur-3xl animate-glow"></div>
-            </motion.div>
+                
+                {/* Decorative elements */}
+                <div className="absolute -top-4 -right-4 w-32 h-32 bg-[#D01414]/30 rounded-full blur-3xl animate-pulse"></div>
+                <div className="absolute -bottom-8 -left-8 w-48 h-48 bg-[#502172]/30 rounded-full blur-3xl animate-glow"></div>
+              </motion.div>
+            </div>
           </div>
         </div>
       </section>
