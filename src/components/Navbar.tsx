@@ -25,6 +25,7 @@ export default function Navbar() {
     { id: 'weighbridge', name: 'Weighbridge', path: '/weighbridge' },
     { id: 'dock-operations', name: 'Dock Operations', path: '/dock-operations' },
     { id: 'led-screen', name: 'LED Screen', path: '/led-screen' },
+    { id: 'register', name: 'Registers', path: '/register' },
   ];
 
   const adminPages = [
@@ -73,7 +74,7 @@ export default function Navbar() {
           const templates = registersSnapshot.docs
             .filter((doc) => doc.data().isActive)
             .map((doc) => ({
-              id: `register-${doc.data().slug}`,
+              id: `register-template-${doc.data().slug}`,
               name: doc.data().name,
               path: `/register/${doc.data().slug}`
             })) as NavPage[];
@@ -125,7 +126,7 @@ export default function Navbar() {
   const hasAuditAccess = auditPages.some(page => hasPermission(page.id));
 
   // Check if user has access to any register pages
-  const hasRegisterAccess = registerPages.some(page => hasPermission(page.id));
+  const hasRegisterAccess = hasPermission('register') || registerPages.some(page => hasPermission(page.id));
 
   // Filter admin pages based on permissions
   const accessibleAdminPages = adminPages.filter(page => hasPermission(page.id));
@@ -134,7 +135,8 @@ export default function Navbar() {
   const accessibleAuditPages = auditPages.filter(page => hasPermission(page.id));
   
   // Filter register pages based on permissions
-  const accessibleRegisterPages = registerPages.filter(page => hasPermission(page.id));
+  // A user can access a specific register if they have the general 'register' permission or the specific register permission
+  const accessibleRegisterPages = registerPages.filter(page => hasPermission(page.id) || hasPermission('register'));
   
   // Filter main pages based on permissions
   const accessibleMainPages = mainPages.filter(page => hasPermission(page.id));
@@ -148,7 +150,7 @@ export default function Navbar() {
   const showAdminDropdown = (filteredAdminPages.length > 0 || accessibleAuditPages.length > 0);
   
   // Determine if we should show the register dropdown
-  const showRegisterDropdown = accessibleRegisterPages.length > 0 || isAdminUser;
+  const showRegisterDropdown = hasPermission('register') || accessibleRegisterPages.length > 0 || isAdminUser;
   
   // Debug information
   console.log('Navbar Debug:', {
@@ -232,7 +234,7 @@ export default function Navbar() {
                       onClick={() => setIsRegisterOpen(!isRegisterOpen)}
                       onBlur={() => setTimeout(() => setIsRegisterOpen(false), 200)}
                       className={`px-3 py-2 rounded-md text-sm font-medium flex items-center ${
-                        isActive('/register') 
+                        isActive('/register') || pathname?.startsWith('/register/')
                           ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-200' 
                           : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800'
                       }`}

@@ -1,11 +1,22 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { collection, getDocs } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 
 interface Page {
   id: string;
   name: string;
   path: string;
+}
+
+interface RegisterTemplate {
+  id: string;
+  name: string;
+  description: string;
+  slug: string;
+  isActive: boolean;
 }
 
 interface RoleModalProps {
@@ -35,6 +46,35 @@ export default function RoleModal({
   pages,
   isEditing
 }: RoleModalProps) {
+  const [dynamicRegisters, setDynamicRegisters] = useState<RegisterTemplate[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  // Fetch dynamic registers from Firestore
+  useEffect(() => {
+    if (isOpen) {
+      fetchDynamicRegisters();
+    }
+  }, [isOpen]);
+
+  const fetchDynamicRegisters = async () => {
+    setLoading(true);
+    try {
+      const registersCollection = collection(db, 'registerTemplates');
+      const registersSnapshot = await getDocs(registersCollection);
+      const registersList = registersSnapshot.docs
+        .map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        })) as RegisterTemplate[];
+      
+      setDynamicRegisters(registersList);
+    } catch (error) {
+      console.error("Error fetching register templates:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const togglePermission = (pageId: string) => {
     if (selectedPermissions.includes(pageId)) {
       setSelectedPermissions(selectedPermissions.filter(id => id !== pageId));
@@ -48,9 +88,21 @@ export default function RoleModal({
     await onSubmit();
   };
 
+  // Group pages by category
+  const mainPages = pages.filter(page => 
+    !page.id.startsWith('admin-') && 
+    !page.id.startsWith('register-') && 
+    page.id !== 'register'
+  );
+  const adminPages = pages.filter(page => page.id.startsWith('admin-'));
+  const registerPages = pages.filter(page => 
+    page.id === 'register' || 
+    page.id.startsWith('register-')
+  );
+
   return (
     <Dialog open={isOpen} onOpenChange={() => onClose()}>
-      <DialogContent className="sm:max-w-[600px] h-[90vh] flex flex-col">
+      <DialogContent className="sm:max-w-[650px] h-[90vh] flex flex-col">
         <DialogHeader>
           <DialogTitle>{isEditing ? 'Edit Role' : 'Create New Role'}</DialogTitle>
         </DialogHeader>
@@ -81,12 +133,95 @@ export default function RoleModal({
                   rows={3}
                 />
               </div>
+              
+              {/* Main Modules Section */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Permissions (Select pages this role can access)
+                  Main Modules
                 </label>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 border border-gray-200 dark:border-gray-700 rounded-md p-4 max-h-[40vh] overflow-y-auto">
-                  {pages.map((page) => (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 border border-gray-200 dark:border-gray-700 rounded-md p-4 max-h-[25vh] overflow-y-auto">
+                  {mainPages.map((page) => (
+                    <div key={page.id} className="flex items-center">
+                      <input
+                        type="checkbox"
+                        id={`page-${page.id}`}
+                        checked={selectedPermissions.includes(page.id)}
+                        onChange={() => togglePermission(page.id)}
+                        className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                      />
+                      <label
+                        htmlFor={`page-${page.id}`}
+                        className="ml-2 block text-sm text-gray-700 dark:text-gray-300"
+                      >
+                        {page.name}
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Register Section */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Register Permissions
+                </label>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 border border-gray-200 dark:border-gray-700 rounded-md p-4 max-h-[25vh] overflow-y-auto">
+                  {/* Built-in Register Permissions */}
+                  {registerPages.map((page) => (
+                    <div key={page.id} className="flex items-center">
+                      <input
+                        type="checkbox"
+                        id={`page-${page.id}`}
+                        checked={selectedPermissions.includes(page.id)}
+                        onChange={() => togglePermission(page.id)}
+                        className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                      />
+                      <label
+                        htmlFor={`page-${page.id}`}
+                        className="ml-2 block text-sm text-gray-700 dark:text-gray-300"
+                      >
+                        {page.name}
+                      </label>
+                    </div>
+                  ))}
+                  
+                  {/* Dynamic Register Permissions */}
+                  {loading ? (
+                    <div className="col-span-2 flex justify-center py-2">
+                      <svg className="animate-spin h-5 w-5 text-indigo-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                    </div>
+                  ) : (
+                    dynamicRegisters.map((register) => (
+                      <div key={`dynamic-register-${register.slug}`} className="flex items-center">
+                        <input
+                          type="checkbox"
+                          id={`register-template-${register.slug}`}
+                          checked={selectedPermissions.includes(`register-template-${register.slug}`)}
+                          onChange={() => togglePermission(`register-template-${register.slug}`)}
+                          className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                        />
+                        <label
+                          htmlFor={`register-template-${register.slug}`}
+                          className="ml-2 block text-sm text-gray-700 dark:text-gray-300"
+                        >
+                          {register.name} {!register.isActive && <span className="text-gray-400">(Inactive)</span>}
+                        </label>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+
+              {/* Admin Section */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Admin Permissions
+                </label>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 border border-gray-200 dark:border-gray-700 rounded-md p-4 max-h-[25vh] overflow-y-auto">
+                  {adminPages.map((page) => (
                     <div key={page.id} className="flex items-center">
                       <input
                         type="checkbox"

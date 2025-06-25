@@ -49,10 +49,25 @@ export default function RegistersPage() {
             ...doc.data()
           })) as RegisterTemplate[];
         
-        // Filter out inactive templates if the user isn't an admin
-        const filteredRegisters = registersList.filter(register => 
-          register.isActive || hasPermission('admin-register-management')
-        );
+        // Filter registers based on permissions:
+        // 1. If user has 'register' permission, show all active registers
+        // 2. If user has specific register permissions, show those registers
+        // 3. If user is an admin, show all registers including inactive ones
+        let filteredRegisters: RegisterTemplate[] = [];
+        
+        if (hasPermission('admin-register-management')) {
+          // Admin sees all registers including inactive ones
+          filteredRegisters = registersList;
+        } else if (hasPermission('register')) {
+          // User with general register permission sees all active registers
+          filteredRegisters = registersList.filter(register => register.isActive);
+        } else {
+          // User with specific register permissions only sees those registers
+          filteredRegisters = registersList.filter(register => 
+            register.isActive && 
+            hasPermission(`register-template-${register.slug}`)
+          );
+        }
         
         setRegisters(filteredRegisters);
       } catch (error) {

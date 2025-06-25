@@ -58,7 +58,7 @@ interface DynamicRegisterProps {
 }
 
 export default function DynamicRegister({ slug }: DynamicRegisterProps) {
-  const { user } = useAuth();
+  const { user, hasPermission } = useAuth();
   const [loading, setLoading] = useState(true);
   const [templateLoading, setTemplateLoading] = useState(true);
   const [entries, setEntries] = useState<RegisterEntry[]>([]);
@@ -69,6 +69,17 @@ export default function DynamicRegister({ slug }: DynamicRegisterProps) {
   const [formErrors, setFormErrors] = useState<{[key: string]: string}>({});
   const [trucks, setTrucks] = useState<Truck[]>([]);
   const [selectedTruck, setSelectedTruck] = useState<string>('');
+  const [hasAccessError, setHasAccessError] = useState(false);
+
+  // Check if user has permission to access this register
+  useEffect(() => {
+    // User has access if they have the generic register permission or specific permission for this register
+    const hasAccess = hasPermission('register') || hasPermission(`register-template-${slug}`);
+    
+    if (!hasAccess) {
+      setHasAccessError(true);
+    }
+  }, [hasPermission, slug]);
 
   // Fetch the register template
   useEffect(() => {
@@ -418,6 +429,25 @@ export default function DynamicRegister({ slug }: DynamicRegisterProps) {
         );
     }
   };
+
+  if (hasAccessError) {
+    return (
+      <div className="text-center py-8">
+        <div className="bg-red-100 dark:bg-red-900/30 p-4 rounded-lg max-w-xl mx-auto">
+          <p className="text-red-600 dark:text-red-400 text-lg font-medium mb-2">Access Denied</p>
+          <p className="text-gray-700 dark:text-gray-300 mb-4">
+            You don't have permission to access this register. Please contact your administrator to request access.
+          </p>
+          <Link
+            href="/register"
+            className="inline-block px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md transition-colors duration-200"
+          >
+            Back to Registers
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   if (templateLoading) {
     return (

@@ -228,7 +228,7 @@ export default function EditRegisterTemplatePage() {
 
   if (loading) {
     return (
-      <PagePermissionWrapper pageId="admin-register-management">
+      <PagePermissionWrapper pageId="admin-register-edit">
         <div className="container mx-auto px-4 py-8">
           <div className="text-center py-8">
             <svg className="animate-spin h-8 w-8 mx-auto text-indigo-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -243,7 +243,7 @@ export default function EditRegisterTemplatePage() {
   }
 
   return (
-    <PagePermissionWrapper pageId="admin-register-management">
+    <PagePermissionWrapper pageId="admin-register-edit">
       <div className="container mx-auto px-4 py-8">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-bold">Edit Register Template</h1>
