@@ -16,16 +16,17 @@ export default function Home() {
         {/* Animated background patterns */}
         <div className="absolute inset-0">
           <div className="absolute inset-0 opacity-30">
-            <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_500px_at_50%_200px,rgba(208,20,20,0.3),transparent)]" />
-            <div className="absolute inset-0" style={{ 
+            {/* Gradient orbs with glow effect */}
+            <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-[#502172] rounded-full mix-blend-multiply filter blur-[128px] animate-glow" />
+            <div className="absolute top-1/3 right-1/4 w-96 h-96 bg-[#D01414] rounded-full mix-blend-multiply filter blur-[128px] animate-glow animation-delay-2000" />
+            <div className="absolute bottom-1/4 left-1/3 w-96 h-96 bg-[#502172] rounded-full mix-blend-multiply filter blur-[128px] animate-glow animation-delay-4000" />
+            
+            {/* Subtle grid pattern */}
+            <div className="absolute inset-0 animate-pulse opacity-20" style={{ 
               backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
               backgroundSize: '30px 30px'
             }} />
           </div>
-          {/* Animated gradient orbs */}
-          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-[#502172] rounded-full mix-blend-multiply filter blur-[128px] animate-blob" />
-          <div className="absolute top-1/3 right-1/4 w-96 h-96 bg-[#D01414] rounded-full mix-blend-multiply filter blur-[128px] animate-blob animation-delay-2000" />
-          <div className="absolute bottom-1/4 left-1/3 w-96 h-96 bg-[#502172] rounded-full mix-blend-multiply filter blur-[128px] animate-blob animation-delay-4000" />
         </div>
 
         <div className="container mx-auto px-6 py-12 md:py-20 relative z-10">
@@ -36,9 +37,17 @@ export default function Home() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.7 }}
               >
-                <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight bg-clip-text text-transparent bg-gradient-to-r from-white via-[#502172]/40 to-white">
-                  Enterprise Logistics <br />
-                  <span className="text-[#D01414]">Management</span> Platform
+                <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight">
+                  <span className="inline-block bg-clip-text text-transparent bg-[size:200%] bg-gradient-to-r from-white via-[#D01414] to-white animate-gradient">
+                    Enterprise Logistics
+                  </span>
+                  <br />
+                  <span className="inline-block bg-clip-text text-transparent bg-[size:200%] bg-gradient-to-r from-[#502172] via-white to-[#D01414] animate-gradient">
+                    Management
+                  </span>{' '}
+                  <span className="inline-block bg-clip-text text-transparent bg-[size:200%] bg-gradient-to-r from-white via-[#502172] to-white animate-gradient">
+                    Platform
+                  </span>
                 </h1>
                 <p className="mt-6 text-lg md:text-xl text-white/90 max-w-lg leading-relaxed">
                   Streamline operations, enhance visibility, and optimize your logistics park with our comprehensive enterprise solution.
@@ -51,13 +60,13 @@ export default function Home() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.7, delay: 0.3 }}
               >
-                <Link href="/auth/signup" className="group relative px-8 py-3 bg-white text-[#502172] rounded-md font-medium overflow-hidden">
+                <Link href="/auth/signup" className="group relative px-8 py-3 bg-white text-[#502172] rounded-md font-medium overflow-hidden hover:scale-105 transition-all duration-300">
                   <div className="absolute inset-0 w-0 bg-gradient-to-r from-[#502172] to-[#D01414] transition-all duration-[250ms] ease-out group-hover:w-full"></div>
                   <div className="relative flex items-center gap-2 group-hover:text-white transition-colors duration-[250ms]">
                     Get Started <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
                   </div>
                 </Link>
-                <Link href="/auth/signin" className="px-8 py-3 bg-transparent border border-white/30 text-white rounded-md font-medium hover:bg-white/10 backdrop-blur-sm transition-colors">
+                <Link href="/auth/signin" className="px-8 py-3 bg-transparent border border-white/30 text-white rounded-md font-medium hover:bg-white/10 backdrop-blur-sm transition-all duration-300 hover:scale-105">
                   Sign In
                 </Link>
               </motion.div>
@@ -67,7 +76,7 @@ export default function Home() {
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.7, delay: 0.2 }}
-              className="relative"
+              className="relative animate-float"
             >
               <div className="bg-gradient-to-tr from-blue-600/20 to-indigo-600/20 rounded-2xl shadow-2xl overflow-hidden backdrop-blur-sm border border-white/10">
                 <div className="bg-white/5 p-6">
@@ -75,58 +84,35 @@ export default function Home() {
                     <div className="p-4 border-b border-gray-700/50 flex justify-between items-center bg-gradient-to-r from-gray-900 to-gray-800">
                       <h3 className="font-medium text-gray-200">Logistics Dashboard</h3>
                       <div className="flex space-x-2">
-                        <div className="w-3 h-3 rounded-full bg-red-400"></div>
-                        <div className="w-3 h-3 rounded-full bg-yellow-400"></div>
-                        <div className="w-3 h-3 rounded-full bg-green-400"></div>
+                        <div className="w-3 h-3 rounded-full bg-red-400 animate-pulse"></div>
+                        <div className="w-3 h-3 rounded-full bg-yellow-400 animate-pulse animation-delay-2000"></div>
+                        <div className="w-3 h-3 rounded-full bg-green-400 animate-pulse animation-delay-4000"></div>
                       </div>
                     </div>
+                    
                     <div className="p-6 space-y-6">
-                      <div className="grid grid-cols-3 gap-4">
-                        {[
-                          { label: 'Active Trucks', value: '127', color: 'from-blue-500/20 to-blue-600/20', icon: '🚛' },
-                          { label: 'On Time', value: '94%', color: 'from-green-500/20 to-green-600/20', icon: '⏰' },
-                          { label: 'Waiting', value: '12', color: 'from-amber-500/20 to-amber-600/20', icon: '⌛' }
-                        ].map((stat, i) => (
-                          <div key={i} className={`bg-gradient-to-br ${stat.color} p-4 rounded-xl border border-white/10 backdrop-blur-sm`}>
-                            <div className="text-2xl mb-2">{stat.icon}</div>
-                            <div className="text-sm text-gray-300">{stat.label}</div>
-                            <div className="text-xl font-bold text-white mt-1">{stat.value}</div>
-                          </div>
-                        ))}
-                      </div>
-                      
-                      <div className="h-32 bg-gray-800/50 rounded-xl overflow-hidden relative border border-gray-700/50">
-                        <div className="absolute inset-0 flex items-end">
-                          {[40, 65, 35, 70, 50, 80, 60].map((h, i) => (
-                            <div 
-                              key={i} 
-                              className="w-1/7 h-full flex items-end px-1"
-                            >
-                              <div 
-                                className="w-full bg-gradient-to-t from-blue-600 to-blue-400 rounded-t-sm"
-                                style={{ height: `${h}%` }}
-                              ></div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                      
                       <div className="space-y-3">
                         {[
                           { name: 'Dock A-12', status: 'Active', time: '12:42', color: 'bg-green-500' },
                           { name: 'Dock B-05', status: 'Waiting', time: '13:15', color: 'bg-yellow-500' },
                           { name: 'Dock C-03', status: 'Complete', time: '11:30', color: 'bg-blue-500' },
                         ].map((dock, i) => (
-                          <div key={i} className="flex items-center justify-between p-3 bg-gray-800/50 border border-gray-700/30 rounded-lg backdrop-blur-sm">
+                          <motion.div
+                            key={i}
+                            initial={{ opacity: 0, x: -20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ duration: 0.5, delay: 0.5 + (i * 0.1) }}
+                            className="flex items-center justify-between p-3 bg-gray-800/50 border border-gray-700/30 rounded-lg backdrop-blur-sm hover:bg-gray-700/50 transition-colors"
+                          >
                             <div className="flex items-center gap-3">
-                              <div className={`w-2 h-2 rounded-full ${dock.color}`}></div>
+                              <div className={`w-2 h-2 rounded-full ${dock.color} animate-pulse`}></div>
                               <span className="text-gray-200">{dock.name}</span>
                             </div>
                             <div className="flex items-center gap-4">
                               <span className="text-sm text-gray-400">{dock.status}</span>
                               <span className="text-sm text-gray-300">{dock.time}</span>
                             </div>
-                          </div>
+                          </motion.div>
                         ))}
                       </div>
                     </div>
@@ -135,8 +121,8 @@ export default function Home() {
               </div>
               
               {/* Decorative elements */}
-              <div className="absolute -top-4 -right-4 w-32 h-32 bg-yellow-500/30 rounded-full blur-3xl"></div>
-              <div className="absolute -bottom-8 -left-8 w-48 h-48 bg-blue-500/30 rounded-full blur-3xl"></div>
+              <div className="absolute -top-4 -right-4 w-32 h-32 bg-yellow-500/30 rounded-full blur-3xl animate-pulse"></div>
+              <div className="absolute -bottom-8 -left-8 w-48 h-48 bg-blue-500/30 rounded-full blur-3xl animate-glow"></div>
             </motion.div>
           </div>
         </div>
@@ -356,14 +342,32 @@ export default function Home() {
       <section className="py-20 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-[#502172] to-[#D01414] opacity-90"></div>
         
-        {/* Background Pattern */}
+        {/* Animated Background Pattern */}
         <div className="absolute inset-0 opacity-10">
-          <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
-            <pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse">
-              <path d="M 10 0 L 0 0 0 10" fill="none" stroke="white" strokeWidth="0.5"/>
-            </pattern>
-            <rect width="100" height="100" fill="url(#grid)"/>
-          </svg>
+          <div className="absolute inset-0 animate-shift1">
+            <svg className="w-[200%] h-[200%]" viewBox="0 0 100 100" preserveAspectRatio="none">
+              <pattern id="grid1" width="10" height="10" patternUnits="userSpaceOnUse">
+                <path d="M 10 0 L 0 0 0 10" fill="none" stroke="white" strokeWidth="0.5"/>
+              </pattern>
+              <rect width="100" height="100" fill="url(#grid1)"/>
+            </svg>
+          </div>
+          <div className="absolute inset-0 animate-shift2">
+            <svg className="w-[200%] h-[200%]" viewBox="0 0 100 100" preserveAspectRatio="none">
+              <pattern id="grid2" width="15" height="15" patternUnits="userSpaceOnUse">
+                <path d="M 15 0 L 0 0 0 15" fill="none" stroke="white" strokeWidth="0.5"/>
+              </pattern>
+              <rect width="100" height="100" fill="url(#grid2)"/>
+            </svg>
+          </div>
+          <div className="absolute inset-0 animate-shift3">
+            <svg className="w-[200%] h-[200%]" viewBox="0 0 100 100" preserveAspectRatio="none">
+              <pattern id="grid3" width="20" height="20" patternUnits="userSpaceOnUse">
+                <path d="M 20 0 L 0 0 0 20" fill="none" stroke="white" strokeWidth="0.5"/>
+              </pattern>
+              <rect width="100" height="100" fill="url(#grid3)"/>
+            </svg>
+          </div>
         </div>
 
         <div className="container mx-auto px-6 relative z-10">
