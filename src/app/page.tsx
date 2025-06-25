@@ -6,7 +6,7 @@ import { motion } from 'framer-motion';
 import { AnimatedText } from '@/components/ui/AnimatedText';
 import AnimatedButton from '@/components/ui/AnimatedButton';
 import ScrollRevealSection from '@/components/ui/ScrollRevealSection';
-import { ArrowRight, BarChart3, Clock, FileText, Globe, Shield, Truck } from 'lucide-react';
+import { ArrowRight, BarChart3, Clock, FileText, Globe, Shield, Truck, CheckCircle2, Settings } from 'lucide-react';
 
 export default function Home() {
   return (
@@ -198,11 +198,11 @@ export default function Home() {
         <div className="container mx-auto px-6">
           <ScrollRevealSection>
             <div className="text-center mb-16">
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
+              <h2 className="text-3xl md:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-[#502172] to-[#D01414] mb-4">
                 Enterprise-Grade Solutions
               </h2>
               <p className="text-lg text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-                Our comprehensive platform provides end-to-end visibility and control over your logistics operations
+                Our comprehensive platform provides end-to-end visibility and control over your logistics operations, backed by enterprise-level security and scalability
               </p>
             </div>
             
@@ -211,49 +211,61 @@ export default function Home() {
                 {
                   icon: <Truck className="h-8 w-8" />,
                   title: "Fleet Management",
-                  description: "Real-time tracking, route optimization, and comprehensive fleet analytics for maximum efficiency."
+                  description: "Real-time tracking, route optimization, and comprehensive fleet analytics for maximum efficiency.",
+                  features: ["Live GPS Tracking", "Route Optimization", "Fuel Efficiency Analysis"]
                 },
                 {
                   icon: <BarChart3 className="h-8 w-8" />,
                   title: "Advanced Analytics",
-                  description: "Powerful business intelligence with customizable dashboards and predictive insights."
+                  description: "Powerful business intelligence with customizable dashboards and predictive insights.",
+                  features: ["Custom KPI Dashboards", "Predictive Analytics", "Performance Metrics"]
                 },
                 {
                   icon: <FileText className="h-8 w-8" />,
                   title: "Documentation Control",
-                  description: "Centralized document management with automated workflows and compliance tracking."
+                  description: "Centralized document management with automated workflows and compliance tracking.",
+                  features: ["Digital Documentation", "Automated Workflows", "Audit Trails"]
                 },
                 {
                   icon: <Shield className="h-8 w-8" />,
                   title: "Security & Compliance",
-                  description: "Enterprise-grade security with role-based access control and audit logging."
+                  description: "Enterprise-grade security with role-based access control and audit logging.",
+                  features: ["Role-Based Access", "Data Encryption", "Security Audits"]
                 },
                 {
                   icon: <Clock className="h-8 w-8" />,
                   title: "Real-time Monitoring",
-                  description: "Live tracking of all operations with instant alerts and notifications."
+                  description: "Live tracking of all operations with instant alerts and notifications.",
+                  features: ["Live Status Updates", "Instant Notifications", "Performance Alerts"]
                 },
                 {
-                  icon: <Globe className="h-8 w-8" />,
-                  title: "Global Scalability",
-                  description: "Multi-location support with localization and region-specific compliance."
+                  icon: <Settings className="h-8 w-8" />,
+                  title: "Integration Hub",
+                  description: "Seamless integration with your existing systems and third-party applications.",
+                  features: ["API Integration", "Custom Workflows", "Data Synchronization"]
                 }
               ].map((feature, i) => (
                 <div 
-                  key={i} 
-                  className="bg-white dark:bg-gray-800 rounded-xl shadow-md hover:shadow-lg transition-shadow p-6 border border-gray-100 dark:border-gray-700"
+                  key={i}
+                  className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100 dark:border-gray-700 group"
                 >
-                  <div className="bg-blue-50 dark:bg-blue-900/30 p-3 rounded-lg inline-block mb-4">
-                    <div className="text-blue-600 dark:text-blue-400">
-                      {feature.icon}
-                    </div>
+                  <div className="mb-4 p-3 bg-gradient-to-br from-[#502172]/10 to-[#D01414]/10 rounded-lg inline-block group-hover:from-[#502172]/20 group-hover:to-[#D01414]/20 transition-colors">
+                    {feature.icon}
                   </div>
-                  <h3 className="text-xl font-semibold mb-3 text-gray-900 dark:text-white">
+                  <h3 className="text-xl font-semibold mb-3 text-gray-900 dark:text-white group-hover:text-[#502172] dark:group-hover:text-[#D01414] transition-colors">
                     {feature.title}
                   </h3>
-                  <p className="text-gray-600 dark:text-gray-300">
+                  <p className="text-gray-600 dark:text-gray-300 mb-4">
                     {feature.description}
                   </p>
+                  <ul className="space-y-2">
+                    {feature.features.map((item, index) => (
+                      <li key={index} className="flex items-center text-sm text-gray-500 dark:text-gray-400">
+                        <CheckCircle2 className="h-4 w-4 mr-2 text-[#502172] dark:text-[#D01414]" />
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
                 </div>
               ))}
             </div>
@@ -266,42 +278,71 @@ export default function Home() {
         <div className="container mx-auto px-6">
           <ScrollRevealSection>
             <div className="text-center mb-16">
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
+              <h2 className="text-3xl md:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-[#502172] to-[#D01414] mb-4">
                 Trusted by Industry Leaders
               </h2>
               <p className="text-lg text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-                See how enterprises around the world transform their logistics operations
+                Join leading enterprises that have transformed their logistics operations with our platform
               </p>
             </div>
             
             <div className="grid md:grid-cols-3 gap-8">
-              {[1, 2, 3].map((i) => (
+              {[
+                {
+                  name: "Global Manufacturing Corp",
+                  role: "Manufacturing",
+                  image: "M",
+                  quote: "The platform has revolutionized our logistics operations, providing unprecedented visibility and control across our supply chain.",
+                  stats: {
+                    improvement: "45%",
+                    metric: "reduction in processing time"
+                  }
+                },
+                {
+                  name: "International Logistics Ltd",
+                  role: "Logistics",
+                  image: "L",
+                  quote: "Real-time tracking and automated workflows have significantly improved our operational efficiency and customer satisfaction.",
+                  stats: {
+                    improvement: "99.9%",
+                    metric: "platform uptime"
+                  }
+                },
+                {
+                  name: "Enterprise Solutions Inc",
+                  role: "Technology",
+                  image: "T",
+                  quote: "The seamless integration capabilities and robust security features make this platform stand out in the logistics industry.",
+                  stats: {
+                    improvement: "60%",
+                    metric: "faster dock operations"
+                  }
+                }
+              ].map((testimonial, i) => (
                 <div 
                   key={i}
-                  className="bg-gray-50 dark:bg-gray-800 rounded-xl p-6 border border-gray-100 dark:border-gray-700"
+                  className="bg-gray-50 dark:bg-gray-800 rounded-xl p-6 border border-gray-100 dark:border-gray-700 hover:shadow-lg transition-shadow group"
                 >
                   <div className="flex items-center mb-6">
-                    <div className="w-12 h-12 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center mr-4">
-                      <span className="text-xl font-bold">{String.fromCharCode(64 + i)}</span>
+                    <div className="w-12 h-12 bg-gradient-to-br from-[#502172] to-[#D01414] rounded-full flex items-center justify-center mr-4 group-hover:scale-110 transition-transform">
+                      <span className="text-xl font-bold text-white">{testimonial.image}</span>
                     </div>
                     <div>
-                      <div className="font-semibold text-gray-900 dark:text-white">Enterprise Client {i}</div>
-                      <div className="text-sm text-gray-500 dark:text-gray-400">Global Logistics</div>
+                      <div className="font-semibold text-gray-900 dark:text-white">{testimonial.name}</div>
+                      <div className="text-sm text-gray-500 dark:text-gray-400">{testimonial.role}</div>
                     </div>
                   </div>
                   <blockquote className="text-gray-600 dark:text-gray-300 italic mb-6">
-                    "The LPMS platform has transformed our logistics operations, providing unprecedented visibility and control across our entire supply chain."
+                    "{testimonial.quote}"
                   </blockquote>
-                  <div className="flex items-center justify-between">
-                    <div className="text-sm text-gray-500 dark:text-gray-400">
-                      <span className="font-medium">ROI:</span> 215%
-                    </div>
-                    <div className="flex">
-                      {[1, 2, 3, 4, 5].map((star) => (
-                        <svg key={star} className="w-4 h-4 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
-                          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                        </svg>
-                      ))}
+                  <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
+                    <div className="flex items-baseline">
+                      <span className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-[#502172] to-[#D01414]">
+                        {testimonial.stats.improvement}
+                      </span>
+                      <span className="ml-2 text-sm text-gray-500 dark:text-gray-400">
+                        {testimonial.stats.metric}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -312,24 +353,47 @@ export default function Home() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-16 bg-gradient-to-br from-blue-900 via-indigo-900 to-blue-800 text-white">
-        <div className="container mx-auto px-6">
+      <section className="py-20 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-[#502172] to-[#D01414] opacity-90"></div>
+        
+        {/* Background Pattern */}
+        <div className="absolute inset-0 opacity-10">
+          <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+            <pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse">
+              <path d="M 10 0 L 0 0 0 10" fill="none" stroke="white" strokeWidth="0.5"/>
+            </pattern>
+            <rect width="100" height="100" fill="url(#grid)"/>
+          </svg>
+        </div>
+
+        <div className="container mx-auto px-6 relative z-10">
           <ScrollRevealSection direction="up">
             <div className="max-w-4xl mx-auto text-center">
-              <h2 className="text-3xl md:text-4xl font-bold mb-6">
+              <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
                 Ready to transform your logistics operations?
               </h2>
-              <p className="text-lg text-blue-100 mb-8 max-w-2xl mx-auto">
+              <p className="text-xl text-white/90 mb-12 max-w-2xl mx-auto">
                 Join industry leaders who trust our enterprise platform for their mission-critical logistics operations.
               </p>
-              <div className="flex flex-wrap justify-center gap-4">
-                <Link href="/auth/signup" className="px-8 py-3 bg-white text-indigo-900 rounded-md font-medium hover:bg-blue-50 transition-colors">
-                  Request Demo
+              <div className="flex flex-wrap justify-center gap-6">
+                <Link 
+                  href="/auth/signup" 
+                  className="px-8 py-4 bg-white text-[#502172] rounded-lg font-medium hover:bg-gray-50 transition-colors inline-flex items-center group"
+                >
+                  Get Started
+                  <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
                 </Link>
-                <Link href="/auth/signin" className="px-8 py-3 bg-transparent border border-white text-white rounded-md font-medium hover:bg-white/10 transition-colors">
+                <Link 
+                  href="/contact" 
+                  className="px-8 py-4 bg-transparent text-white border-2 border-white rounded-lg font-medium hover:bg-white/10 transition-colors inline-flex items-center group"
+                >
                   Contact Sales
+                  <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
                 </Link>
               </div>
+              <p className="mt-8 text-white/80 text-sm">
+                Enterprise-grade security • 24/7 support • Custom solutions
+              </p>
             </div>
           </ScrollRevealSection>
         </div>
