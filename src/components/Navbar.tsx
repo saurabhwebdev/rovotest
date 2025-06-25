@@ -5,6 +5,8 @@ import Link from 'next/link';
 import ThemeToggle from './ThemeToggle';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter, usePathname } from 'next/navigation';
+import { collection, getDocs } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 
 export default function Navbar() {
   const { user, logout, hasPermission, userRole } = useAuth();
@@ -12,6 +14,7 @@ export default function Navbar() {
   const pathname = usePathname();
   const [isAdminOpen, setIsAdminOpen] = useState(false);
   const [isAuditOpen, setIsAuditOpen] = useState(false);
+  const [isRegisterOpen, setIsRegisterOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   // Define all available pages with their IDs and paths
@@ -33,6 +36,7 @@ export default function Navbar() {
     { id: 'admin-led-settings', name: 'LED Screen Settings', path: '/admin/led-settings' },
     { id: 'admin-shift-handover', name: 'Shift Handover', path: '/admin/shift-handover' },
     { id: 'admin-shift-handover-approval', name: 'Shift Handover Approval', path: '/admin/shift-handover-approval' },
+    { id: 'admin-register-management', name: 'Register Management', path: '/admin/register-management' },
     { id: 'admin-role-management', name: 'Role Management', path: '/admin/role-management' },
     { id: 'admin-user-management', name: 'User Management', path: '/admin/user-management' },
     { id: 'admin-reports', name: 'Reports', path: '/admin/reports' },
@@ -44,6 +48,46 @@ export default function Navbar() {
     { id: 'admin-truck-scheduling-audit', name: 'Truck Scheduling Audit', path: '/admin/truck-scheduling-audit' },
     { id: 'admin-shift-handover-audit', name: 'Shift Handover Audit', path: '/admin/shift-handover-audit' },
   ];
+
+  // Empty array for predefined register pages - we'll only use dynamic ones
+  const staticRegisterPages: NavPage[] = [];
+  
+  // Define interfaces for page types
+  interface NavPage {
+    id: string;
+    name: string;
+    path: string;
+  }
+  
+  // State for register pages loaded from Firestore
+  const [registerPages, setRegisterPages] = useState<NavPage[]>([]);
+  
+  // Fetch dynamic register templates from Firestore
+  useEffect(() => {
+    async function fetchRegisterTemplates() {
+      try {
+        const registersCollection = collection(db, 'registerTemplates');
+        const registersSnapshot = await getDocs(registersCollection);
+        
+        if (!registersSnapshot.empty) {
+          const templates = registersSnapshot.docs
+            .filter((doc) => doc.data().isActive)
+            .map((doc) => ({
+              id: `register-${doc.data().slug}`,
+              name: doc.data().name,
+              path: `/register/${doc.data().slug}`
+            })) as NavPage[];
+          
+          // Set register pages directly from templates (no static pages)
+          setRegisterPages(templates);
+        }
+      } catch (error) {
+        console.error("Error fetching register templates:", error);
+      }
+    }
+    
+    fetchRegisterTemplates();
+  }, []);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -80,11 +124,17 @@ export default function Navbar() {
   // Check if user has access to any audit pages
   const hasAuditAccess = auditPages.some(page => hasPermission(page.id));
 
+  // Check if user has access to any register pages
+  const hasRegisterAccess = registerPages.some(page => hasPermission(page.id));
+
   // Filter admin pages based on permissions
   const accessibleAdminPages = adminPages.filter(page => hasPermission(page.id));
   
   // Filter audit pages based on permissions
   const accessibleAuditPages = auditPages.filter(page => hasPermission(page.id));
+  
+  // Filter register pages based on permissions
+  const accessibleRegisterPages = registerPages.filter(page => hasPermission(page.id));
   
   // Filter main pages based on permissions
   const accessibleMainPages = mainPages.filter(page => hasPermission(page.id));
@@ -97,6 +147,9 @@ export default function Navbar() {
   const filteredAdminPages = accessibleAdminPages.filter(page => page.id !== 'admin-shift-handover');
   const showAdminDropdown = (filteredAdminPages.length > 0 || accessibleAuditPages.length > 0);
   
+  // Determine if we should show the register dropdown
+  const showRegisterDropdown = accessibleRegisterPages.length > 0 || isAdminUser;
+  
   // Debug information
   console.log('Navbar Debug:', {
     isAdminUser,
@@ -104,7 +157,9 @@ export default function Navbar() {
     accessibleAdminPages: accessibleAdminPages.map(p => p.id),
     filteredAdminPages: filteredAdminPages.map(p => p.id),
     accessibleAuditPages: accessibleAuditPages.map(p => p.id),
-    showAdminDropdown
+    accessibleRegisterPages: accessibleRegisterPages.map(p => p.id),
+    showAdminDropdown,
+    showRegisterDropdown
   });
 
   return (
@@ -168,6 +223,54 @@ export default function Navbar() {
                   >
                     Shift Handover
                   </Link>
+                )}
+
+                {/* Register dropdown - only show if user has permission to any register pages */}
+                {showRegisterDropdown && (
+                  <div className="relative">
+                    <button
+                      onClick={() => setIsRegisterOpen(!isRegisterOpen)}
+                      onBlur={() => setTimeout(() => setIsRegisterOpen(false), 200)}
+                      className={`px-3 py-2 rounded-md text-sm font-medium flex items-center ${
+                        isActive('/register') 
+                          ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-200' 
+                          : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800'
+                      }`}
+                    >
+                      Registers
+                      <svg
+                        className={`ml-1 w-4 h-4 transition-transform ${isRegisterOpen ? 'rotate-180' : ''}`}
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M19 9l-7 7-7-7"
+                        />
+                      </svg>
+                    </button>
+                    {isRegisterOpen && (
+                      <div className="absolute top-full right-0 mt-1 w-56 rounded-md shadow-lg bg-white dark:bg-gray-800 ring-1 ring-black ring-opacity-5 z-50">
+                        <div className="py-1" role="menu" aria-orientation="vertical">
+                          {/* Filter register menu items based on permissions */}
+                          {accessibleRegisterPages.map(page => (
+                            <Link
+                              key={page.id}
+                              href={page.path}
+                              className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                              role="menuitem"
+                            >
+                              {page.name}
+                            </Link>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 )}
 
                 {/* Admin dropdown - only show if user has permission to any admin pages */}
@@ -296,6 +399,31 @@ export default function Navbar() {
             {user ? (
               <>
                 {accessibleMainPages.map(page => (
+                  <Link
+                    key={page.id}
+                    href={page.path}
+                    className={`block px-3 py-2 rounded-md text-base font-medium ${
+                      isActive(page.path)
+                        ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-200'
+                        : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800'
+                    }`}
+                  >
+                    {page.name}
+                  </Link>
+                ))}
+
+                {/* Show register section header if user has register access */}
+                {showRegisterDropdown && (
+                  <div className="pt-4 pb-2">
+                    <div className="border-t border-gray-200 dark:border-gray-700"></div>
+                    <div className="mt-2 text-xs font-semibold text-gray-500 dark:text-gray-400 px-3">
+                      REGISTERS
+                    </div>
+                  </div>
+                )}
+
+                {/* Show register pages the user has access to */}
+                {accessibleRegisterPages.map(page => (
                   <Link
                     key={page.id}
                     href={page.path}

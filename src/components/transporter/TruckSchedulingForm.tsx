@@ -173,6 +173,34 @@ export default function TruckSchedulingForm({ onSuccess }: TruckSchedulingFormPr
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
+  const handleClearAll = () => {
+    // Reset form data to initial empty state
+    setFormData({
+      driverName: '',
+      mobileNumber: '',
+      licenseNumber: '',
+      vehicleNumber: '',
+      depotName: '',
+      lrNumber: '',
+      rtoPassingCapacity: '',
+      loadingCapacity: '',
+      transporterName: '',
+      reportingDate: '',
+      reportingTime: '',
+      gate: '',
+      supplierName: '',
+      rcNumber: '',
+      insuranceNumber: '',
+      pollutionNumber: '',
+      dlValidityDate: '',
+      rcValidityDate: '',
+      insuranceValidityDate: '',
+      pollutionValidityDate: ''
+    });
+    // Clear any error messages
+    setError('');
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -753,7 +781,17 @@ export default function TruckSchedulingForm({ onSuccess }: TruckSchedulingFormPr
             </div>
           </div>
           
-          <div className="flex justify-end">
+          <div className="flex justify-end space-x-4">
+            <button
+              type="button"
+              onClick={handleClearAll}
+              className="inline-flex items-center justify-center py-2 px-6 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-200"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
+              Clear All
+            </button>
             <button
               type="submit"
               disabled={loading}
