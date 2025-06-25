@@ -555,22 +555,22 @@ export default function DynamicRegister({ slug }: DynamicRegisterProps) {
           <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
             <thead className="bg-gray-50 dark:bg-gray-800">
               <tr>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                <th scope="col" className="px-2 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Truck
                 </th>
                 {template.fields.slice(0, 4).map((field) => (
                   <th 
                     key={field.id} 
                     scope="col" 
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+                    className="px-2 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
                   >
                     {field.name}
                   </th>
                 ))}
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Created At
+                <th scope="col" className="px-2 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  Created
                 </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                <th scope="col" className="px-2 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Actions
                 </th>
               </tr>
@@ -578,52 +578,61 @@ export default function DynamicRegister({ slug }: DynamicRegisterProps) {
             <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-800">
               {loading ? (
                 <tr>
-                  <td colSpan={template.fields.slice(0, 4).length + 3} className="px-6 py-4 text-center text-sm text-gray-500 dark:text-gray-400">
+                  <td colSpan={template.fields.slice(0, 4).length + 3} className="px-2 py-1.5 text-center text-sm text-gray-500 dark:text-gray-400">
                     Loading entries...
                   </td>
                 </tr>
               ) : entries.length === 0 ? (
                 <tr>
-                  <td colSpan={template.fields.slice(0, 4).length + 3} className="px-6 py-4 text-center text-sm text-gray-500 dark:text-gray-400">
+                  <td colSpan={template.fields.slice(0, 4).length + 3} className="px-2 py-1.5 text-center text-sm text-gray-500 dark:text-gray-400">
                     No entries found
                   </td>
                 </tr>
               ) : (
                 entries.map((entry) => (
                   <tr key={entry.id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                    <td className="px-2 py-1.5 whitespace-nowrap text-xs text-gray-500 dark:text-gray-400">
                       {entry.truck ? (
                         <div>
                           <div className="font-medium">{entry.truck.vehicleNumber}</div>
-                          <div className="text-xs">{entry.truck.transporterName}</div>
+                          <div className="text-xs opacity-75">{entry.truck.transporterName}</div>
                         </div>
                       ) : (
                         <span className="italic">No truck data</span>
                       )}
                     </td>
                     {template.fields.slice(0, 4).map((field) => (
-                      <td key={field.id} className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                      <td key={field.id} className="px-2 py-1.5 whitespace-nowrap text-xs text-gray-500 dark:text-gray-400">
                         {field.type === 'checkbox' 
                           ? (entry.data[field.id] ? 'Yes' : 'No')
                           : (entry.data[field.id] || '-')}
                       </td>
                     ))}
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                    <td className="px-2 py-1.5 whitespace-nowrap text-xs text-gray-500 dark:text-gray-400">
                       {entry.createdAt?.toLocaleString() || '-'}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 space-x-2">
-                      <button 
-                        className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
-                        onClick={() => {/* View entry details */}}
-                      >
-                        View
-                      </button>
-                      <button 
-                        className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
-                        onClick={() => handleDeleteEntry(entry.id)}
-                      >
-                        Delete
-                      </button>
+                    <td className="px-2 py-1.5 whitespace-nowrap text-xs text-gray-500 dark:text-gray-400">
+                      <div className="flex space-x-1">
+                        <button 
+                          onClick={() => {/* View entry details */}}
+                          className="text-gray-500 hover:text-indigo-600 focus:outline-none"
+                          title="View Details"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                          </svg>
+                        </button>
+                        <button 
+                          onClick={() => handleDeleteEntry(entry.id)}
+                          className="text-gray-500 hover:text-red-600 focus:outline-none"
+                          title="Delete"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))
