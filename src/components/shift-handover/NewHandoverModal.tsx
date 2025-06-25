@@ -213,10 +213,13 @@ export default function NewHandoverModal({ onClose, onSuccess }: NewHandoverModa
                 <input
                   type="time"
                   value={handoverTime}
-                  onChange={(e) => setHandoverTime(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:border-gray-600"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-100 dark:bg-gray-600 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                  disabled
                   required
                 />
+                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                  Time is set automatically and cannot be changed for audit purposes.
+                </p>
               </div>
               
               <div>
