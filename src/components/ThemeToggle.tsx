@@ -7,6 +7,7 @@ export default function ThemeToggle() {
   const [mounted, setMounted] = useState(false);
   const { theme, setTheme } = useTheme();
   const [isChanging, setIsChanging] = useState(false);
+  const [isHovering, setIsHovering] = useState(false);
 
   // useEffect only runs on the client, so now we can safely show the UI
   useEffect(() => {
@@ -16,6 +17,15 @@ export default function ThemeToggle() {
   const toggleTheme = () => {
     setIsChanging(true);
     setTheme(theme === 'dark' ? 'light' : 'dark');
+    
+    // Add a small sound effect when toggling
+    try {
+      const audio = new Audio('/sounds/ding.mp3');
+      audio.volume = 0.2;
+      audio.play();
+    } catch (e) {
+      console.error('Could not play toggle sound', e);
+    }
     
     // Reset animation state after transition completes
     setTimeout(() => {
@@ -30,10 +40,12 @@ export default function ThemeToggle() {
   return (
     <button
       onClick={toggleTheme}
-      className="rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 focus:ring-blue-500 relative overflow-hidden"
+      onMouseEnter={() => setIsHovering(true)}
+      onMouseLeave={() => setIsHovering(false)}
+      className="rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 focus:ring-blue-500 relative overflow-hidden tooltip-wrapper"
       aria-label="Toggle dark mode"
     >
-      <div className={`relative z-10 transition-all duration-500 ${isChanging ? 'scale-110' : 'scale-100'}`}>
+      <div className={`relative z-10 transition-all duration-500 ${isChanging ? 'scale-110 rotate-180' : isHovering ? 'scale-125 rotate-12' : 'scale-100'}`}>
         {theme === 'dark' ? (
           // Sun icon for light mode
           <svg
@@ -61,10 +73,47 @@ export default function ThemeToggle() {
         )}
       </div>
       <span 
-        className={`absolute inset-0 rounded-md transition-opacity duration-500 ${
-          isChanging ? 'opacity-25' : 'opacity-0'
+        className={`absolute inset-0 rounded-md transition-all duration-500 ${
+          isChanging ? 'opacity-25 scale-100' : isHovering ? 'opacity-10 scale-110' : 'opacity-0 scale-90'
         } ${theme === 'dark' ? 'bg-yellow-200' : 'bg-blue-900'}`}
       />
+      
+      {/* Animated rays/stars for hover effect */}
+      {theme === 'dark' ? (
+        <div className={`absolute inset-0 z-0 transition-opacity duration-300 ${isHovering ? 'opacity-100' : 'opacity-0'}`}>
+          {[...Array(6)].map((_, i) => (
+            <span 
+              key={i}
+              className={`absolute w-1 h-1 rounded-full bg-yellow-300 transition-all duration-500`}
+              style={{
+                top: '50%',
+                left: '50%',
+                transform: `rotate(${i * 60}deg) translateX(${isHovering ? 14 : 8}px)`,
+                opacity: isHovering ? 1 : 0,
+                transitionDelay: `${i * 50}ms`
+              }}
+            />
+          ))}
+        </div>
+      ) : (
+        <div className={`absolute inset-0 z-0 transition-opacity duration-300 ${isHovering ? 'opacity-100' : 'opacity-0'}`}>
+          {[...Array(5)].map((_, i) => (
+            <span 
+              key={i}
+              className={`absolute w-1 h-1 rounded-full bg-blue-400 transition-all duration-500`}
+              style={{
+                top: `${35 + Math.random() * 30}%`,
+                left: `${35 + Math.random() * 30}%`,
+                transform: `scale(${isHovering ? 1.5 : 0.8})`,
+                opacity: isHovering ? 0.8 : 0,
+                transitionDelay: `${i * 100}ms`
+              }}
+            />
+          ))}
+        </div>
+      )}
+      
+      <span className="tooltip">{theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}</span>
     </button>
   );
 }
