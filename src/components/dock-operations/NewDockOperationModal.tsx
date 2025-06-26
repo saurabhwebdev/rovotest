@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react';
 import { db } from '@/lib/firebase';
 import { collection, addDoc, getDocs, query, where, orderBy, Timestamp, doc, updateDoc } from 'firebase/firestore';
+import { updateTruckLocationAndStatus } from '@/lib/firestore';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface NewDockOperationModalProps {
   isOpen: boolean;
@@ -23,6 +25,7 @@ interface WeighbridgeEntry {
 }
 
 export default function NewDockOperationModal({ isOpen, onClose }: NewDockOperationModalProps) {
+  const { user } = useAuth();
   const [docks, setDocks] = useState<Dock[]>([]);
   const [weighbridgeEntries, setWeighbridgeEntries] = useState<WeighbridgeEntry[]>([]);
   const [selectedDock, setSelectedDock] = useState('');
@@ -103,9 +106,11 @@ export default function NewDockOperationModal({ isOpen, onClose }: NewDockOperat
       const selectedDockData = docks.find(d => d.id === selectedDock);
       const selectedEntryData = weighbridgeEntries.find(w => w.id === selectedEntry);
 
-      if (!selectedDockData || !selectedEntryData) {
+      if (!selectedDockData || !selectedEntryData || !user) {
         throw new Error('Missing required data');
       }
+
+      const now = Timestamp.now();
 
       // 1. Create dock operation
       const dockOperationRef = await addDoc(collection(db, 'dockOperations'), {
@@ -114,27 +119,31 @@ export default function NewDockOperationModal({ isOpen, onClose }: NewDockOperat
         weighbridgeEntryId: selectedEntry,
         truckNumber: selectedEntryData.truckNumber,
         operationType,
-        startTime: Timestamp.now(),
+        startTime: now,
         endTime: null,
         status: 'IN_PROGRESS'
       });
 
-      // 2. Update weighbridge entry status
-      await updateDoc(doc(db, 'weighbridgeEntries', selectedEntry), {
-        status: operationType === 'LOADING' ? 'LOADING_IN_PROGRESS' : 'UNLOADING_IN_PROGRESS',
-        currentDockId: selectedDock,
-        dockOperationId: dockOperationRef.id
-      });
-
-      // 3. Update plant tracking status
-      if (selectedEntryData.plantTrackingId) {
-        await updateDoc(doc(db, 'plantTracking', selectedEntryData.plantTrackingId), {
-          location: selectedDockData.name,
-          status: operationType === 'LOADING' ? 'LOADING_IN_PROGRESS' : 'UNLOADING_IN_PROGRESS',
-          dockId: selectedDock,
-          dockOperationId: dockOperationRef.id,
-          lastUpdated: Timestamp.now()
-        });
+      // 2. Update truck status and location
+      const trucksQuery = query(
+        collection(db, 'trucks'),
+        where('vehicleNumber', '==', selectedEntryData.truckNumber)
+      );
+      const truckSnapshot = await getDocs(trucksQuery);
+      
+      if (!truckSnapshot.empty) {
+        const truckDoc = truckSnapshot.docs[0];
+        await updateTruckLocationAndStatus(
+          truckDoc.id,
+          selectedDockData.name,
+          'at_dock',
+          user.uid,
+          {
+            dockId: selectedDock,
+            dockName: selectedDockData.name,
+            dockOperationId: dockOperationRef.id
+          }
+        );
       }
 
       onClose();

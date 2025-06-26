@@ -6,6 +6,7 @@ import { collection, query, orderBy, getDocs, doc, updateDoc, where, Timestamp, 
 import { useAuth } from '@/contexts/AuthContext';
 import WeighingModal from './WeighingModal';
 import NextMilestoneModal from './NextMilestoneModal';
+import { updateTruckLocationAndStatus } from '@/lib/firestore';
 
 interface WeighbridgeEntry {
   id: string;
@@ -129,25 +130,28 @@ export default function WeighbridgeTruckList() {
 
   const handleMoveToPark = async (entry: WeighbridgeEntry) => {
     try {
-      await updateDoc(doc(db, 'weighbridgeEntries', entry.id), {
-        currentMilestone: 'AT_PARKING',
-        status: 'AT_PARKING',
-        parkingTime: Timestamp.now()
-      });
+      if (!user) {
+        throw new Error('User not authenticated');
+      }
 
-      // Update plant tracking
-      const plantTrackingQuery = query(
-        collection(db, 'plantTracking'),
-        where('weighbridgeEntryId', '==', entry.id)
+      // Find the truck document
+      const trucksQuery = query(
+        collection(db, 'trucks'),
+        where('vehicleNumber', '==', entry.truckNumber)
       );
-      const plantTrackingSnapshot = await getDocs(plantTrackingQuery);
-      if (!plantTrackingSnapshot.empty) {
-        const trackingDoc = plantTrackingSnapshot.docs[0];
-        await updateDoc(doc(db, 'plantTracking', trackingDoc.id), {
-          location: 'Parking Area',
-          status: 'PARKED',
-          lastUpdated: Timestamp.now()
-        });
+      const truckSnapshot = await getDocs(trucksQuery);
+      
+      if (!truckSnapshot.empty) {
+        const truckDoc = truckSnapshot.docs[0];
+        await updateTruckLocationAndStatus(
+          truckDoc.id,
+          'Parking Area',
+          'at_parking',
+          user.uid,
+          {
+            weighbridgeId: entry.id
+          }
+        );
       }
 
       // Create audit entry
@@ -166,31 +170,33 @@ export default function WeighbridgeTruckList() {
 
   const handleMoveToDock = async (entry: WeighbridgeEntry, selectedDockId: string) => {
     try {
+      if (!user) {
+        throw new Error('User not authenticated');
+      }
+
       const selectedDock = docks.find(d => d.id === selectedDockId);
       if (!selectedDock) return;
 
-      await updateDoc(doc(db, 'weighbridgeEntries', entry.id), {
-        currentMilestone: 'AT_DOCK',
-        status: 'AT_DOCK',
-        dockId: selectedDockId,
-        dockName: selectedDock.name,
-        dockAssignmentTime: Timestamp.now()
-      });
-
-      // Update plant tracking
-      const plantTrackingQuery = query(
-        collection(db, 'plantTracking'),
-        where('weighbridgeEntryId', '==', entry.id)
+      // Find the truck document
+      const trucksQuery = query(
+        collection(db, 'trucks'),
+        where('vehicleNumber', '==', entry.truckNumber)
       );
-      const plantTrackingSnapshot = await getDocs(plantTrackingQuery);
-      if (!plantTrackingSnapshot.empty) {
-        const trackingDoc = plantTrackingSnapshot.docs[0];
-        await updateDoc(doc(db, 'plantTracking', trackingDoc.id), {
-          location: selectedDock.name,
-          status: 'AT_DOCK',
-          dockId: selectedDockId,
-          lastUpdated: Timestamp.now()
-        });
+      const truckSnapshot = await getDocs(trucksQuery);
+      
+      if (!truckSnapshot.empty) {
+        const truckDoc = truckSnapshot.docs[0];
+        await updateTruckLocationAndStatus(
+          truckDoc.id,
+          selectedDock.name,
+          'at_dock',
+          user.uid,
+          {
+            dockId: selectedDockId,
+            dockName: selectedDock.name,
+            weighbridgeId: entry.id
+          }
+        );
       }
 
       // Create audit entry

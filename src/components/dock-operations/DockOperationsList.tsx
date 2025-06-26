@@ -12,6 +12,8 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
+import { updateTruckLocationAndStatus } from '@/lib/firestore';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface DockOperation {
   id: string;
@@ -26,6 +28,7 @@ interface DockOperation {
 }
 
 export default function DockOperationsList() {
+  const { user } = useAuth();
   const [operations, setOperations] = useState<DockOperation[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentTime, setCurrentTime] = useState<Date>(new Date());
@@ -76,6 +79,10 @@ export default function DockOperationsList() {
 
   async function handleComplete(operation: DockOperation) {
     try {
+      if (!user) {
+        throw new Error('User not authenticated');
+      }
+
       const now = Timestamp.now();
 
       // 1. Update dock operation status
@@ -84,34 +91,29 @@ export default function DockOperationsList() {
         endTime: now
       });
 
-      // 2. Get weighbridge entry
-      const weighbridgeRef = doc(db, 'weighbridgeEntries', operation.weighbridgeEntryId);
-      const weighbridgeDoc = await getDoc(weighbridgeRef);
+      // 2. Find and update truck status
+      const trucksQuery = query(
+        collection(db, 'trucks'),
+        where('vehicleNumber', '==', operation.truckNumber)
+      );
+      const truckSnapshot = await getDocs(trucksQuery);
       
-      if (weighbridgeDoc.exists()) {
-        const weighbridgeData = weighbridgeDoc.data();
-        
-        // 3. Update weighbridge entry status
-        await updateDoc(weighbridgeRef, {
-          status: operation.operationType === 'LOADING' ? 'LOADING_COMPLETED' : 'UNLOADING_COMPLETED',
-          currentDockId: null,
-          dockOperationId: null,
-          completedDockOperations: [...(weighbridgeData.completedDockOperations || []), operation.id]
-        });
-
-        // 4. Update plant tracking if exists
-        if (weighbridgeData.plantTrackingId) {
-          await updateDoc(doc(db, 'plantTracking', weighbridgeData.plantTrackingId), {
-            location: 'Exit Gate',
-            status: operation.operationType === 'LOADING' ? 'LOADING_COMPLETED' : 'UNLOADING_COMPLETED',
+      if (!truckSnapshot.empty) {
+        const truckDoc = truckSnapshot.docs[0];
+        await updateTruckLocationAndStatus(
+          truckDoc.id,
+          'Exit Gate',
+          operation.operationType === 'LOADING' ? 'loading_completed' : 'unloading_completed',
+          user.uid,
+          {
             dockId: null,
-            dockOperationId: null,
-            lastUpdated: now
-          });
-        }
+            dockName: null,
+            dockOperationId: null
+          }
+        );
       }
 
-      // 5. Close dialog and refresh the list
+      // 3. Close dialog and refresh the list
       closeConfirmDialog();
       fetchDockOperations();
     } catch (error) {

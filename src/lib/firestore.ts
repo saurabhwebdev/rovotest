@@ -179,31 +179,87 @@ export async function sendTruckForApproval(truckId: string, userId: string, fail
   return updateDocument('trucks', truckId, updateData);
 }
 
-export async function updateTruckLocation(
-  truckId: string, 
-  location: string, 
-  userId: string, 
-  notes?: string,
-  weighbridgeId?: string
+export async function updateTruckLocationAndStatus(
+  truckId: string,
+  location: string,
+  status: string,
+  userId: string,
+  additionalData: {
+    dockId?: string;
+    dockName?: string;
+    weighbridgeId?: string;
+    dockOperationId?: string;
+    notes?: string;
+  } = {}
 ) {
-  const truckRef = doc(db, 'trucks', truckId);
-  const updateData: any = {
-    currentLocation: location,
-    locationUpdatedAt: serverTimestamp(),
-    locationUpdatedBy: userId,
-    locationNotes: notes || null,
-    status: location === 'weighbridge' ? 'at_weighbridge' : 'at_' + location
-  };
+  try {
+    const now = serverTimestamp();
+    const truckRef = doc(db, 'trucks', truckId);
+    const truckDoc = await getDoc(truckRef);
 
-  if (location === 'weighbridge') {
-    updateData.weighbridgeId = weighbridgeId;
-    updateData.source = 'parking';
-  } else {
-    // Clear weighbridge ID if moving to another location
-    updateData.weighbridgeId = null;
+    if (!truckDoc.exists()) {
+      throw new Error('Truck not found');
+    }
+
+    const truckData = truckDoc.data();
+    const vehicleNumber = truckData.vehicleNumber;
+
+    // 1. Update truck document
+    const updateData = {
+      currentLocation: location,
+      status: status,
+      locationUpdatedAt: now,
+      locationUpdatedBy: userId,
+      ...additionalData,
+      updatedAt: now
+    };
+
+    await updateDoc(truckRef, updateData);
+
+    // 2. Find and update related weighbridge entry if exists
+    const weighbridgeQuery = query(
+      collection(db, 'weighbridgeEntries'),
+      where('truckNumber', '==', vehicleNumber),
+      where('status', 'not-in', ['COMPLETED', 'CANCELLED']),
+      limit(1)
+    );
+    
+    const weighbridgeSnapshot = await getDocs(weighbridgeQuery);
+    if (!weighbridgeSnapshot.empty) {
+      const weighbridgeDoc = weighbridgeSnapshot.docs[0];
+      await updateDoc(doc(db, 'weighbridgeEntries', weighbridgeDoc.id), {
+        status: status,
+        currentLocation: location,
+        currentMilestone: status.toUpperCase(),
+        ...additionalData,
+        updatedAt: now
+      });
+    }
+
+    // 3. Find and update related plant tracking if exists
+    const plantTrackingQuery = query(
+      collection(db, 'plantTracking'),
+      where('truckNumber', '==', vehicleNumber),
+      where('status', 'not-in', ['COMPLETED', 'CANCELLED']),
+      limit(1)
+    );
+
+    const plantTrackingSnapshot = await getDocs(plantTrackingQuery);
+    if (!plantTrackingSnapshot.empty) {
+      const plantTrackingDoc = plantTrackingSnapshot.docs[0];
+      await updateDoc(doc(db, 'plantTracking', plantTrackingDoc.id), {
+        status: status,
+        location: location,
+        ...additionalData,
+        lastUpdated: now
+      });
+    }
+
+    return true;
+  } catch (error) {
+    console.error('Error updating truck location and status:', error);
+    throw error;
   }
-
-  await updateDoc(truckRef, updateData);
 }
 
 export async function getTrucksInsidePlant() {
@@ -289,4 +345,30 @@ export async function rejectTruckRequest(truckId: string, userId: string, reject
   };
   
   return updateDocument('trucks', truckId, updateData);
+}
+
+export async function getTrucksForGateGuard() {
+  const q = query(
+    collection(db, 'trucks'),
+    where('status', 'in', [
+      'scheduled',
+      'pending-approval',
+      'verified',
+      'at_parking',
+      'at_weighbridge',
+      'at_loading',
+      'at_unloading',
+      'at_dock',
+      'rejected',
+      'in-process'
+    ])
+  );
+
+  const snapshot = await getDocs(q);
+  return snapshot.docs.map(doc => ({
+    id: doc.id,
+    ...doc.data(),
+    createdAt: doc.data().createdAt?.toDate?.() || doc.data().createdAt,
+    locationUpdatedAt: doc.data().locationUpdatedAt?.toDate?.() || doc.data().locationUpdatedAt,
+  }));
 }

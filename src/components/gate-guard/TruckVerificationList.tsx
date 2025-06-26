@@ -1,7 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { getCollection } from '@/lib/firestore';
+import { getTrucksForGateGuard } from '@/lib/firestore';
+import { collection, getDocs, DocumentData } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 import TruckVerificationModal from '@/components/gate-guard/TruckVerificationModal';
 import TruckDetailsModal from '@/components/gate-guard/TruckDetailsModal';
 import { Input } from '@/components/ui/input';
@@ -13,13 +15,27 @@ interface Truck {
   transporterName: string;
   reportingDate: string;
   reportingTime: string;
-  gate: string;
   status: string;
-  createdAt: string;
+  gate: string;
+  createdAt: any;
+  locationUpdatedAt?: any;
+  approvalStatus?: 'pending' | 'approved' | 'rejected';
+  currentLocation?: string;
   mobileNumber: string;
   licenseNumber: string;
-  approvalStatus?: 'pending' | 'approved' | 'rejected';
-  approvalNotes?: string;
+  depotName?: string;
+  lrNumber?: string;
+  rtoPassingCapacity?: string;
+  loadingCapacity?: string;
+  supplierName?: string;
+  rcNumber?: string;
+  insuranceNumber?: string;
+  pollutionNumber?: string;
+  dlValidityDate?: string;
+  rcValidityDate?: string;
+  insuranceValidityDate?: string;
+  pollutionValidityDate?: string;
+  destination?: string;
 }
 
 export default function TruckVerificationList() {
@@ -55,11 +71,17 @@ export default function TruckVerificationList() {
   const fetchTrucks = async () => {
     try {
       setLoading(true);
-      const trucksData = await getCollection('trucks') as Truck[];
+      const snapshot = await getDocs(collection(db, 'trucks'));
+      const trucksData = snapshot.docs.map((doc: DocumentData) => ({
+        id: doc.id,
+        ...doc.data(),
+        createdAt: doc.data().createdAt?.toDate?.() || doc.data().createdAt,
+        locationUpdatedAt: doc.data().locationUpdatedAt?.toDate?.() || doc.data().locationUpdatedAt,
+      })) as Truck[];
       setTrucks(trucksData);
     } catch (err) {
       console.error('Error fetching trucks:', err);
-      setError('Failed to load scheduled trucks');
+      setError('Failed to load trucks');
     } finally {
       setLoading(false);
     }
@@ -108,7 +130,7 @@ export default function TruckVerificationList() {
   };
 
   const getStatusBadgeClass = (status: string) => {
-    switch (status) {
+    switch (status.toLowerCase()) {
       case 'scheduled':
         return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200';
       case 'verified':
@@ -116,13 +138,57 @@ export default function TruckVerificationList() {
       case 'rejected':
         return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
       case 'in-process':
+      case 'in_process':
         return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200';
       case 'pending-approval':
+      case 'pending_approval':
         return 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200';
       case 'inside-plant':
+      case 'inside_plant':
         return 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200';
+      case 'at_dock':
+        return 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200';
+      case 'at_parking':
+        return 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900 dark:text-cyan-200';
+      case 'at_weighbridge':
+        return 'bg-teal-100 text-teal-800 dark:bg-teal-900 dark:text-teal-200';
+      case 'loading_completed':
+      case 'unloading_completed':
+        return 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200';
       default:
         return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200';
+    }
+  };
+
+  const getStatusDisplay = (status: string) => {
+    switch (status.toLowerCase()) {
+      case 'scheduled':
+        return 'Scheduled';
+      case 'verified':
+        return 'Verified';
+      case 'rejected':
+        return 'Rejected';
+      case 'in-process':
+      case 'in_process':
+        return 'In Process';
+      case 'pending-approval':
+      case 'pending_approval':
+        return 'Pending Approval';
+      case 'inside-plant':
+      case 'inside_plant':
+        return 'Inside Plant';
+      case 'at_dock':
+        return 'At Dock';
+      case 'at_parking':
+        return 'At Parking';
+      case 'at_weighbridge':
+        return 'At Weighbridge';
+      case 'loading_completed':
+        return 'Loading Completed';
+      case 'unloading_completed':
+        return 'Unloading Completed';
+      default:
+        return status.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
     }
   };
 
@@ -184,7 +250,7 @@ export default function TruckVerificationList() {
             <div className="flex justify-between items-start mb-2">
               <h3 className="font-medium text-sm">{truck.vehicleNumber}</h3>
               <span className={`px-2 py-0.5 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusBadgeClass(truck.status)}`}>
-                {truck.status === 'pending-approval' && truck.approvalStatus === 'approved' ? 'Exception Approval' : truck.status}
+                {getStatusDisplay(truck.status)}
               </span>
             </div>
             
@@ -362,14 +428,9 @@ export default function TruckVerificationList() {
                 <td className="px-2 py-1.5 whitespace-nowrap text-xs">{formatTime(truck.reportingTime)}</td>
                 <td className="px-2 py-1.5 whitespace-nowrap text-xs">{truck.gate}</td>
                 <td className="px-2 py-1.5 whitespace-nowrap text-xs">
-                  <span className={`px-2 py-0.5 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusBadgeClass(truck.status)}`}>
-                    {truck.status === 'pending-approval' && truck.approvalStatus === 'approved' ? 'Exception Approval' : truck.status}
+                  <span className={`px-2 py-0.5 rounded-full ${getStatusBadgeClass(truck.status)}`}>
+                    {getStatusDisplay(truck.status)}
                   </span>
-                  {truck.status === 'pending-approval' && truck.approvalStatus === 'pending' && (
-                    <span className="ml-1 px-1 py-0.5 text-xs rounded-sm bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400">
-                      Awaiting
-                    </span>
-                  )}
                 </td>
                 <td className="px-2 py-1.5 whitespace-nowrap text-xs">
                   <div className="flex space-x-1">
@@ -444,7 +505,11 @@ export default function TruckVerificationList() {
               <option value="scheduled">Scheduled</option>
               <option value="pending-approval">Pending Approval</option>
               <option value="verified">Verified</option>
-              <option value="inside-plant">Inside Plant</option>
+              <option value="at_parking">At Parking</option>
+              <option value="at_weighbridge">At Weighbridge</option>
+              <option value="at_loading">At Loading</option>
+              <option value="at_unloading">At Unloading</option>
+              <option value="at_dock">At Dock</option>
               <option value="rejected">Rejected</option>
               <option value="in-process">In Process</option>
             </select>
