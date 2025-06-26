@@ -33,10 +33,24 @@ export default function TruckVerificationList() {
   const [filterStatus, setFilterStatus] = useState('all');
   const [sortField, setSortField] = useState<keyof Truck>('reportingDate');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+  const [isMobileView, setIsMobileView] = useState(false);
 
   useEffect(() => {
     fetchTrucks();
+    
+    // Check if mobile view on initial load
+    checkIfMobile();
+    
+    // Add event listener for window resize
+    window.addEventListener('resize', checkIfMobile);
+    
+    // Cleanup event listener
+    return () => window.removeEventListener('resize', checkIfMobile);
   }, []);
+
+  const checkIfMobile = () => {
+    setIsMobileView(window.innerWidth < 768);
+  };
 
   const fetchTrucks = async () => {
     try {
@@ -158,6 +172,236 @@ export default function TruckVerificationList() {
     );
   }
 
+  // Mobile Card View
+  const renderMobileCards = () => {
+    return (
+      <div className="grid grid-cols-1 gap-4 p-4">
+        {filteredTrucks.map(truck => (
+          <div 
+            key={truck.id} 
+            className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 border border-gray-200 dark:border-gray-700"
+          >
+            <div className="flex justify-between items-start mb-2">
+              <h3 className="font-medium text-sm">{truck.vehicleNumber}</h3>
+              <span className={`px-2 py-0.5 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusBadgeClass(truck.status)}`}>
+                {truck.status === 'pending-approval' && truck.approvalStatus === 'approved' ? 'Exception Approval' : truck.status}
+              </span>
+            </div>
+            
+            <div className="space-y-1 text-xs text-gray-600 dark:text-gray-300">
+              <div className="flex justify-between">
+                <span>Driver:</span>
+                <span className="font-medium">{truck.driverName}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Mobile:</span>
+                <span>{truck.mobileNumber}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Transporter:</span>
+                <span>{truck.transporterName}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Date & Time:</span>
+                <span>{formatDate(truck.reportingDate)} {formatTime(truck.reportingTime)}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Gate:</span>
+                <span>{truck.gate}</span>
+              </div>
+            </div>
+            
+            <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700 flex justify-end space-x-2">
+              <button
+                onClick={() => handleViewDetails(truck)}
+                className="px-3 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md text-xs flex items-center"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                </svg>
+                Details
+              </button>
+              
+              {truck.status === 'scheduled' && (
+                <button
+                  onClick={() => handleVerifyTruck(truck)}
+                  className="px-3 py-1 bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-md text-xs flex items-center"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  Verify
+                </button>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  };
+
+  // Desktop Table View
+  const renderDesktopTable = () => {
+    return (
+      <div className="overflow-x-auto">
+        <table className="min-w-full border-collapse">
+          <thead className="bg-gray-50 dark:bg-gray-800/50">
+            <tr>
+              <th 
+                className="px-2 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700/50"
+                onClick={() => handleSort('vehicleNumber')}
+              >
+                <div className="flex items-center">
+                  <span>Vehicle Number</span>
+                  {sortField === 'vehicleNumber' && (
+                    <svg xmlns="http://www.w3.org/2000/svg" className={`ml-1 h-3 w-3 ${sortDirection === 'desc' ? 'transform rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                    </svg>
+                  )}
+                </div>
+              </th>
+              <th 
+                className="px-2 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700/50"
+                onClick={() => handleSort('driverName')}
+              >
+                <div className="flex items-center">
+                  <span>Driver Name</span>
+                  {sortField === 'driverName' && (
+                    <svg xmlns="http://www.w3.org/2000/svg" className={`ml-1 h-3 w-3 ${sortDirection === 'desc' ? 'transform rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                    </svg>
+                  )}
+                </div>
+              </th>
+              <th 
+                className="px-2 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700/50"
+              >
+                <div className="flex items-center">
+                  <span>Mobile Number</span>
+                </div>
+              </th>
+              <th 
+                className="px-2 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700/50"
+                onClick={() => handleSort('transporterName')}
+              >
+                <div className="flex items-center">
+                  <span>Transporter</span>
+                  {sortField === 'transporterName' && (
+                    <svg xmlns="http://www.w3.org/2000/svg" className={`ml-1 h-3 w-3 ${sortDirection === 'desc' ? 'transform rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                    </svg>
+                  )}
+                </div>
+              </th>
+              <th 
+                className="px-2 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700/50"
+                onClick={() => handleSort('reportingDate')}
+              >
+                <div className="flex items-center">
+                  <span>Date</span>
+                  {sortField === 'reportingDate' && (
+                    <svg xmlns="http://www.w3.org/2000/svg" className={`ml-1 h-3 w-3 ${sortDirection === 'desc' ? 'transform rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                    </svg>
+                  )}
+                </div>
+              </th>
+              <th 
+                className="px-2 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700/50"
+                onClick={() => handleSort('reportingTime')}
+              >
+                <div className="flex items-center">
+                  <span>Time</span>
+                  {sortField === 'reportingTime' && (
+                    <svg xmlns="http://www.w3.org/2000/svg" className={`ml-1 h-3 w-3 ${sortDirection === 'desc' ? 'transform rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                    </svg>
+                  )}
+                </div>
+              </th>
+              <th 
+                className="px-2 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700/50"
+                onClick={() => handleSort('gate')}
+              >
+                <div className="flex items-center">
+                  <span>Gate</span>
+                  {sortField === 'gate' && (
+                    <svg xmlns="http://www.w3.org/2000/svg" className={`ml-1 h-3 w-3 ${sortDirection === 'desc' ? 'transform rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                    </svg>
+                  )}
+                </div>
+              </th>
+              <th 
+                className="px-2 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700/50"
+                onClick={() => handleSort('status')}
+              >
+                <div className="flex items-center">
+                  <span>Status</span>
+                  {sortField === 'status' && (
+                    <svg xmlns="http://www.w3.org/2000/svg" className={`ml-1 h-3 w-3 ${sortDirection === 'desc' ? 'transform rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                    </svg>
+                  )}
+                </div>
+              </th>
+              <th className="px-2 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-300">
+                Actions
+              </th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+            {filteredTrucks.map(truck => (
+              <tr key={truck.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50">
+                <td className="px-2 py-1.5 whitespace-nowrap text-xs font-medium">{truck.vehicleNumber}</td>
+                <td className="px-2 py-1.5 whitespace-nowrap text-xs">{truck.driverName}</td>
+                <td className="px-2 py-1.5 whitespace-nowrap text-xs">{truck.mobileNumber}</td>
+                <td className="px-2 py-1.5 whitespace-nowrap text-xs">{truck.transporterName}</td>
+                <td className="px-2 py-1.5 whitespace-nowrap text-xs">{formatDate(truck.reportingDate)}</td>
+                <td className="px-2 py-1.5 whitespace-nowrap text-xs">{formatTime(truck.reportingTime)}</td>
+                <td className="px-2 py-1.5 whitespace-nowrap text-xs">{truck.gate}</td>
+                <td className="px-2 py-1.5 whitespace-nowrap text-xs">
+                  <span className={`px-2 py-0.5 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusBadgeClass(truck.status)}`}>
+                    {truck.status === 'pending-approval' && truck.approvalStatus === 'approved' ? 'Exception Approval' : truck.status}
+                  </span>
+                  {truck.status === 'pending-approval' && truck.approvalStatus === 'pending' && (
+                    <span className="ml-1 px-1 py-0.5 text-xs rounded-sm bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400">
+                      Awaiting
+                    </span>
+                  )}
+                </td>
+                <td className="px-2 py-1.5 whitespace-nowrap text-xs">
+                  <div className="flex space-x-1">
+                    <button
+                      onClick={() => handleViewDetails(truck)}
+                      className="text-gray-500 hover:text-indigo-600 focus:outline-none"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                      </svg>
+                    </button>
+                    
+                    <button
+                      onClick={() => handleVerifyTruck(truck)}
+                      className="text-gray-500 hover:text-green-600 focus:outline-none"
+                      disabled={truck.status !== 'scheduled'}
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    );
+  };
+
   return (
     <div>
       <div className="p-4 border-b dark:border-gray-700 bg-white dark:bg-gray-800">
@@ -186,7 +430,7 @@ export default function TruckVerificationList() {
             </svg>
           </div>
           
-          <div className="flex items-center">
+          <div className="flex items-center w-full md:w-auto">
             <label htmlFor="statusFilter" className="mr-2 text-sm font-medium text-gray-700 dark:text-gray-300">
               Status:
             </label>
@@ -194,7 +438,7 @@ export default function TruckVerificationList() {
               id="statusFilter"
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value)}
-              className="px-3 py-2 text-sm border border-gray-300 dark:border-gray-700 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:bg-gray-800"
+              className="px-3 py-2 text-sm border border-gray-300 dark:border-gray-700 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:bg-gray-800 flex-grow md:flex-grow-0"
             >
               <option value="all">All</option>
               <option value="scheduled">Scheduled</option>
@@ -224,161 +468,10 @@ export default function TruckVerificationList() {
           <p className="mt-2 text-gray-400">Try adjusting your search or filter criteria.</p>
         </div>
       ) : (
-        <div className="overflow-x-auto">
-          <table className="min-w-full border-collapse">
-            <thead className="bg-gray-50 dark:bg-gray-800/50">
-              <tr>
-                <th 
-                  className="px-2 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700/50"
-                  onClick={() => handleSort('vehicleNumber')}
-                >
-                  <div className="flex items-center">
-                    <span>Vehicle Number</span>
-                    {sortField === 'vehicleNumber' && (
-                      <svg xmlns="http://www.w3.org/2000/svg" className={`ml-1 h-3 w-3 ${sortDirection === 'desc' ? 'transform rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
-                      </svg>
-                    )}
-                  </div>
-                </th>
-                <th 
-                  className="px-2 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700/50"
-                  onClick={() => handleSort('driverName')}
-                >
-                  <div className="flex items-center">
-                    <span>Driver Name</span>
-                    {sortField === 'driverName' && (
-                      <svg xmlns="http://www.w3.org/2000/svg" className={`ml-1 h-3 w-3 ${sortDirection === 'desc' ? 'transform rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
-                      </svg>
-                    )}
-                  </div>
-                </th>
-                <th 
-                  className="px-2 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700/50"
-                >
-                  <div className="flex items-center">
-                    <span>Mobile Number</span>
-                  </div>
-                </th>
-                <th 
-                  className="px-2 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700/50"
-                  onClick={() => handleSort('transporterName')}
-                >
-                  <div className="flex items-center">
-                    <span>Transporter</span>
-                    {sortField === 'transporterName' && (
-                      <svg xmlns="http://www.w3.org/2000/svg" className={`ml-1 h-3 w-3 ${sortDirection === 'desc' ? 'transform rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
-                      </svg>
-                    )}
-                  </div>
-                </th>
-                <th 
-                  className="px-2 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700/50"
-                  onClick={() => handleSort('reportingDate')}
-                >
-                  <div className="flex items-center">
-                    <span>Date</span>
-                    {sortField === 'reportingDate' && (
-                      <svg xmlns="http://www.w3.org/2000/svg" className={`ml-1 h-3 w-3 ${sortDirection === 'desc' ? 'transform rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
-                      </svg>
-                    )}
-                  </div>
-                </th>
-                <th 
-                  className="px-2 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700/50"
-                  onClick={() => handleSort('reportingTime')}
-                >
-                  <div className="flex items-center">
-                    <span>Time</span>
-                    {sortField === 'reportingTime' && (
-                      <svg xmlns="http://www.w3.org/2000/svg" className={`ml-1 h-3 w-3 ${sortDirection === 'desc' ? 'transform rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
-                      </svg>
-                    )}
-                  </div>
-                </th>
-                <th 
-                  className="px-2 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700/50"
-                  onClick={() => handleSort('gate')}
-                >
-                  <div className="flex items-center">
-                    <span>Gate</span>
-                    {sortField === 'gate' && (
-                      <svg xmlns="http://www.w3.org/2000/svg" className={`ml-1 h-3 w-3 ${sortDirection === 'desc' ? 'transform rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
-                      </svg>
-                    )}
-                  </div>
-                </th>
-                <th 
-                  className="px-2 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700/50"
-                  onClick={() => handleSort('status')}
-                >
-                  <div className="flex items-center">
-                    <span>Status</span>
-                    {sortField === 'status' && (
-                      <svg xmlns="http://www.w3.org/2000/svg" className={`ml-1 h-3 w-3 ${sortDirection === 'desc' ? 'transform rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
-                      </svg>
-                    )}
-                  </div>
-                </th>
-                <th className="px-2 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-300">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-              {filteredTrucks.map(truck => (
-                <tr key={truck.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50">
-                  <td className="px-2 py-1.5 whitespace-nowrap text-xs font-medium">{truck.vehicleNumber}</td>
-                  <td className="px-2 py-1.5 whitespace-nowrap text-xs">{truck.driverName}</td>
-                  <td className="px-2 py-1.5 whitespace-nowrap text-xs">{truck.mobileNumber}</td>
-                  <td className="px-2 py-1.5 whitespace-nowrap text-xs">{truck.transporterName}</td>
-                  <td className="px-2 py-1.5 whitespace-nowrap text-xs">{formatDate(truck.reportingDate)}</td>
-                  <td className="px-2 py-1.5 whitespace-nowrap text-xs">{formatTime(truck.reportingTime)}</td>
-                  <td className="px-2 py-1.5 whitespace-nowrap text-xs">{truck.gate}</td>
-                  <td className="px-2 py-1.5 whitespace-nowrap text-xs">
-                    <span className={`px-2 py-0.5 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusBadgeClass(truck.status)}`}>
-                      {truck.status === 'pending-approval' && truck.approvalStatus === 'approved' ? 'Exception Approval' : truck.status}
-                    </span>
-                    {truck.status === 'pending-approval' && truck.approvalStatus === 'pending' && (
-                      <span className="ml-1 px-1 py-0.5 text-xs rounded-sm bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400">
-                        Awaiting
-                      </span>
-                    )}
-                  </td>
-                  <td className="px-2 py-1.5 whitespace-nowrap text-xs">
-                    <div className="flex space-x-1">
-                      <button
-                        onClick={() => handleViewDetails(truck)}
-                        className="text-gray-500 hover:text-indigo-600 focus:outline-none"
-                      >
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                        </svg>
-                      </button>
-                      
-                      <button
-                        onClick={() => handleVerifyTruck(truck)}
-                        className="text-gray-500 hover:text-green-600 focus:outline-none"
-                        disabled={truck.status !== 'scheduled'}
-                      >
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <>
+          {/* Toggle between mobile and desktop view */}
+          {isMobileView ? renderMobileCards() : renderDesktopTable()}
+        </>
       )}
 
       {/* Verification Modal */}

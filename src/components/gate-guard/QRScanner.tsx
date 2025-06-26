@@ -31,6 +31,7 @@ export default function QRScanner({ onScanComplete }: QRScannerProps) {
   const [foundTruck, setFoundTruck] = useState<Truck | null>(null);
   const [showVerificationModal, setShowVerificationModal] = useState(false);
   const [manualEntry, setManualEntry] = useState('');
+  const [activeTab, setActiveTab] = useState<'scan' | 'manual'>('scan');
   
   const scannerRef = useRef<Html5Qrcode | null>(null);
   const scannerDivId = 'qr-reader';
@@ -202,9 +203,35 @@ export default function QRScanner({ onScanComplete }: QRScannerProps) {
 
   return (
     <div>
+      {/* Mobile Tab Selector */}
+      <div className="md:hidden mb-4">
+        <div className="flex rounded-md overflow-hidden border border-gray-200 dark:border-gray-700">
+          <button
+            onClick={() => setActiveTab('scan')}
+            className={`flex-1 py-2 text-center text-sm font-medium ${
+              activeTab === 'scan' 
+                ? 'bg-indigo-600 text-white' 
+                : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300'
+            }`}
+          >
+            Scan QR
+          </button>
+          <button
+            onClick={() => setActiveTab('manual')}
+            className={`flex-1 py-2 text-center text-sm font-medium ${
+              activeTab === 'manual' 
+                ? 'bg-indigo-600 text-white' 
+                : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300'
+            }`}
+          >
+            Manual Entry
+          </button>
+        </div>
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* QR Scanner */}
-        <div>
+        <div className={activeTab === 'scan' ? 'block' : 'hidden md:block'}>
           <h2 className="text-lg font-semibold mb-3">Scan QR Code</h2>
           <div className="relative bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden" style={{ height: "280px" }}>
             <div id={scannerDivId} className="w-full h-full"></div>
@@ -252,9 +279,9 @@ export default function QRScanner({ onScanComplete }: QRScannerProps) {
         </div>
         
         {/* Manual Entry */}
-        <div>
+        <div className={activeTab === 'manual' ? 'block' : 'hidden md:block'}>
           <h2 className="text-lg font-semibold mb-3">Enter Truck ID Manually</h2>
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700 h-[280px] flex flex-col justify-center">
+          <div className="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-lg border border-gray-200 dark:border-gray-700 h-[280px] flex flex-col justify-center">
             <div className="mb-4">
               <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
                 If the QR code is damaged or not scanning properly, you can enter the truck ID manually below.
