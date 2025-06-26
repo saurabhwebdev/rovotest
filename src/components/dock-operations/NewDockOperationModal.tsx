@@ -71,8 +71,8 @@ export default function NewDockOperationModal({ isOpen, onClose }: NewDockOperat
       // Modified to fetch trucks that are ready for dock operations
       const entriesQuery = query(
         collection(db, 'weighbridgeEntries'),
-        where('status', 'in', ['WEIGHED', 'READY_FOR_DOCK']),
-        orderBy('timestamp', 'desc')
+        where('currentMilestone', 'in', ['WEIGHED', 'AT_PARKING', 'AT_DOCK']),
+        orderBy('inTime', 'desc')
       );
       
       const querySnapshot = await getDocs(entriesQuery);
