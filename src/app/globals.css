@@ -56,6 +56,18 @@
   body {
     @apply bg-background text-foreground;
   }
+  
+  /* Add smooth theme transition */
+  html {
+    transition: color 0.3s ease, background-color 0.3s ease;
+  }
+  
+  body, div, span, p, h1, h2, h3, h4, h5, h6, a, button, svg, 
+  header, footer, nav, main, aside, section, article {
+    transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 300ms;
+  }
 }
 
 /* Custom Google Translate Styles */
