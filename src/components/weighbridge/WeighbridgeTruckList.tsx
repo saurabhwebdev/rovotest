@@ -70,10 +70,28 @@ export default function WeighbridgeTruckList() {
         orderBy('inTime', 'desc')
       );
       const snapshot = await getDocs(entriesQuery);
-      const entriesData = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      } as WeighbridgeEntry));
+      console.log('Total weighbridge entries found:', snapshot.docs.length);
+      
+      const entriesData = snapshot.docs
+        .map(doc => {
+          const data = doc.data();
+          console.log('Entry data:', data);
+          return {
+            id: doc.id,
+            ...data
+          } as WeighbridgeEntry;
+        })
+        .filter(entry => {
+          const milestone = entry.currentMilestone?.toUpperCase?.() || '';
+          return milestone === 'PENDING_WEIGHING' || 
+                 milestone === 'WEIGHED' || 
+                 milestone === 'AT_PARKING' || 
+                 milestone === 'AT_DOCK';
+        });
+      
+      console.log('Filtered weighbridge entries:', entriesData.length);
+      console.log('Entry milestones:', entriesData.map(e => e.currentMilestone));
+      
       setEntries(entriesData);
       setLoading(false);
     } catch (error) {

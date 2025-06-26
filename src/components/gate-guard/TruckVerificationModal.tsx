@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { updateTruckStatus, sendTruckForApproval, updateTruckLocation } from '@/lib/firestore';
 import { useAuth } from '@/contexts/AuthContext';
-import { collection, query, onSnapshot, doc, updateDoc, addDoc } from 'firebase/firestore';
+import { collection, query, onSnapshot, doc, updateDoc, addDoc, Timestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 
 interface Truck {
@@ -241,6 +241,21 @@ export default function TruckVerificationModal({ truck, onClose, onVerificationC
         if (selectedWeighbridgeObj) {
           updateData.weighbridgeName = selectedWeighbridgeObj.name;
         }
+        
+        // Create a new weighbridge entry
+        const weighbridgeEntry = {
+          truckNumber: truck.vehicleNumber,
+          transporterName: truck.transporterName,
+          status: 'PENDING_WEIGHING',
+          inTime: Timestamp.now(),
+          currentMilestone: 'PENDING_WEIGHING',
+          truckId: truck.id,
+          createdAt: Timestamp.now(),
+          createdBy: user.uid
+        };
+        
+        const weighbridgeEntryRef = await addDoc(collection(db, 'weighbridgeEntries'), weighbridgeEntry);
+        updateData.weighbridgeEntryId = weighbridgeEntryRef.id;
       }
 
       const truckRef = doc(db, 'trucks', truck.id);
@@ -256,7 +271,8 @@ export default function TruckVerificationModal({ truck, onClose, onVerificationC
         notes: locationNotes,
         status: updateData.status,
         weighbridgeId: updateData.weighbridgeId,
-        weighbridgeName: updateData.weighbridgeName
+        weighbridgeName: updateData.weighbridgeName,
+        weighbridgeEntryId: updateData.weighbridgeEntryId
       }, user);
       
       setShowLocationModal(false);

@@ -3,9 +3,8 @@
 import { useState, useEffect } from 'react';
 import { getTrucksInsidePlant, updateTruckLocation } from '@/lib/firestore';
 import { useAuth } from '@/contexts/AuthContext';
-import { collection, query, onSnapshot, addDoc } from 'firebase/firestore';
+import { collection, query, onSnapshot, addDoc, where, getDocs, doc, updateDoc, Timestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { doc, updateDoc } from 'firebase/firestore';
 
 interface Truck {
   id: string;
@@ -188,10 +187,10 @@ export default function PlantTruckList() {
           truckNumber: selectedTruck.vehicleNumber,
           transporterName: selectedTruck.transporterName,
           status: 'PENDING_WEIGHING',
-          inTime: new Date(),
+          inTime: Timestamp.now(),
           currentMilestone: 'PENDING_WEIGHING',
           truckId: selectedTruck.id,
-          createdAt: new Date(),
+          createdAt: Timestamp.now(),
           createdBy: user.uid
         };
         
