@@ -79,21 +79,21 @@ export default function TruckDetailsView({ details }: TruckDetailsViewProps) {
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-1 overflow-hidden">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-6 p-2 sm:p-4">
         {fieldGroups.map((group, groupIndex) => (
-          <div key={groupIndex} className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4">
-            <h3 className="text-md font-semibold text-gray-800 dark:text-gray-200 mb-3 pb-2 border-b border-gray-200 dark:border-gray-700">
+          <div key={groupIndex} className="bg-gray-50 dark:bg-gray-900 rounded-lg p-3 sm:p-4">
+            <h3 className="text-sm sm:text-md font-semibold text-gray-800 dark:text-gray-200 mb-2 sm:mb-3 pb-1 sm:pb-2 border-b border-gray-200 dark:border-gray-700">
               {group.title}
             </h3>
-            <dl className="grid grid-cols-1 gap-2">
+            <dl className="grid grid-cols-1 gap-1 sm:gap-2">
               {group.fields.map((field, fieldIndex) => {
                 const value = scheduledData[field.key];
                 return value ? (
-                  <div key={fieldIndex} className="flex justify-between items-start py-1">
-                    <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                  <div key={fieldIndex} className="flex flex-col sm:flex-row sm:justify-between sm:items-start py-1">
+                    <dt className="text-xs sm:text-sm font-medium text-gray-500 dark:text-gray-400">
                       {field.label}:
                     </dt>
-                    <dd className={`text-sm ml-2 text-right ${getStatusStyles(value)}`}>
+                    <dd className={`text-xs sm:text-sm sm:ml-2 sm:text-right ${getStatusStyles(value)}`}>
                       {value}
                     </dd>
                   </div>
@@ -108,19 +108,19 @@ export default function TruckDetailsView({ details }: TruckDetailsViewProps) {
       {Object.keys(scheduledData).some(key => 
         !fieldGroups.flatMap(g => g.fields.map(f => f.key)).includes(key)
       ) && (
-        <div className="mt-4 px-4 pb-4">
-          <h3 className="text-md font-semibold text-gray-800 dark:text-gray-200 mb-2">
+        <div className="mt-3 sm:mt-4 px-3 sm:px-4 pb-3 sm:pb-4">
+          <h3 className="text-sm sm:text-md font-semibold text-gray-800 dark:text-gray-200 mb-2">
             Additional Information
           </h3>
-          <dl className="grid grid-cols-1 md:grid-cols-2 gap-2">
+          <dl className="grid grid-cols-1 md:grid-cols-2 gap-1 sm:gap-2">
             {Object.entries(scheduledData)
               .filter(([key]) => !fieldGroups.flatMap(g => g.fields.map(f => f.key)).includes(key))
               .map(([key, value]) => (
-                <div key={key} className="flex justify-between items-start py-1">
-                  <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                <div key={key} className="flex flex-col sm:flex-row sm:justify-between sm:items-start py-1">
+                  <dt className="text-xs sm:text-sm font-medium text-gray-500 dark:text-gray-400">
                     {key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}:
                   </dt>
-                  <dd className="text-sm ml-2 text-right text-gray-900 dark:text-gray-300">
+                  <dd className="text-xs sm:text-sm sm:ml-2 sm:text-right text-gray-900 dark:text-gray-300">
                     {String(value)}
                   </dd>
                 </div>

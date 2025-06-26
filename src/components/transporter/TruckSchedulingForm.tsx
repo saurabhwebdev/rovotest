@@ -315,14 +315,14 @@ export default function TruckSchedulingForm({ onSuccess }: TruckSchedulingFormPr
   return (
     <div className="space-y-6">
       {success && (
-        <div className="mb-6 p-6 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
-          <h3 className="text-xl font-bold text-green-800 dark:text-green-400 mb-2">{isEditing ? 'Truck Updated Successfully' : 'Truck Scheduled Successfully'}</h3>
-          <p className="text-green-700 dark:text-green-500 mb-6">{isEditing ? 'Your truck details have been updated. Below is your QR code for easy check-in.' : 'Your truck has been scheduled. Below is your QR code for easy check-in.'}</p>
+        <div className="mb-6 p-4 sm:p-6 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+          <h3 className="text-lg sm:text-xl font-bold text-green-800 dark:text-green-400 mb-2">{isEditing ? 'Truck Updated Successfully' : 'Truck Scheduled Successfully'}</h3>
+          <p className="text-green-700 dark:text-green-500 mb-4 sm:mb-6">{isEditing ? 'Your truck details have been updated. Below is your QR code for easy check-in.' : 'Your truck has been scheduled. Below is your QR code for easy check-in.'}</p>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="bg-white dark:bg-gray-800 p-4 rounded-lg">
-              <h4 className="text-lg font-medium mb-4">Truck Details</h4>
-              <div className="space-y-2">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+            <div className="bg-white dark:bg-gray-800 p-3 sm:p-4 rounded-lg">
+              <h4 className="text-base sm:text-lg font-medium mb-3 sm:mb-4">Truck Details</h4>
+              <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span className="font-medium">Vehicle Number:</span>
                   <span>{formData.vehicleNumber}</span>
@@ -357,8 +357,8 @@ export default function TruckSchedulingForm({ onSuccess }: TruckSchedulingFormPr
             </div>
             
             <div className="flex flex-col items-center justify-center p-4 bg-white dark:bg-gray-900 rounded-lg">
-              <QRCodeSVG value={qrCodeData} size={200} className="success-qr-code" />
-              <p className="mt-4 text-sm text-gray-500 dark:text-gray-400 text-center">
+              <QRCodeSVG value={qrCodeData} size={180} className="success-qr-code" />
+              <p className="mt-3 text-sm text-gray-500 dark:text-gray-400 text-center">
                 Scan this QR code at the gate for quick check-in
               </p>
               <button 
@@ -397,9 +397,9 @@ export default function TruckSchedulingForm({ onSuccess }: TruckSchedulingFormPr
                     img.src = url;
                   }
                 }}
-                className="mt-4 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md flex items-center"
+                className="mt-3 px-3 py-1.5 sm:px-4 sm:py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md flex items-center text-sm"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                 </svg>
                 Download QR Code
@@ -407,10 +407,10 @@ export default function TruckSchedulingForm({ onSuccess }: TruckSchedulingFormPr
             </div>
           </div>
           
-          <div className="mt-6 flex justify-center">
+          <div className="mt-4 sm:mt-6 flex justify-center">
             <button
               onClick={() => setSuccess(false)}
-              className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md"
+              className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md text-sm sm:text-base"
             >
               Schedule Another Truck
             </button>
@@ -419,18 +419,18 @@ export default function TruckSchedulingForm({ onSuccess }: TruckSchedulingFormPr
       )}
 
       {error && (
-        <div className="p-4 bg-red-50 border border-red-200 rounded-lg mb-6">
-          <p className="text-red-700">{error}</p>
+        <div className="p-3 sm:p-4 bg-red-50 border border-red-200 rounded-lg mb-4 sm:mb-6">
+          <p className="text-red-700 text-sm">{error}</p>
         </div>
       )}
 
       {!success && (
         <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Basic Information */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold dark:text-white">Basic Information</h3>
-              
+          {/* Basic Information Section */}
+          <div className="space-y-4">
+            <h3 className="text-base sm:text-lg font-semibold dark:text-white">Basic Information</h3>
+            
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Transporter Name*
@@ -442,7 +442,7 @@ export default function TruckSchedulingForm({ onSuccess }: TruckSchedulingFormPr
                   required
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md 
                            shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 
-                           dark:bg-gray-700 dark:text-white"
+                           dark:bg-gray-700 dark:text-white text-sm"
                 >
                   <option value="">Select Transporter</option>
                   {transporters.map(transporter => (
@@ -464,7 +464,7 @@ export default function TruckSchedulingForm({ onSuccess }: TruckSchedulingFormPr
                   required
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md 
                            shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 
-                           dark:bg-gray-700 dark:text-white"
+                           dark:bg-gray-700 dark:text-white text-sm"
                 >
                   <option value="">Select Depot</option>
                   {depots.map(depot => (
@@ -486,7 +486,7 @@ export default function TruckSchedulingForm({ onSuccess }: TruckSchedulingFormPr
                   required
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md 
                            shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 
-                           dark:bg-gray-700 dark:text-white"
+                           dark:bg-gray-700 dark:text-white text-sm"
                 >
                   <option value="">Select Supplier</option>
                   {suppliers.map(supplier => (
@@ -508,7 +508,7 @@ export default function TruckSchedulingForm({ onSuccess }: TruckSchedulingFormPr
                   required
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md 
                            shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 
-                           dark:bg-gray-700 dark:text-white"
+                           dark:bg-gray-700 dark:text-white text-sm"
                 >
                   <option value="">Select Gate</option>
                   {gates.map(gate => (
@@ -518,8 +518,14 @@ export default function TruckSchedulingForm({ onSuccess }: TruckSchedulingFormPr
                   ))}
                 </select>
               </div>
-
-              {/* Driver Information */}
+            </div>
+          </div>
+          
+          {/* Driver Information Section */}
+          <div className="space-y-4">
+            <h3 className="text-base sm:text-lg font-semibold dark:text-white">Driver Information</h3>
+            
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label htmlFor="driverName" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                   Driver Name*
@@ -531,7 +537,7 @@ export default function TruckSchedulingForm({ onSuccess }: TruckSchedulingFormPr
                   value={formData.driverName}
                   onChange={handleChange}
                   required
-                  className="mt-1"
+                  className="mt-1 text-sm"
                 />
               </div>
               
@@ -546,7 +552,7 @@ export default function TruckSchedulingForm({ onSuccess }: TruckSchedulingFormPr
                   value={formData.mobileNumber}
                   onChange={handleChange}
                   required
-                  className="mt-1"
+                  className="mt-1 text-sm"
                 />
               </div>
               
@@ -561,7 +567,7 @@ export default function TruckSchedulingForm({ onSuccess }: TruckSchedulingFormPr
                   value={formData.licenseNumber}
                   onChange={handleChange}
                   required
-                  className="mt-1"
+                  className="mt-1 text-sm"
                 />
               </div>
               
@@ -576,15 +582,17 @@ export default function TruckSchedulingForm({ onSuccess }: TruckSchedulingFormPr
                   value={formData.dlValidityDate}
                   onChange={handleChange}
                   required
-                  className="mt-1"
+                  className="mt-1 text-sm"
                 />
               </div>
             </div>
+          </div>
+          
+          {/* Vehicle Information Section */}
+          <div className="space-y-4">
+            <h3 className="text-base sm:text-lg font-semibold dark:text-white">Vehicle Information</h3>
             
-            {/* Vehicle Information */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-medium border-b pb-2">Vehicle Information</h3>
-              
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label htmlFor="vehicleNumber" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                   Vehicle Number*
@@ -596,7 +604,7 @@ export default function TruckSchedulingForm({ onSuccess }: TruckSchedulingFormPr
                   value={formData.vehicleNumber}
                   onChange={handleChange}
                   required
-                  className="mt-1"
+                  className="mt-1 text-sm"
                 />
               </div>
               
@@ -611,7 +619,7 @@ export default function TruckSchedulingForm({ onSuccess }: TruckSchedulingFormPr
                   value={formData.rcNumber}
                   onChange={handleChange}
                   required
-                  className="mt-1"
+                  className="mt-1 text-sm"
                 />
               </div>
               
@@ -626,7 +634,7 @@ export default function TruckSchedulingForm({ onSuccess }: TruckSchedulingFormPr
                   value={formData.rcValidityDate}
                   onChange={handleChange}
                   required
-                  className="mt-1"
+                  className="mt-1 text-sm"
                 />
               </div>
               
@@ -641,7 +649,7 @@ export default function TruckSchedulingForm({ onSuccess }: TruckSchedulingFormPr
                   value={formData.rtoPassingCapacity}
                   onChange={handleChange}
                   required
-                  className="mt-1"
+                  className="mt-1 text-sm"
                 />
               </div>
               
@@ -656,17 +664,17 @@ export default function TruckSchedulingForm({ onSuccess }: TruckSchedulingFormPr
                   value={formData.loadingCapacity}
                   onChange={handleChange}
                   required
-                  className="mt-1"
+                  className="mt-1 text-sm"
                 />
               </div>
             </div>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Compliance Information */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-medium border-b pb-2">Compliance Information</h3>
-              
+          {/* Compliance Information Section */}
+          <div className="space-y-4">
+            <h3 className="text-base sm:text-lg font-semibold dark:text-white">Compliance Information</h3>
+            
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label htmlFor="insuranceNumber" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                   Insurance Number*
@@ -678,7 +686,7 @@ export default function TruckSchedulingForm({ onSuccess }: TruckSchedulingFormPr
                   value={formData.insuranceNumber}
                   onChange={handleChange}
                   required
-                  className="mt-1"
+                  className="mt-1 text-sm"
                 />
               </div>
               
@@ -693,7 +701,7 @@ export default function TruckSchedulingForm({ onSuccess }: TruckSchedulingFormPr
                   value={formData.insuranceValidityDate}
                   onChange={handleChange}
                   required
-                  className="mt-1"
+                  className="mt-1 text-sm"
                 />
               </div>
               
@@ -708,7 +716,7 @@ export default function TruckSchedulingForm({ onSuccess }: TruckSchedulingFormPr
                   value={formData.pollutionNumber}
                   onChange={handleChange}
                   required
-                  className="mt-1"
+                  className="mt-1 text-sm"
                 />
               </div>
               
@@ -723,15 +731,17 @@ export default function TruckSchedulingForm({ onSuccess }: TruckSchedulingFormPr
                   value={formData.pollutionValidityDate}
                   onChange={handleChange}
                   required
-                  className="mt-1"
+                  className="mt-1 text-sm"
                 />
               </div>
             </div>
+          </div>
+          
+          {/* Scheduling Information Section */}
+          <div className="space-y-4">
+            <h3 className="text-base sm:text-lg font-semibold dark:text-white">Scheduling Information</h3>
             
-            {/* Scheduling Information */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-medium border-b pb-2">Scheduling Information</h3>
-              
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label htmlFor="lrNumber" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                   LR Number*
@@ -743,11 +753,11 @@ export default function TruckSchedulingForm({ onSuccess }: TruckSchedulingFormPr
                   value={formData.lrNumber}
                   onChange={handleChange}
                   required
-                  className="mt-1"
+                  className="mt-1 text-sm"
                 />
               </div>
               
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-2 sm:gap-4">
                 <div>
                   <label htmlFor="reportingDate" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                     Reporting Date*
@@ -759,7 +769,7 @@ export default function TruckSchedulingForm({ onSuccess }: TruckSchedulingFormPr
                     value={formData.reportingDate}
                     onChange={handleChange}
                     required
-                    className="mt-1"
+                    className="mt-1 text-sm"
                   />
                 </div>
                 
@@ -774,20 +784,20 @@ export default function TruckSchedulingForm({ onSuccess }: TruckSchedulingFormPr
                     value={formData.reportingTime}
                     onChange={handleChange}
                     required
-                    className="mt-1"
+                    className="mt-1 text-sm"
                   />
                 </div>
               </div>
             </div>
           </div>
           
-          <div className="flex justify-end space-x-4">
+          <div className="flex flex-col sm:flex-row sm:justify-end space-y-3 sm:space-y-0 sm:space-x-4 mt-6">
             <button
               type="button"
               onClick={handleClearAll}
-              className="inline-flex items-center justify-center py-2 px-6 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-200"
+              className="inline-flex items-center justify-center py-2 px-4 sm:px-6 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-200 w-full sm:w-auto"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
               </svg>
               Clear All
@@ -795,7 +805,7 @@ export default function TruckSchedulingForm({ onSuccess }: TruckSchedulingFormPr
             <button
               type="submit"
               disabled={loading}
-              className="inline-flex items-center justify-center py-2 px-6 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 transition-all duration-200"
+              className="inline-flex items-center justify-center py-2 px-4 sm:px-6 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 transition-all duration-200 w-full sm:w-auto"
             >
               {loading ? (
                 <>
@@ -807,7 +817,7 @@ export default function TruckSchedulingForm({ onSuccess }: TruckSchedulingFormPr
                 </>
               ) : (
                 <>
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                   </svg>
                   {isEditing ? 'Update Truck' : 'Schedule Truck'}
