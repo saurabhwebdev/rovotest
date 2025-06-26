@@ -4,6 +4,14 @@ import { useState, useEffect } from 'react';
 import { db } from '@/lib/firebase';
 import { collection, query, orderBy, getDocs, where, Timestamp, updateDoc, doc, getDoc } from 'firebase/firestore';
 import { CheckCircle2 } from 'lucide-react';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 
 interface DockOperation {
   id: string;
@@ -21,6 +29,8 @@ export default function DockOperationsList() {
   const [operations, setOperations] = useState<DockOperation[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentTime, setCurrentTime] = useState<Date>(new Date());
+  const [selectedOperation, setSelectedOperation] = useState<DockOperation | null>(null);
+  const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
 
   useEffect(() => {
     fetchDockOperations();
@@ -52,6 +62,16 @@ export default function DockOperationsList() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const openConfirmDialog = (operation: DockOperation) => {
+    setSelectedOperation(operation);
+    setIsConfirmDialogOpen(true);
+  };
+
+  const closeConfirmDialog = () => {
+    setSelectedOperation(null);
+    setIsConfirmDialogOpen(false);
   };
 
   async function handleComplete(operation: DockOperation) {
@@ -91,7 +111,8 @@ export default function DockOperationsList() {
         }
       }
 
-      // 5. Refresh the list
+      // 5. Close dialog and refresh the list
+      closeConfirmDialog();
       fetchDockOperations();
     } catch (error) {
       console.error('Error completing dock operation:', error);
@@ -103,70 +124,97 @@ export default function DockOperationsList() {
   }
 
   return (
-    <div className="overflow-x-auto">
-      <table className="min-w-full bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-        <thead className="bg-gray-50 dark:bg-gray-700">
-          <tr>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-              Truck Number
-            </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-              Dock
-            </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-              Operation
-            </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-              Start Time
-            </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-              Duration
-            </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-              Status
-            </th>
-            <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-              Actions
-            </th>
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-          {operations.map((operation) => (
-            <tr key={operation.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
-              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
-                {operation.truckNumber}
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
-                {operation.dockName}
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
-                {operation.operationType}
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
-                {operation.startTime.toDate().toLocaleString()}
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
-                {getDuration(operation.startTime.toDate(), currentTime)}
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap">
-                <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100">
-                  In Progress
-                </span>
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                <button
-                  onClick={() => handleComplete(operation)}
-                  className="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300"
-                  title="Complete Operation"
-                >
-                  <CheckCircle2 className="h-5 w-5" />
-                </button>
-              </td>
+    <>
+      <div className="overflow-x-auto">
+        <table className="min-w-full bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+          <thead className="bg-gray-50 dark:bg-gray-700">
+            <tr>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                Truck Number
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                Dock
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                Operation
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                Start Time
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                Duration
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                Status
+              </th>
+              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                Actions
+              </th>
             </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+          </thead>
+          <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+            {operations.map((operation) => (
+              <tr key={operation.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
+                  {operation.truckNumber}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
+                  {operation.dockName}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
+                  {operation.operationType}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
+                  {operation.startTime.toDate().toLocaleString()}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
+                  {getDuration(operation.startTime.toDate(), currentTime)}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100">
+                    In Progress
+                  </span>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                  <button
+                    onClick={() => openConfirmDialog(operation)}
+                    className="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300"
+                    title="Complete Operation"
+                  >
+                    <CheckCircle2 className="h-5 w-5" />
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <Dialog open={isConfirmDialogOpen} onOpenChange={setIsConfirmDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Complete Dock Operation</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to complete the {selectedOperation?.operationType.toLowerCase()} operation for truck {selectedOperation?.truckNumber} at dock {selectedOperation?.dockName}?
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex justify-end space-x-2">
+            <button
+              onClick={closeConfirmDialog}
+              className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600 rounded-md"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={() => selectedOperation && handleComplete(selectedOperation)}
+              className="px-4 py-2 text-sm font-medium text-white bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600 rounded-md"
+            >
+              Complete
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
 
