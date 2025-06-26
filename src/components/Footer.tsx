@@ -9,13 +9,13 @@ export default function Footer() {
             © {new Date().getFullYear()} LPMS. All rights reserved.
           </p>
           <div className="flex space-x-6">
-            <Link href="#" className="text-sm text-gray-500 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400">
+            <Link href="/privacy" className="text-sm text-gray-500 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400">
               Privacy
             </Link>
-            <Link href="#" className="text-sm text-gray-500 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400">
+            <Link href="/terms" className="text-sm text-gray-500 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400">
               Terms
             </Link>
-            <Link href="#" className="text-sm text-gray-500 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400">
+            <Link href="/contact" className="text-sm text-gray-500 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400">
               Contact
             </Link>
           </div>
