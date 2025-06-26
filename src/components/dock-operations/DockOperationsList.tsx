@@ -19,9 +19,18 @@ interface DockOperation {
 export default function DockOperationsList() {
   const [operations, setOperations] = useState<DockOperation[]>([]);
   const [loading, setLoading] = useState(true);
+  const [currentTime, setCurrentTime] = useState<Date>(new Date());
 
   useEffect(() => {
     fetchDockOperations();
+
+    // Set up interval to update the current time every second
+    const intervalId = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000); // Update every second
+
+    // Clean up the interval on component unmount
+    return () => clearInterval(intervalId);
   }, []);
 
   const fetchDockOperations = async () => {
@@ -136,7 +145,7 @@ export default function DockOperationsList() {
                 {operation.startTime.toDate().toLocaleString()}
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
-                {getDuration(operation.startTime.toDate())}
+                {getDuration(operation.startTime.toDate(), currentTime)}
               </td>
               <td className="px-6 py-4 whitespace-nowrap">
                 <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100">
@@ -159,10 +168,10 @@ export default function DockOperationsList() {
   );
 }
 
-function getDuration(startTime: Date): string {
-  const now = new Date();
-  const diff = now.getTime() - startTime.getTime();
+function getDuration(startTime: Date, currentTime: Date): string {
+  const diff = currentTime.getTime() - startTime.getTime();
   const hours = Math.floor(diff / (1000 * 60 * 60));
   const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-  return `${hours}h ${minutes}m`;
+  const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+  return `${hours}h ${minutes}m ${seconds}s`;
 } 
