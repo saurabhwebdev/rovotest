@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, ReactNode } from 'react';
 import Link from 'next/link';
 import ThemeToggle from './ThemeToggle';
 import { useAuth } from '@/contexts/AuthContext';
@@ -17,6 +17,70 @@ export default function Navbar() {
   const [isAuditOpen, setIsAuditOpen] = useState(false);
   const [isRegisterOpen, setIsRegisterOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isCompactMode, setIsCompactMode] = useState(true);
+
+  // Load display mode preference from localStorage on component mount
+  useEffect(() => {
+    const savedMode = localStorage.getItem('navDisplayMode');
+    if (savedMode !== null) {
+      setIsCompactMode(savedMode === 'compact');
+    }
+  }, []);
+
+  // Icon mapping for menu items
+  const menuIcons: Record<string, ReactNode> = {
+    'dashboard': (
+      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+      </svg>
+    ),
+    'transporter': (
+      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+      </svg>
+    ),
+    'gate-guard': (
+      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+      </svg>
+    ),
+    'weighbridge': (
+      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3" />
+      </svg>
+    ),
+    'dock-operations': (
+      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+      </svg>
+    ),
+    'led-screen': (
+      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+      </svg>
+    ),
+    'register': (
+      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+      </svg>
+    ),
+    'admin': (
+      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+      </svg>
+    ),
+    'admin-shift-handover': (
+      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+      </svg>
+    ),
+    'audit': (
+      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+      </svg>
+    )
+  };
 
   // Define all available pages with their IDs and paths
   const mainPages = [
@@ -164,6 +228,13 @@ export default function Navbar() {
     showRegisterDropdown
   });
 
+  // Toggle between compact (icon) and verbose (text) modes
+  const toggleDisplayMode = () => {
+    const newMode = !isCompactMode;
+    setIsCompactMode(newMode);
+    localStorage.setItem('navDisplayMode', newMode ? 'compact' : 'verbose');
+  };
+
   return (
     <header className="sticky top-0 z-50 w-full border-b border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900 shadow-sm">
       <div className="container mx-auto px-4">
@@ -217,13 +288,20 @@ export default function Navbar() {
                   <Link 
                     key={page.id}
                     href={page.path} 
-                    className={`px-3 py-2 rounded-md text-sm font-medium ${
+                    className={`px-3 py-2 rounded-md text-sm font-medium ${isCompactMode ? 'tooltip-wrapper' : ''} ${
                       isActive(page.path) 
                         ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-200' 
                         : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800'
                     }`}
                   >
-                    {page.name}
+                    {isCompactMode ? (
+                      <>
+                        {menuIcons[page.id]}
+                        <span className="tooltip">{page.name}</span>
+                      </>
+                    ) : (
+                      <>{page.name}</>
+                    )}
                   </Link>
                 ))}
 
@@ -231,13 +309,20 @@ export default function Navbar() {
                 {hasPermission('admin-shift-handover') && (
                   <Link 
                     href="/admin/shift-handover" 
-                    className={`px-3 py-2 rounded-md text-sm font-medium ${
+                    className={`px-3 py-2 rounded-md text-sm font-medium ${isCompactMode ? 'tooltip-wrapper' : ''} ${
                       isActive('/admin/shift-handover') 
                         ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-200' 
                         : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800'
                     }`}
                   >
-                    Shift Handover
+                    {isCompactMode ? (
+                      <>
+                        {menuIcons['admin-shift-handover']}
+                        <span className="tooltip">Shift Handover</span>
+                      </>
+                    ) : (
+                      <>Shift Handover</>
+                    )}
                   </Link>
                 )}
 
@@ -247,13 +332,20 @@ export default function Navbar() {
                     <button
                       onClick={() => setIsRegisterOpen(!isRegisterOpen)}
                       onBlur={() => setTimeout(() => setIsRegisterOpen(false), 200)}
-                      className={`px-3 py-2 rounded-md text-sm font-medium flex items-center ${
+                      className={`px-3 py-2 rounded-md text-sm font-medium flex items-center ${isCompactMode ? 'tooltip-wrapper' : ''} ${
                         isActive('/register') || pathname?.startsWith('/register/')
                           ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-200' 
                           : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800'
                       }`}
                     >
-                      Registers
+                      {isCompactMode ? (
+                        <>
+                          {menuIcons['register']}
+                          <span className="tooltip">Registers</span>
+                        </>
+                      ) : (
+                        <>Registers</>
+                      )}
                       <svg
                         className={`ml-1 w-4 h-4 transition-transform ${isRegisterOpen ? 'rotate-180' : ''}`}
                         fill="none"
@@ -295,13 +387,20 @@ export default function Navbar() {
                     <button
                       onClick={() => setIsAdminOpen(!isAdminOpen)}
                       onBlur={() => setTimeout(() => setIsAdminOpen(false), 200)}
-                      className={`px-3 py-2 rounded-md text-sm font-medium flex items-center ${
+                      className={`px-3 py-2 rounded-md text-sm font-medium flex items-center ${isCompactMode ? 'tooltip-wrapper' : ''} ${
                         isActive('/admin') 
                           ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-200' 
                           : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800'
                       }`}
                     >
-                      Admin
+                      {isCompactMode ? (
+                        <>
+                          {menuIcons['admin']}
+                          <span className="tooltip">Admin</span>
+                        </>
+                      ) : (
+                        <>Admin</>
+                      )}
                       <svg
                         className={`ml-1 w-4 h-4 transition-transform ${isAdminOpen ? 'rotate-180' : ''}`}
                         fill="none"
@@ -344,7 +443,7 @@ export default function Navbar() {
                               >
                                 Audit
                                 <svg
-                                  className={`w-4 h-4 transition-transform ${isAuditOpen ? 'rotate-90' : ''}`}
+                                  className={`ml-1 w-4 h-4 transition-transform ${isAuditOpen ? 'rotate-90' : ''}`}
                                   fill="none"
                                   stroke="currentColor"
                                   viewBox="0 0 24 24"
@@ -390,18 +489,60 @@ export default function Navbar() {
             {user ? (
               <button
                 onClick={handleLogout}
-                className="px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
+                className={`px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 ${isCompactMode ? 'tooltip-wrapper' : ''}`}
               >
-                Logout
+                {isCompactMode ? (
+                  <>
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+                    </svg>
+                    <span className="tooltip">Logout</span>
+                  </>
+                ) : (
+                  <>Logout</>
+                )}
               </button>
             ) : (
               <Link
                 href="/auth/signin"
-                className="px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
+                className={`px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 ${isCompactMode ? 'tooltip-wrapper' : ''}`}
               >
-                Login
+                {isCompactMode ? (
+                  <>
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+                    </svg>
+                    <span className="tooltip">Login</span>
+                  </>
+                ) : (
+                  <>Login</>
+                )}
               </Link>
             )}
+            
+            {/* Display mode toggle */}
+            <button
+              onClick={toggleDisplayMode}
+              className="p-2 rounded-md text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 tooltip-wrapper"
+              aria-label="Toggle display mode"
+            >
+              {isCompactMode ? (
+                <>
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h6m4 0h6m-10 4h4" />
+                  </svg>
+                  <span className="tooltip">Switch to Text Mode</span>
+                </>
+              ) : (
+                <>
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16m-7 6h7" />
+                  </svg>
+                  <span className="tooltip">Switch to Icon Mode</span>
+                </>
+              )}
+            </button>
+            
             <ThemeToggle />
           </div>
         </div>
@@ -418,12 +559,13 @@ export default function Navbar() {
                   <Link
                     key={page.id}
                     href={page.path}
-                    className={`block px-3 py-2 rounded-md text-base font-medium ${
+                    className={`block px-3 py-2 rounded-md text-base font-medium flex items-center ${
                       isActive(page.path)
                         ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-200'
                         : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800'
                     }`}
                   >
+                    <span className="mr-2">{menuIcons[page.id]}</span>
                     {page.name}
                   </Link>
                 ))}
@@ -443,12 +585,13 @@ export default function Navbar() {
                   <Link
                     key={page.id}
                     href={page.path}
-                    className={`block px-3 py-2 rounded-md text-base font-medium ${
+                    className={`block px-3 py-2 rounded-md text-base font-medium flex items-center ${
                       isActive(page.path)
                         ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-200'
                         : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800'
                     }`}
                   >
+                    <span className="mr-2">{menuIcons['register']}</span>
                     {page.name}
                   </Link>
                 ))}
@@ -468,12 +611,13 @@ export default function Navbar() {
                   <Link
                     key={page.id}
                     href={page.path}
-                    className={`block px-3 py-2 rounded-md text-base font-medium ${
+                    className={`block px-3 py-2 rounded-md text-base font-medium flex items-center ${
                       isActive(page.path)
                         ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-200'
                         : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800'
                     }`}
                   >
+                    <span className="mr-2">{menuIcons['admin']}</span>
                     {page.name}
                   </Link>
                 ))}
@@ -493,12 +637,13 @@ export default function Navbar() {
                   <Link
                     key={page.id}
                     href={page.path}
-                    className={`block px-3 py-2 rounded-md text-base font-medium ${
+                    className={`block px-3 py-2 rounded-md text-base font-medium flex items-center ${
                       isActive(page.path)
                         ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-200'
                         : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800'
                     }`}
                   >
+                    <span className="mr-2">{menuIcons['audit']}</span>
                     {page.name}
                   </Link>
                 ))}
