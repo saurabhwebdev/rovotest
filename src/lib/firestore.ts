@@ -371,7 +371,8 @@ export async function getTrucksForGateGuard() {
       'at_unloading',
       'at_dock',
       'rejected',
-      'in-process'
+      'in-process',
+      'exit_ready'
     ])
   );
 

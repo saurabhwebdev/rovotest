@@ -39,6 +39,7 @@ interface Truck {
   insuranceValidityDate?: string;
   pollutionValidityDate?: string;
   destination?: string;
+  sealNumber?: string;
 }
 
 export default function TruckVerificationList() {
@@ -54,6 +55,8 @@ export default function TruckVerificationList() {
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const [isMobileView, setIsMobileView] = useState(false);
   const [showExitConfirmModal, setShowExitConfirmModal] = useState(false);
+  const [sealNumber, setSealNumber] = useState('');
+  const [sealNumberError, setSealNumberError] = useState('');
   const { user } = useAuth();
 
   useEffect(() => {
@@ -231,6 +234,12 @@ export default function TruckVerificationList() {
   });
 
   const handleProcessExit = async (truck: Truck) => {
+    // Validate seal number
+    if (!sealNumber.trim()) {
+      setSealNumberError('Seal number is required');
+      return;
+    }
+    
     try {
       // Update truck status to exited
       const truckRef = doc(db, 'trucks', truck.id);
@@ -238,7 +247,8 @@ export default function TruckVerificationList() {
         status: 'exited',
         exitTime: Timestamp.now(),
         exitProcessedBy: user?.uid || 'unknown',
-        currentLocation: 'Outside Plant'
+        currentLocation: 'Outside Plant',
+        sealNumber: sealNumber.trim()
       });
 
       // Create audit entry
@@ -252,13 +262,16 @@ export default function TruckVerificationList() {
         performedByName: user?.displayName || 'Unknown User',
         details: {
           exitTime: new Date(),
-          previousStatus: truck.status
+          previousStatus: truck.status,
+          sealNumber: sealNumber.trim()
         }
       });
 
       // Close modal and refresh the list
       setShowExitConfirmModal(false);
       setSelectedTruck(null);
+      setSealNumber('');
+      setSealNumberError('');
       fetchTrucks();
     } catch (error) {
       console.error('Error processing truck exit:', error);
@@ -267,11 +280,15 @@ export default function TruckVerificationList() {
 
   const openExitConfirmModal = (truck: Truck) => {
     setSelectedTruck(truck);
+    setSealNumber('');
+    setSealNumberError('');
     setShowExitConfirmModal(true);
   };
 
   const closeExitConfirmModal = () => {
     setSelectedTruck(null);
+    setSealNumber('');
+    setSealNumberError('');
     setShowExitConfirmModal(false);
   };
 
@@ -599,10 +616,31 @@ export default function TruckVerificationList() {
               <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
                 Confirm Truck Exit
               </h3>
-              <p className="text-gray-600 dark:text-gray-400 mb-6">
+              <p className="text-gray-600 dark:text-gray-400 mb-4">
                 Are you sure you want to process the exit for truck <span className="font-semibold">{selectedTruck.vehicleNumber}</span>?
                 This will mark the truck as exited from the plant.
               </p>
+              
+              <div className="mb-4">
+                <label htmlFor="sealNumber" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Enter Seal Number<span className="text-red-500">*</span>
+                </label>
+                <Input
+                  id="sealNumber"
+                  type="text"
+                  value={sealNumber}
+                  onChange={(e) => {
+                    setSealNumber(e.target.value);
+                    setSealNumberError('');
+                  }}
+                  className={`w-full ${sealNumberError ? 'border-red-500' : ''}`}
+                  placeholder="Enter the seal number"
+                />
+                {sealNumberError && (
+                  <p className="mt-1 text-sm text-red-600 dark:text-red-400">{sealNumberError}</p>
+                )}
+              </div>
+              
               <div className="flex justify-end space-x-3">
                 <button
                   onClick={closeExitConfirmModal}

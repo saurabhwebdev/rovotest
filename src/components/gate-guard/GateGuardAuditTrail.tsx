@@ -22,6 +22,9 @@ interface AuditEntry {
     approvalReason?: string;
     weighbridgeId?: string;
     weighbridgeName?: string;
+    sealNumber?: string;
+    exitTime?: Date;
+    previousStatus?: string;
   };
 }
 
@@ -97,6 +100,7 @@ export default function GateGuardAuditTrail({ showFullHistoryByDefault = false }
       'Weighbridge': entry.details.weighbridgeName || '',
       'Failed Checks': entry.details.failedChecks ? entry.details.failedChecks.join(', ') : '',
       'Approval Reason': entry.details.approvalReason || '',
+      'Seal Number': entry.details.sealNumber || '',
       'Performed By': entry.performedByName || 'Unknown User'
     }));
     
@@ -192,6 +196,7 @@ export default function GateGuardAuditTrail({ showFullHistoryByDefault = false }
                     </div>
                   )}
                   {entry.details.approvalReason && <div>Reason: {entry.details.approvalReason}</div>}
+                  {entry.details.sealNumber && <div>Seal Number: {entry.details.sealNumber}</div>}
                 </td>
                 <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
                   {entry.performedByName || 'Unknown User'}

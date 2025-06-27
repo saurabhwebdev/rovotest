@@ -26,6 +26,7 @@ interface TruckDetailsModalProps {
     previousLocation?: string;
     previousLocationUpdatedAt?: string;
     destination?: string;
+    sealNumber?: string;
   };
   onClose: () => void;
 }
@@ -482,6 +483,29 @@ export default function TruckDetailsModal({ truck, onClose }: TruckDetailsModalP
                     <p className="text-sm text-gray-800 dark:text-gray-300">
                       {truck.approvalNotes}
                     </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Add seal number section if it exists */}
+            {truck.sealNumber && (
+              <div className="col-span-1 md:col-span-2">
+                <h3 className="text-base sm:text-lg font-semibold mb-2 dark:text-white flex items-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-indigo-600 dark:text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                  </svg>
+                  Seal Information
+                </h3>
+                <div className="bg-white dark:bg-gray-800 p-3 rounded-lg shadow-sm border border-indigo-100 dark:border-indigo-800">
+                  <div className="flex items-start">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-indigo-600 dark:text-indigo-500 mr-2 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                    </svg>
+                    <div>
+                      <label className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 block">Seal Number</label>
+                      <p className="text-sm font-medium text-gray-800 dark:text-white">{truck.sealNumber}</p>
+                    </div>
                   </div>
                 </div>
               </div>
