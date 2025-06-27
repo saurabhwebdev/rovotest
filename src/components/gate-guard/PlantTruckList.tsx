@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { getTrucksInsidePlant, updateTruckLocation } from '@/lib/firestore';
+import { getTrucksInsidePlant } from '@/lib/firestore';
 import { useAuth } from '@/contexts/AuthContext';
 import { collection, query, onSnapshot, addDoc, where, getDocs, doc, updateDoc, Timestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
@@ -51,6 +51,8 @@ export default function PlantTruckList() {
     const fetchTrucks = async () => {
       try {
         const trucksData = await getTrucksInsidePlant();
+        console.log('Trucks inside plant:', trucksData);
+        
         // Sort by location updated time
         const sortedTrucks = trucksData.sort((a, b) => {
           const dateA = new Date(a.locationUpdatedAt || a.createdAt).getTime();
@@ -58,6 +60,10 @@ export default function PlantTruckList() {
           return dateB - dateA; // Most recent first
         });
         setTrucks(sortedTrucks as Truck[]);
+        
+        if (sortedTrucks.length === 0) {
+          console.log('No trucks found in plant. Check if the truck status is one of: verified, at_parking, at_weighbridge, at_loading, at_unloading, in_plant, at_dock, inside_plant, inside-plant, in-plant');
+        }
       } catch (err) {
         console.error('Error fetching trucks inside plant:', err);
         setError('Failed to load trucks inside plant');
@@ -116,7 +122,8 @@ export default function PlantTruckList() {
     });
   };
 
-  const getLocationBadgeClass = (location: string) => {
+  const getLocationBadgeClass = (location: string, truck?: Truck) => {
+    // First check the provided location
     switch (location?.toLowerCase()) {
       case 'parking':
         return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200';
@@ -128,12 +135,31 @@ export default function PlantTruckList() {
         return 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200';
       case 'exit':
         return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
-      default:
-        return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200';
     }
+    
+    // If no location, try to determine from status
+    if (truck) {
+      const status = truck.status?.toLowerCase() || '';
+      if (status.includes('parking') || status === 'at_parking') 
+        return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200';
+      if (status.includes('weighbridge') || status === 'at_weighbridge') 
+        return 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200';
+      if (status.includes('loading') || status === 'at_loading') 
+        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200';
+      if (status.includes('unloading') || status === 'at_unloading') 
+        return 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200';
+      if (status.includes('dock') || status === 'at_dock') 
+        return 'bg-teal-100 text-teal-800 dark:bg-teal-900 dark:text-teal-200';
+      if (status === 'verified') 
+        return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
+    }
+    
+    // Default for inside plant
+    return 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200';
   };
 
-  const getLocationLabel = (location: string) => {
+  const getLocationLabel = (location: string, truck?: Truck) => {
+    // First check the provided location
     switch (location?.toLowerCase()) {
       case 'parking':
         return 'At Parking';
@@ -145,9 +171,23 @@ export default function PlantTruckList() {
         return 'At Unloading';
       case 'exit':
         return 'At Exit';
-      default:
-        return location || 'Unknown';
     }
+    
+    // If no location or 'unknown', try to determine from status
+    if (!location || location === 'Unknown') {
+      if (!truck) return 'Inside Plant';
+      
+      const status = truck.status?.toLowerCase() || '';
+      if (status.includes('parking') || status === 'at_parking') return 'At Parking';
+      if (status.includes('weighbridge') || status === 'at_weighbridge') return 'At Weighbridge';
+      if (status.includes('loading') || status === 'at_loading') return 'At Loading';
+      if (status.includes('unloading') || status === 'at_unloading') return 'At Unloading';
+      if (status.includes('dock') || status === 'at_dock') return 'At Dock';
+      if (status === 'verified') return 'At Gate';
+      if (status.includes('inside') || status.includes('in_plant') || status.includes('in-plant')) return 'Inside Plant';
+    }
+    
+    return location || 'Inside Plant';
   };
 
   const handleUpdateLocation = (truck: Truck) => {
@@ -224,17 +264,24 @@ export default function PlantTruckList() {
   };
 
   const filteredTrucks = trucks.filter(truck => {
+    // Basic search filter
     const matchesSearch = 
-      truck.vehicleNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      truck.driverName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      truck.transporterName.toLowerCase().includes(searchTerm.toLowerCase());
+      (truck.vehicleNumber?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+      (truck.driverName?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+      (truck.transporterName?.toLowerCase() || '').includes(searchTerm.toLowerCase());
     
-    const matchesLocation = filterLocation === 'all' || 
-      (truck.currentLocation?.toLowerCase() === filterLocation.toLowerCase()) ||
-      (filterLocation === 'weighbridge' && truck.status === 'at_weighbridge') ||
-      (filterLocation === 'parking' && truck.status === 'at_parking') ||
-      (filterLocation === 'loading' && truck.status === 'at_loading') ||
-      (filterLocation === 'unloading' && truck.status === 'at_unloading');
+    // Handle various location/status formats
+    const truckLocation = truck.currentLocation?.toLowerCase() || '';
+    const truckStatus = truck.status?.toLowerCase() || '';
+    
+    // Match location filter
+    const matchesLocation = 
+      filterLocation === 'all' || 
+      truckLocation === filterLocation.toLowerCase() ||
+      (filterLocation === 'weighbridge' && (truckStatus === 'at_weighbridge' || truckStatus.includes('weighbridge'))) ||
+      (filterLocation === 'parking' && (truckStatus === 'at_parking' || truckStatus.includes('parking'))) ||
+      (filterLocation === 'loading' && (truckStatus === 'at_loading' || truckStatus.includes('loading'))) ||
+      (filterLocation === 'unloading' && (truckStatus === 'at_unloading' || truckStatus.includes('unloading')));
     
     return matchesSearch && matchesLocation;
   });
@@ -330,8 +377,8 @@ export default function PlantTruckList() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm">{truck.transporterName}</td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getLocationBadgeClass(truck.currentLocation || '')}`}>
-                      {getLocationLabel(truck.currentLocation || '')}
+                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getLocationBadgeClass(truck.currentLocation || '', truck)}`}>
+                      {getLocationLabel(truck.currentLocation || '', truck)}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm">

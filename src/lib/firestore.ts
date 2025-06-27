@@ -265,7 +265,18 @@ export async function updateTruckLocationAndStatus(
 export async function getTrucksInsidePlant() {
   const q = query(
     collection(db, 'trucks'),
-    where('status', 'in', ['verified', 'at_parking', 'at_weighbridge', 'at_loading', 'at_unloading'])
+    where('status', 'in', [
+      'verified', 
+      'at_parking', 
+      'at_weighbridge', 
+      'at_loading', 
+      'at_unloading',
+      'in_plant',
+      'at_dock',
+      'inside_plant',
+      'inside-plant',
+      'in-plant'
+    ])
   );
 
   const snapshot = await getDocs(q);
