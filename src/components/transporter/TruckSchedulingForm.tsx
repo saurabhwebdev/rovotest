@@ -8,6 +8,7 @@ import { QRCodeSVG } from 'qrcode.react';
 import { Input } from '@/components/ui/input';
 import { collection, query, onSnapshot } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
+import AutocompleteInput from '@/components/ui/AutocompleteInput';
 
 interface MasterDataItem {
   id: string;
@@ -608,7 +609,7 @@ export default function TruckSchedulingForm({ onSuccess }: TruckSchedulingFormPr
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Source Location*
                 </label>
-                <Input
+                <AutocompleteInput
                   type="text"
                   id="sourceLocation"
                   name="sourceLocation"
@@ -624,7 +625,7 @@ export default function TruckSchedulingForm({ onSuccess }: TruckSchedulingFormPr
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Destination*
                 </label>
-                <Input
+                <AutocompleteInput
                   type="text"
                   id="destination"
                   name="destination"
@@ -652,7 +653,7 @@ export default function TruckSchedulingForm({ onSuccess }: TruckSchedulingFormPr
                 <label htmlFor="driverName" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                   Driver Name*
                 </label>
-                <Input
+                <AutocompleteInput
                   type="text"
                   id="driverName"
                   name="driverName"
@@ -667,7 +668,7 @@ export default function TruckSchedulingForm({ onSuccess }: TruckSchedulingFormPr
                 <label htmlFor="mobileNumber" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                   Mobile Number*
                 </label>
-                <Input
+                <AutocompleteInput
                   type="tel"
                   id="mobileNumber"
                   name="mobileNumber"
@@ -682,7 +683,7 @@ export default function TruckSchedulingForm({ onSuccess }: TruckSchedulingFormPr
                 <label htmlFor="licenseNumber" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                   License Number*
                 </label>
-                <Input
+                <AutocompleteInput
                   type="text"
                   id="licenseNumber"
                   name="licenseNumber"
@@ -731,7 +732,7 @@ export default function TruckSchedulingForm({ onSuccess }: TruckSchedulingFormPr
                 <label htmlFor="vehicleNumber" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                   Vehicle Number*
                 </label>
-                <Input
+                <AutocompleteInput
                   type="text"
                   id="vehicleNumber"
                   name="vehicleNumber"
@@ -746,7 +747,7 @@ export default function TruckSchedulingForm({ onSuccess }: TruckSchedulingFormPr
                 <label htmlFor="rcNumber" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                   RC Number*
                 </label>
-                <Input
+                <AutocompleteInput
                   type="text"
                   id="rcNumber"
                   name="rcNumber"
@@ -782,7 +783,7 @@ export default function TruckSchedulingForm({ onSuccess }: TruckSchedulingFormPr
                 <label htmlFor="rtoPassingCapacity" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                   RTO Passing Capacity (Tonnes)*
                 </label>
-                <Input
+                <AutocompleteInput
                   type="text"
                   id="rtoPassingCapacity"
                   name="rtoPassingCapacity"
@@ -797,7 +798,7 @@ export default function TruckSchedulingForm({ onSuccess }: TruckSchedulingFormPr
                 <label htmlFor="loadingCapacity" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                   Loading Capacity*
                 </label>
-                <Input
+                <AutocompleteInput
                   type="text"
                   id="loadingCapacity"
                   name="loadingCapacity"
@@ -824,7 +825,7 @@ export default function TruckSchedulingForm({ onSuccess }: TruckSchedulingFormPr
                 <label htmlFor="insuranceNumber" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                   Insurance Number*
                 </label>
-                <Input
+                <AutocompleteInput
                   type="text"
                   id="insuranceNumber"
                   name="insuranceNumber"
@@ -860,7 +861,7 @@ export default function TruckSchedulingForm({ onSuccess }: TruckSchedulingFormPr
                 <label htmlFor="pollutionNumber" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                   Pollution Number*
                 </label>
-                <Input
+                <AutocompleteInput
                   type="text"
                   id="pollutionNumber"
                   name="pollutionNumber"
@@ -908,7 +909,7 @@ export default function TruckSchedulingForm({ onSuccess }: TruckSchedulingFormPr
                 <label htmlFor="lrNumber" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                   LR Number*
                 </label>
-                <Input
+                <AutocompleteInput
                   type="text"
                   id="lrNumber"
                   name="lrNumber"
