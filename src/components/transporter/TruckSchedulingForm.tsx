@@ -52,6 +52,7 @@ export default function TruckSchedulingForm({ onSuccess }: TruckSchedulingFormPr
   const [qrCodeData, setQrCodeData] = useState('');
   const [isEditing, setIsEditing] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
+  const [submittedData, setSubmittedData] = useState<TruckSchedulingFormData | null>(null);
   
   // Master data states
   const [transporters, setTransporters] = useState<MasterDataItem[]>([]);
@@ -81,6 +82,8 @@ export default function TruckSchedulingForm({ onSuccess }: TruckSchedulingFormPr
     insuranceValidityDate: '',
     pollutionValidityDate: ''
   });
+
+  const [dateWarnings, setDateWarnings] = useState<Record<string, string>>({});
 
   // Fetch master data
   useEffect(() => {
@@ -171,7 +174,49 @@ export default function TruckSchedulingForm({ onSuccess }: TruckSchedulingFormPr
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+    
+    // Validate date fields to prevent past dates
+    if (name.includes('ValidityDate') || name === 'reportingDate') {
+      validateDate(name, value);
+    }
   };
+
+  const validateDate = (fieldName: string, dateValue: string) => {
+    if (!dateValue) return;
+    
+    const selectedDate = new Date(dateValue);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Reset time part for date comparison
+    
+    // Create a shallow copy of the current warnings
+    const updatedWarnings = { ...dateWarnings };
+    
+    if (selectedDate < today) {
+      // Past date - show error
+      updatedWarnings[fieldName] = "Date cannot be in the past";
+    } else if (
+      selectedDate.getDate() === today.getDate() &&
+      selectedDate.getMonth() === today.getMonth() &&
+      selectedDate.getFullYear() === today.getFullYear()
+    ) {
+      // Today's date - show warning
+      updatedWarnings[fieldName] = "Warning: This document expires today";
+    } else {
+      // Valid future date - clear any existing warning
+      delete updatedWarnings[fieldName];
+    }
+    
+    setDateWarnings(updatedWarnings);
+  };
+
+  // Validate existing dates when component mounts
+  useEffect(() => {
+    if (formData.dlValidityDate) validateDate('dlValidityDate', formData.dlValidityDate);
+    if (formData.rcValidityDate) validateDate('rcValidityDate', formData.rcValidityDate);
+    if (formData.insuranceValidityDate) validateDate('insuranceValidityDate', formData.insuranceValidityDate);
+    if (formData.pollutionValidityDate) validateDate('pollutionValidityDate', formData.pollutionValidityDate);
+    if (formData.reportingDate) validateDate('reportingDate', formData.reportingDate);
+  }, []);
 
   const handleClearAll = () => {
     // Reset form data to initial empty state
@@ -203,6 +248,17 @@ export default function TruckSchedulingForm({ onSuccess }: TruckSchedulingFormPr
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Check if there are any past date errors before submitting
+    const hasPastDateErrors = Object.entries(dateWarnings).some(
+      ([field, warning]) => warning.includes("cannot be in the past")
+    );
+    
+    if (hasPastDateErrors) {
+      setError('Please correct all date validation errors before submitting.');
+      return;
+    }
+    
     setLoading(true);
     setError('');
     setSuccess(false);
@@ -211,6 +267,9 @@ export default function TruckSchedulingForm({ onSuccess }: TruckSchedulingFormPr
       if (!user) {
         throw new Error('You must be logged in to schedule a truck');
       }
+
+      // Save a copy of the current form data for display in success message
+      setSubmittedData({...formData});
 
       // Prepare truck data
       let truckData: any = {
@@ -259,7 +318,7 @@ export default function TruckSchedulingForm({ onSuccess }: TruckSchedulingFormPr
         });
       }
       
-      // Generate QR code data
+      // Generate QR code data - use the saved form data (which will persist even after form reset)
       const qrData = JSON.stringify({
         id: truckId,
         vehicleNumber: formData.vehicleNumber,
@@ -280,6 +339,8 @@ export default function TruckSchedulingForm({ onSuccess }: TruckSchedulingFormPr
       }
       
       // Reset form after successful submission if not in edit mode
+      // Note: We've already saved the submitted data in submittedData state
+      // So we can safely reset the form here
       if (!isEditing) {
         setFormData({
           driverName: '',
@@ -325,27 +386,27 @@ export default function TruckSchedulingForm({ onSuccess }: TruckSchedulingFormPr
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span className="font-medium">Vehicle Number:</span>
-                  <span>{formData.vehicleNumber}</span>
+                  <span>{submittedData?.vehicleNumber}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="font-medium">Driver Name:</span>
-                  <span>{formData.driverName}</span>
+                  <span>{submittedData?.driverName}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="font-medium">Transporter:</span>
-                  <span>{formData.transporterName}</span>
+                  <span>{submittedData?.transporterName}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="font-medium">Reporting Date:</span>
-                  <span>{formData.reportingDate}</span>
+                  <span>{submittedData?.reportingDate}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="font-medium">Reporting Time:</span>
-                  <span>{formData.reportingTime}</span>
+                  <span>{submittedData?.reportingTime}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="font-medium">Gate:</span>
-                  <span>{formData.gate}</span>
+                  <span>{submittedData?.gate}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="font-medium">Status:</span>
@@ -388,7 +449,7 @@ export default function TruckSchedulingForm({ onSuccess }: TruckSchedulingFormPr
                       // Create a download link
                       const downloadLink = document.createElement("a");
                       downloadLink.href = canvas.toDataURL("image/png");
-                      downloadLink.download = `truck-qr-${formData.vehicleNumber || new Date().getTime()}.png`;
+                      downloadLink.download = `truck-qr-${submittedData?.vehicleNumber || new Date().getTime()}.png`;
                       document.body.appendChild(downloadLink);
                       downloadLink.click();
                       document.body.removeChild(downloadLink);
@@ -409,7 +470,10 @@ export default function TruckSchedulingForm({ onSuccess }: TruckSchedulingFormPr
           
           <div className="mt-4 sm:mt-6 flex justify-center">
             <button
-              onClick={() => setSuccess(false)}
+              onClick={() => {
+                setSuccess(false);
+                // Don't reset submittedData here - we need to keep it for display
+              }}
               className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md text-sm sm:text-base"
             >
               Schedule Another Truck
@@ -427,8 +491,13 @@ export default function TruckSchedulingForm({ onSuccess }: TruckSchedulingFormPr
       {!success && (
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Basic Information Section */}
-          <div className="space-y-4">
-            <h3 className="text-base sm:text-lg font-semibold dark:text-white">Basic Information</h3>
+          <div className="p-4 sm:p-6 bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm">
+            <h3 className="text-base sm:text-lg font-semibold dark:text-white flex items-center border-b border-gray-200 dark:border-gray-700 pb-3 mb-4">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-indigo-600 dark:text-indigo-400" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+              </svg>
+              Basic Information
+            </h3>
             
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
@@ -522,8 +591,13 @@ export default function TruckSchedulingForm({ onSuccess }: TruckSchedulingFormPr
           </div>
           
           {/* Driver Information Section */}
-          <div className="space-y-4">
-            <h3 className="text-base sm:text-lg font-semibold dark:text-white">Driver Information</h3>
+          <div className="p-4 sm:p-6 bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-800 rounded-lg shadow-sm">
+            <h3 className="text-base sm:text-lg font-semibold dark:text-white flex items-center border-b border-indigo-200 dark:border-indigo-800 pb-3 mb-4">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-indigo-600 dark:text-indigo-400" viewBox="0 0 20 20" fill="currentColor">
+                <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z" />
+              </svg>
+              Driver Information
+            </h3>
             
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
@@ -582,15 +656,27 @@ export default function TruckSchedulingForm({ onSuccess }: TruckSchedulingFormPr
                   value={formData.dlValidityDate}
                   onChange={handleChange}
                   required
-                  className="mt-1 text-sm"
+                  min={new Date().toISOString().split('T')[0]}
+                  className={`mt-1 text-sm ${dateWarnings.dlValidityDate?.includes("cannot") ? 'border-red-500' : dateWarnings.dlValidityDate ? 'border-yellow-500' : ''}`}
                 />
+                {dateWarnings.dlValidityDate && (
+                  <p className={`text-xs mt-1 ${dateWarnings.dlValidityDate?.includes("cannot") ? 'text-red-500' : 'text-yellow-500'}`}>
+                    {dateWarnings.dlValidityDate}
+                  </p>
+                )}
               </div>
             </div>
           </div>
           
           {/* Vehicle Information Section */}
-          <div className="space-y-4">
-            <h3 className="text-base sm:text-lg font-semibold dark:text-white">Vehicle Information</h3>
+          <div className="p-4 sm:p-6 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg shadow-sm">
+            <h3 className="text-base sm:text-lg font-semibold dark:text-white flex items-center border-b border-blue-200 dark:border-blue-800 pb-3 mb-4">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-blue-600 dark:text-blue-400" viewBox="0 0 20 20" fill="currentColor">
+                <path d="M8 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM15 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z" />
+                <path d="M3 4a1 1 0 00-1 1v10a1 1 0 001 1h1.05a2.5 2.5 0 014.9 0H10a1 1 0 001-1V5a1 1 0 00-1-1H3zM14 7h4a1 1 0 011 1v6.05A2.5 2.5 0 0116.95 16H16a1 1 0 01-1-1v-5h-1V7z" />
+              </svg>
+              Vehicle Information
+            </h3>
             
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
@@ -634,8 +720,14 @@ export default function TruckSchedulingForm({ onSuccess }: TruckSchedulingFormPr
                   value={formData.rcValidityDate}
                   onChange={handleChange}
                   required
-                  className="mt-1 text-sm"
+                  min={new Date().toISOString().split('T')[0]}
+                  className={`mt-1 text-sm ${dateWarnings.rcValidityDate?.includes("cannot") ? 'border-red-500' : dateWarnings.rcValidityDate ? 'border-yellow-500' : ''}`}
                 />
+                {dateWarnings.rcValidityDate && (
+                  <p className={`text-xs mt-1 ${dateWarnings.rcValidityDate?.includes("cannot") ? 'text-red-500' : 'text-yellow-500'}`}>
+                    {dateWarnings.rcValidityDate}
+                  </p>
+                )}
               </div>
               
               <div>
@@ -671,8 +763,13 @@ export default function TruckSchedulingForm({ onSuccess }: TruckSchedulingFormPr
           </div>
           
           {/* Compliance Information Section */}
-          <div className="space-y-4">
-            <h3 className="text-base sm:text-lg font-semibold dark:text-white">Compliance Information</h3>
+          <div className="p-4 sm:p-6 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg shadow-sm">
+            <h3 className="text-base sm:text-lg font-semibold dark:text-white flex items-center border-b border-green-200 dark:border-green-800 pb-3 mb-4">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-green-600 dark:text-green-400" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+              </svg>
+              Compliance Information
+            </h3>
             
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
@@ -701,8 +798,14 @@ export default function TruckSchedulingForm({ onSuccess }: TruckSchedulingFormPr
                   value={formData.insuranceValidityDate}
                   onChange={handleChange}
                   required
-                  className="mt-1 text-sm"
+                  min={new Date().toISOString().split('T')[0]}
+                  className={`mt-1 text-sm ${dateWarnings.insuranceValidityDate?.includes("cannot") ? 'border-red-500' : dateWarnings.insuranceValidityDate ? 'border-yellow-500' : ''}`}
                 />
+                {dateWarnings.insuranceValidityDate && (
+                  <p className={`text-xs mt-1 ${dateWarnings.insuranceValidityDate?.includes("cannot") ? 'text-red-500' : 'text-yellow-500'}`}>
+                    {dateWarnings.insuranceValidityDate}
+                  </p>
+                )}
               </div>
               
               <div>
@@ -731,15 +834,26 @@ export default function TruckSchedulingForm({ onSuccess }: TruckSchedulingFormPr
                   value={formData.pollutionValidityDate}
                   onChange={handleChange}
                   required
-                  className="mt-1 text-sm"
+                  min={new Date().toISOString().split('T')[0]}
+                  className={`mt-1 text-sm ${dateWarnings.pollutionValidityDate?.includes("cannot") ? 'border-red-500' : dateWarnings.pollutionValidityDate ? 'border-yellow-500' : ''}`}
                 />
+                {dateWarnings.pollutionValidityDate && (
+                  <p className={`text-xs mt-1 ${dateWarnings.pollutionValidityDate?.includes("cannot") ? 'text-red-500' : 'text-yellow-500'}`}>
+                    {dateWarnings.pollutionValidityDate}
+                  </p>
+                )}
               </div>
             </div>
           </div>
           
           {/* Scheduling Information Section */}
-          <div className="space-y-4">
-            <h3 className="text-base sm:text-lg font-semibold dark:text-white">Scheduling Information</h3>
+          <div className="p-4 sm:p-6 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg shadow-sm">
+            <h3 className="text-base sm:text-lg font-semibold dark:text-white flex items-center border-b border-purple-200 dark:border-purple-800 pb-3 mb-4">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-purple-600 dark:text-purple-400" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
+              </svg>
+              Scheduling Information
+            </h3>
             
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
@@ -769,8 +883,14 @@ export default function TruckSchedulingForm({ onSuccess }: TruckSchedulingFormPr
                     value={formData.reportingDate}
                     onChange={handleChange}
                     required
-                    className="mt-1 text-sm"
+                    min={new Date().toISOString().split('T')[0]}
+                    className={`mt-1 text-sm ${dateWarnings.reportingDate?.includes("cannot") ? 'border-red-500' : dateWarnings.reportingDate ? 'border-yellow-500' : ''}`}
                   />
+                  {dateWarnings.reportingDate && (
+                    <p className={`text-xs mt-1 ${dateWarnings.reportingDate?.includes("cannot") ? 'text-red-500' : 'text-yellow-500'}`}>
+                      {dateWarnings.reportingDate}
+                    </p>
+                  )}
                 </div>
                 
                 <div>
@@ -791,7 +911,7 @@ export default function TruckSchedulingForm({ onSuccess }: TruckSchedulingFormPr
             </div>
           </div>
           
-          <div className="flex flex-col sm:flex-row sm:justify-end space-y-3 sm:space-y-0 sm:space-x-4 mt-6">
+          <div className="flex flex-col sm:flex-row sm:justify-end space-y-3 sm:space-y-0 sm:space-x-4 mt-8">
             <button
               type="button"
               onClick={handleClearAll}

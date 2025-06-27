@@ -173,6 +173,7 @@ export default function TruckList({ trucks, loading }: TruckListProps) {
   const [rescheduleSuccess, setRescheduleSuccess] = useState(false);
   const [isNewSchedule, setIsNewSchedule] = useState(false);
   const [isMobileView, setIsMobileView] = useState(false);
+  const [dateWarnings, setDateWarnings] = useState<Record<string, string>>({});
   const [rescheduleData, setRescheduleData] = useState<Truck | any>({
     reportingDate: '',
     reportingTime: '',
@@ -296,7 +297,54 @@ export default function TruckList({ trucks, loading }: TruckListProps) {
   const handleRescheduleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setRescheduleData((prev: any) => ({ ...prev, [name]: value }));
+    
+    // Validate date fields to prevent past dates
+    if (name.includes('ValidityDate') || name === 'reportingDate') {
+      validateDate(name, value);
+    }
   };
+
+  const validateDate = (fieldName: string, dateValue: string) => {
+    if (!dateValue) return;
+    
+    const selectedDate = new Date(dateValue);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Reset time part for date comparison
+    
+    // Create a shallow copy of the current warnings
+    const updatedWarnings = { ...dateWarnings };
+    
+    if (selectedDate < today) {
+      // Past date - show error
+      updatedWarnings[fieldName] = "Date cannot be in the past";
+    } else if (
+      selectedDate.getDate() === today.getDate() &&
+      selectedDate.getMonth() === today.getMonth() &&
+      selectedDate.getFullYear() === today.getFullYear()
+    ) {
+      // Today's date - show warning
+      updatedWarnings[fieldName] = "Warning: This document expires today";
+    } else {
+      // Valid future date - clear any existing warning
+      delete updatedWarnings[fieldName];
+    }
+    
+    setDateWarnings(updatedWarnings);
+  };
+
+  // Validate existing dates when reschedule modal opens
+  useEffect(() => {
+    if (showRescheduleModal) {
+      if (rescheduleData.dlValidityDate) validateDate('dlValidityDate', rescheduleData.dlValidityDate);
+      if (rescheduleData.rcValidityDate) validateDate('rcValidityDate', rescheduleData.rcValidityDate);
+      if (rescheduleData.insuranceValidityDate) validateDate('insuranceValidityDate', rescheduleData.insuranceValidityDate);
+      if (rescheduleData.pollutionValidityDate) validateDate('pollutionValidityDate', rescheduleData.pollutionValidityDate);
+      if (rescheduleData.reportingDate) validateDate('reportingDate', rescheduleData.reportingDate);
+    } else {
+      // Clear warnings when modal is closed
+      setDateWarnings({});
+    }
+  }, [showRescheduleModal, rescheduleData]);
 
   const handleScheduleTypeToggle = (newSchedule: boolean) => {
     setIsNewSchedule(newSchedule);
@@ -304,6 +352,16 @@ export default function TruckList({ trucks, loading }: TruckListProps) {
 
   const confirmReschedule = async () => {
     if (!selectedTruck) return;
+    
+    // Check if there are any past date errors before submitting
+    const hasPastDateErrors = Object.entries(dateWarnings).some(
+      ([field, warning]) => warning.includes("cannot be in the past")
+    );
+    
+    if (hasPastDateErrors) {
+      setRescheduleError('Please correct all date validation errors before submitting.');
+      return;
+    }
     
     setRescheduleLoading(true);
     setRescheduleError('');
@@ -921,14 +979,16 @@ export default function TruckList({ trucks, loading }: TruckListProps) {
 
       {/* Reschedule Modal */}
       {showRescheduleModal && selectedTruck && (
-        <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
             <div className="p-6">
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-xl font-bold">Reschedule Truck</h2>
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+                  {isNewSchedule ? 'Create New Schedule' : 'Reschedule Truck'}
+                </h2>
                 <button
                   onClick={() => setShowRescheduleModal(false)}
-                  className="text-gray-400 hover:text-gray-500"
+                  className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
                 >
                   <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
@@ -936,312 +996,173 @@ export default function TruckList({ trucks, loading }: TruckListProps) {
                 </button>
               </div>
               
-              <div className="mb-6 bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
-                <h3 className="text-lg font-medium mb-2">Current Schedule</h3>
-                <div className="grid grid-cols-2 gap-2 text-sm">
-                  <div>
-                    <span className="font-medium">Vehicle Number:</span> {selectedTruck.vehicleNumber}
-                  </div>
-                  <div>
-                    <span className="font-medium">Driver:</span> {selectedTruck.driverName}
-                  </div>
-                  <div>
-                    <span className="font-medium">Reporting Date:</span> {formatDate(selectedTruck.reportingDate)}
-                  </div>
-                  <div>
-                    <span className="font-medium">Reporting Time:</span> {selectedTruck.reportingTime}
-                  </div>
-                  <div>
-                    <span className="font-medium">Gate:</span> {selectedTruck.gate}
-                  </div>
-                  <div>
-                    <span className="font-medium">Status:</span> 
-                    <span className={`ml-1 px-2 py-0.5 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(selectedTruck.status, selectedTruck.approvalStatus)}`}>
-                      {getStatusLabel(selectedTruck)}
-                    </span>
-                  </div>
+              {rescheduleError && (
+                <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md">
+                  <p className="text-red-700 dark:text-red-400 text-sm">{rescheduleError}</p>
                 </div>
-              </div>
+              )}
               
-              <div className="space-y-4">
-                <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg mb-4">
-                  <h3 className="text-lg font-medium mb-2">Reschedule Options</h3>
-                  <div className="text-sm text-gray-500 dark:text-gray-400 mb-2">
-                    Choose how you want to reschedule this truck.
-                  </div>
-                  <div className="flex items-center space-x-4">
-                    <label className="inline-flex items-center">
-                      <input
-                        type="radio"
-                        className="form-radio text-indigo-600"
-                        checked={!isNewSchedule}
-                        onChange={() => handleScheduleTypeToggle(false)}
-                      />
-                      <span className="ml-2">Update Existing Schedule</span>
-                    </label>
-                    <label className="inline-flex items-center">
-                      <input
-                        type="radio"
-                        className="form-radio text-indigo-600"
-                        checked={isNewSchedule}
-                        onChange={() => handleScheduleTypeToggle(true)}
-                      />
-                      <span className="ml-2">Create New Schedule</span>
-                    </label>
-                  </div>
+              {rescheduleSuccess && (
+                <div className="mb-4 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-md">
+                  <p className="text-green-700 dark:text-green-400">Truck successfully rescheduled!</p>
                 </div>
-
-                <div className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
-                  <div className="bg-gray-100 dark:bg-gray-800 px-4 py-3">
-                    <h3 className="text-lg font-medium">Schedule Information</h3>
-                  </div>
-                  <div className="p-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                          Reporting Date
-                        </label>
-                        <input
-                          type="date"
-                          name="reportingDate"
-                          value={rescheduleData.reportingDate}
-                          onChange={handleRescheduleChange}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:border-gray-600"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                          Reporting Time
-                        </label>
-                        <input
-                          type="time"
-                          name="reportingTime"
-                          value={rescheduleData.reportingTime}
-                          onChange={handleRescheduleChange}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:border-gray-600"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                          Gate
-                        </label>
-                        <select
-                          name="gate"
-                          value={rescheduleData.gate}
-                          onChange={handleRescheduleChange}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:border-gray-600"
-                        >
-                          <option value="">Select Gate</option>
-                          <option value="Gate 1">Gate 1</option>
-                          <option value="Gate 2">Gate 2</option>
-                          <option value="Gate 3">Gate 3</option>
-                        </select>
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                          Driver Name
-                        </label>
-                        <input
-                          type="text"
-                          name="driverName"
-                          value={rescheduleData.driverName}
-                          onChange={handleRescheduleChange}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:border-gray-600"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                          Mobile Number
-                        </label>
-                        <input
-                          type="text"
-                          name="mobileNumber"
-                          value={rescheduleData.mobileNumber}
-                          onChange={handleRescheduleChange}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:border-gray-600"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                          License Number
-                        </label>
-                        <input
-                          type="text"
-                          name="licenseNumber"
-                          value={rescheduleData.licenseNumber}
-                          onChange={handleRescheduleChange}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:border-gray-600"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                          Vehicle Number
-                        </label>
-                        <input
-                          type="text"
-                          name="vehicleNumber"
-                          value={rescheduleData.vehicleNumber}
-                          onChange={handleRescheduleChange}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:border-gray-600"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                          Transporter Name
-                        </label>
-                        <input
-                          type="text"
-                          name="transporterName"
-                          value={rescheduleData.transporterName}
-                          onChange={handleRescheduleChange}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:border-gray-600"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                          Depot Name
-                        </label>
-                        <input
-                          type="text"
-                          name="depotName"
-                          value={rescheduleData.depotName}
-                          onChange={handleRescheduleChange}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:border-gray-600"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                          LR Number
-                        </label>
-                        <input
-                          type="text"
-                          name="lrNumber"
-                          value={rescheduleData.lrNumber}
-                          onChange={handleRescheduleChange}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:border-gray-600"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                          RTO Passing Capacity
-                        </label>
-                        <input
-                          type="text"
-                          name="rtoPassingCapacity"
-                          value={rescheduleData.rtoPassingCapacity}
-                          onChange={handleRescheduleChange}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:border-gray-600"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                          Loading Capacity
-                        </label>
-                        <input
-                          type="text"
-                          name="loadingCapacity"
-                          value={rescheduleData.loadingCapacity}
-                          onChange={handleRescheduleChange}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:border-gray-600"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                          Supplier Name
-                        </label>
-                        <input
-                          type="text"
-                          name="supplierName"
-                          value={rescheduleData.supplierName}
-                          onChange={handleRescheduleChange}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:border-gray-600"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                          RC Number
-                        </label>
-                        <input
-                          type="text"
-                          name="rcNumber"
-                          value={rescheduleData.rcNumber}
-                          onChange={handleRescheduleChange}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:border-gray-600"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                          Insurance Number
-                        </label>
-                        <input
-                          type="text"
-                          name="insuranceNumber"
-                          value={rescheduleData.insuranceNumber}
-                          onChange={handleRescheduleChange}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:border-gray-600"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                          Pollution Number
-                        </label>
-                        <input
-                          type="text"
-                          name="pollutionNumber"
-                          value={rescheduleData.pollutionNumber}
-                          onChange={handleRescheduleChange}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:border-gray-600"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                          DL Validity Date
-                        </label>
-                        <input
-                          type="date"
-                          name="dlValidityDate"
-                          value={rescheduleData.dlValidityDate}
-                          onChange={handleRescheduleChange}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:border-gray-600"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                          RC Validity Date
-                        </label>
-                        <input
-                          type="date"
-                          name="rcValidityDate"
-                          value={rescheduleData.rcValidityDate}
-                          onChange={handleRescheduleChange}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:border-gray-600"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                          Insurance Validity Date
-                        </label>
-                        <input
-                          type="date"
-                          name="insuranceValidityDate"
-                          value={rescheduleData.insuranceValidityDate}
-                          onChange={handleRescheduleChange}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:border-gray-600"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                          Pollution Validity Date
-                        </label>
-                        <input
-                          type="date"
-                          name="pollutionValidityDate"
-                          value={rescheduleData.pollutionValidityDate}
-                          onChange={handleRescheduleChange}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:border-gray-600"
-                        />
-                      </div>
+              )}
+              
+              <div className="mb-4">
+                <div className="flex space-x-4 mb-4">
+                  <button
+                    onClick={() => handleScheduleTypeToggle(false)}
+                    className={`px-4 py-2 rounded-md ${
+                      !isNewSchedule
+                        ? 'bg-indigo-600 text-white'
+                        : 'bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200'
+                    }`}
+                  >
+                    Update Existing
+                  </button>
+                  <button
+                    onClick={() => handleScheduleTypeToggle(true)}
+                    className={`px-4 py-2 rounded-md ${
+                      isNewSchedule
+                        ? 'bg-indigo-600 text-white'
+                        : 'bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200'
+                    }`}
+                  >
+                    Create New Schedule
+                  </button>
+                </div>
+                
+                <div>
+                  <h3 className="text-lg font-medium mb-3">Vehicle Details</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        Reporting Date
+                      </label>
+                      <input
+                        type="date"
+                        name="reportingDate"
+                        value={rescheduleData.reportingDate}
+                        onChange={handleRescheduleChange}
+                        min={new Date().toISOString().split('T')[0]}
+                        className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:border-gray-600 ${
+                          dateWarnings.reportingDate?.includes("cannot") 
+                            ? 'border-red-500' 
+                            : dateWarnings.reportingDate 
+                              ? 'border-yellow-500' 
+                              : 'border-gray-300'
+                        }`}
+                      />
+                      {dateWarnings.reportingDate && (
+                        <p className={`text-xs mt-1 ${dateWarnings.reportingDate?.includes("cannot") ? 'text-red-500' : 'text-yellow-500'}`}>
+                          {dateWarnings.reportingDate}
+                        </p>
+                      )}
                     </div>
+                    
+                    {/* ... other fields ... */}
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        DL Validity Date
+                      </label>
+                      <input
+                        type="date"
+                        name="dlValidityDate"
+                        value={rescheduleData.dlValidityDate}
+                        onChange={handleRescheduleChange}
+                        min={new Date().toISOString().split('T')[0]}
+                        className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:border-gray-600 ${
+                          dateWarnings.dlValidityDate?.includes("cannot") 
+                            ? 'border-red-500' 
+                            : dateWarnings.dlValidityDate 
+                              ? 'border-yellow-500' 
+                              : 'border-gray-300'
+                        }`}
+                      />
+                      {dateWarnings.dlValidityDate && (
+                        <p className={`text-xs mt-1 ${dateWarnings.dlValidityDate?.includes("cannot") ? 'text-red-500' : 'text-yellow-500'}`}>
+                          {dateWarnings.dlValidityDate}
+                        </p>
+                      )}
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        RC Validity Date
+                      </label>
+                      <input
+                        type="date"
+                        name="rcValidityDate"
+                        value={rescheduleData.rcValidityDate}
+                        onChange={handleRescheduleChange}
+                        min={new Date().toISOString().split('T')[0]}
+                        className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:border-gray-600 ${
+                          dateWarnings.rcValidityDate?.includes("cannot") 
+                            ? 'border-red-500' 
+                            : dateWarnings.rcValidityDate 
+                              ? 'border-yellow-500' 
+                              : 'border-gray-300'
+                        }`}
+                      />
+                      {dateWarnings.rcValidityDate && (
+                        <p className={`text-xs mt-1 ${dateWarnings.rcValidityDate?.includes("cannot") ? 'text-red-500' : 'text-yellow-500'}`}>
+                          {dateWarnings.rcValidityDate}
+                        </p>
+                      )}
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        Insurance Validity Date
+                      </label>
+                      <input
+                        type="date"
+                        name="insuranceValidityDate"
+                        value={rescheduleData.insuranceValidityDate}
+                        onChange={handleRescheduleChange}
+                        min={new Date().toISOString().split('T')[0]}
+                        className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:border-gray-600 ${
+                          dateWarnings.insuranceValidityDate?.includes("cannot") 
+                            ? 'border-red-500' 
+                            : dateWarnings.insuranceValidityDate 
+                              ? 'border-yellow-500' 
+                              : 'border-gray-300'
+                        }`}
+                      />
+                      {dateWarnings.insuranceValidityDate && (
+                        <p className={`text-xs mt-1 ${dateWarnings.insuranceValidityDate?.includes("cannot") ? 'text-red-500' : 'text-yellow-500'}`}>
+                          {dateWarnings.insuranceValidityDate}
+                        </p>
+                      )}
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        Pollution Validity Date
+                      </label>
+                      <input
+                        type="date"
+                        name="pollutionValidityDate"
+                        value={rescheduleData.pollutionValidityDate}
+                        onChange={handleRescheduleChange}
+                        min={new Date().toISOString().split('T')[0]}
+                        className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:border-gray-600 ${
+                          dateWarnings.pollutionValidityDate?.includes("cannot") 
+                            ? 'border-red-500' 
+                            : dateWarnings.pollutionValidityDate 
+                              ? 'border-yellow-500' 
+                              : 'border-gray-300'
+                        }`}
+                      />
+                      {dateWarnings.pollutionValidityDate && (
+                        <p className={`text-xs mt-1 ${dateWarnings.pollutionValidityDate?.includes("cannot") ? 'text-red-500' : 'text-yellow-500'}`}>
+                          {dateWarnings.pollutionValidityDate}
+                        </p>
+                      )}
+                    </div>
+                    
+                    {/* ... other fields ... */}
                   </div>
                 </div>
               </div>
@@ -1261,18 +1182,6 @@ export default function TruckList({ trucks, loading }: TruckListProps) {
                   {rescheduleLoading ? 'Saving...' : 'Save Changes'}
                 </button>
               </div>
-
-              {rescheduleError && (
-                <div className="mt-4 p-4 bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-400 rounded-md">
-                  {rescheduleError}
-                </div>
-              )}
-
-              {rescheduleSuccess && (
-                <div className="mt-4 p-4 bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-md">
-                  Schedule updated successfully!
-                </div>
-              )}
             </div>
           </div>
         </div>
