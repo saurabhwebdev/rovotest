@@ -7,6 +7,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import WeighingModal from './WeighingModal';
 import NextMilestoneModal from './NextMilestoneModal';
 import { updateTruckLocationAndStatus } from '@/lib/firestore';
+import { Input } from '@/components/ui/input';
 
 interface WeighbridgeEntry {
   id: string;
@@ -41,6 +42,7 @@ export default function WeighbridgeTruckList() {
   const [isNextMilestoneModalOpen, setIsNextMilestoneModalOpen] = useState(false);
   const [docks, setDocks] = useState<Dock[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
     fetchEntries();
@@ -218,8 +220,52 @@ export default function WeighbridgeTruckList() {
     return <div>Loading...</div>;
   }
 
+  // Filter entries based on search term
+  const filteredEntries = entries.filter(entry => 
+    entry.truckNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    entry.transporterName.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
     <div className="overflow-x-auto">
+      <div className="p-4 border-b dark:border-gray-700 bg-white dark:bg-gray-800">
+        <div className="flex flex-col md:flex-row gap-4 justify-between items-center">
+          <div className="relative w-full md:w-64">
+            <Input
+              type="text"
+              placeholder="Search trucks..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full"
+            />
+            <svg
+              className="absolute right-2 top-2.5 h-4 w-4 text-gray-400"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+              ></path>
+            </svg>
+          </div>
+          
+          <button 
+            className="ml-2 px-3 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded border border-gray-300 dark:border-gray-600"
+            title="Refresh List"
+            onClick={fetchEntries}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+          </button>
+        </div>
+      </div>
+
       <table className="min-w-full border-collapse">
         <thead className="bg-gray-50 dark:bg-gray-800/50">
           <tr>
@@ -269,7 +315,7 @@ export default function WeighbridgeTruckList() {
           </tr>
         </thead>
         <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-          {entries.map((entry) => (
+          {filteredEntries.map((entry) => (
             <tr key={entry.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50">
               <td className="px-2 py-1.5 whitespace-nowrap text-xs font-medium">
                 {entry.truckNumber}
@@ -347,6 +393,13 @@ export default function WeighbridgeTruckList() {
           ))}
         </tbody>
       </table>
+
+      {filteredEntries.length === 0 && (
+        <div className="text-center py-10">
+          <h3 className="text-lg font-medium text-gray-500">No trucks found</h3>
+          <p className="mt-2 text-gray-400">Try adjusting your search criteria.</p>
+        </div>
+      )}
 
       {isWeighingModalOpen && selectedEntry && (
         <WeighingModal
