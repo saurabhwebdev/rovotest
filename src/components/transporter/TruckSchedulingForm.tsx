@@ -37,6 +37,8 @@ interface TruckSchedulingFormData {
   rcValidityDate: string;
   insuranceValidityDate: string;
   pollutionValidityDate: string;
+  sourceLocation: string;
+  destination: string;
 }
 
 interface TruckSchedulingFormProps {
@@ -80,7 +82,9 @@ export default function TruckSchedulingForm({ onSuccess }: TruckSchedulingFormPr
     dlValidityDate: '',
     rcValidityDate: '',
     insuranceValidityDate: '',
-    pollutionValidityDate: ''
+    pollutionValidityDate: '',
+    sourceLocation: '',
+    destination: ''
   });
 
   const [dateWarnings, setDateWarnings] = useState<Record<string, string>>({});
@@ -240,7 +244,9 @@ export default function TruckSchedulingForm({ onSuccess }: TruckSchedulingFormPr
       dlValidityDate: '',
       rcValidityDate: '',
       insuranceValidityDate: '',
-      pollutionValidityDate: ''
+      pollutionValidityDate: '',
+      sourceLocation: '',
+      destination: ''
     });
     // Clear any error messages
     setError('');
@@ -362,7 +368,9 @@ export default function TruckSchedulingForm({ onSuccess }: TruckSchedulingFormPr
           dlValidityDate: '',
           rcValidityDate: '',
           insuranceValidityDate: '',
-          pollutionValidityDate: ''
+          pollutionValidityDate: '',
+          sourceLocation: '',
+          destination: ''
         });
       }
     } catch (err) {
@@ -407,6 +415,14 @@ export default function TruckSchedulingForm({ onSuccess }: TruckSchedulingFormPr
                 <div className="flex justify-between">
                   <span className="font-medium">Gate:</span>
                   <span>{submittedData?.gate}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="font-medium">Source Location:</span>
+                  <span>{submittedData?.sourceLocation}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="font-medium">Destination:</span>
+                  <span>{submittedData?.destination}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="font-medium">Status:</span>
@@ -586,6 +602,38 @@ export default function TruckSchedulingForm({ onSuccess }: TruckSchedulingFormPr
                     </option>
                   ))}
                 </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Source Location*
+                </label>
+                <Input
+                  type="text"
+                  id="sourceLocation"
+                  name="sourceLocation"
+                  value={formData.sourceLocation}
+                  onChange={handleChange}
+                  required
+                  placeholder="Enter origin/pickup location"
+                  className="mt-1 text-sm"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Destination*
+                </label>
+                <Input
+                  type="text"
+                  id="destination"
+                  name="destination"
+                  value={formData.destination}
+                  onChange={handleChange}
+                  required
+                  placeholder="Enter final destination"
+                  className="mt-1 text-sm"
+                />
               </div>
             </div>
           </div>

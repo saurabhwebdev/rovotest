@@ -20,6 +20,8 @@ interface Truck {
   gate: string;
   createdAt: string;
   approvalStatus?: string;
+  sourceLocation?: string;
+  destination?: string;
   [key: string]: any;
 }
 
@@ -849,6 +851,14 @@ export default function TruckList({ trucks, loading }: TruckListProps) {
                     <div className="flex justify-between">
                       <span className="font-medium">Gate:</span>
                       <span>{selectedTruck.gate}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="font-medium">Source Location:</span>
+                      <span>{selectedTruck.sourceLocation || 'Not specified'}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="font-medium">Destination:</span>
+                      <span>{selectedTruck.destination || 'Not specified'}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="font-medium">Status:</span>
