@@ -11,112 +11,92 @@ import { ArrowRight, BarChart3, Clock, FileText, Globe, Shield, Truck, CheckCirc
 export default function Home() {
   return (
     <main className="px-0 py-0 mx-0 max-w-full overflow-hidden">
-      {/* Hero Section - Modern Enterprise Style */}
-      <section className="relative min-h-[calc(100vh-4rem)] bg-gradient-to-br from-[#502172] via-[#502172]/90 to-[#D01414] text-white overflow-hidden">
-        {/* Animated background patterns */}
-        <div className="absolute inset-0">
-          <div className="absolute inset-0 opacity-30">
-            {/* Gradient orbs with glow effect */}
-            <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-[#502172] rounded-full mix-blend-multiply filter blur-[128px] animate-glow" />
-            <div className="absolute top-1/3 right-1/4 w-96 h-96 bg-[#D01414] rounded-full mix-blend-multiply filter blur-[128px] animate-glow animation-delay-2000" />
-            <div className="absolute bottom-1/4 left-1/3 w-96 h-96 bg-[#502172] rounded-full mix-blend-multiply filter blur-[128px] animate-glow animation-delay-4000" />
-            
-            {/* Subtle grid pattern */}
-            <div className="absolute inset-0 animate-pulse opacity-20" style={{ 
-              backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
-              backgroundSize: '30px 30px'
-            }} />
-          </div>
+      {/* Hero Section - Minimal Design */}
+      <section className="relative min-h-[calc(100vh-4rem)] bg-gradient-to-br from-background to-background/95 overflow-hidden">
+        {/* Subtle background pattern */}
+        <div className="absolute inset-0 bg-grid-pattern opacity-[0.02] dark:opacity-[0.05]" />
+        
+        {/* Minimal accent elements */}
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute -top-1/2 -right-1/2 w-full h-full bg-gradient-to-br from-[#502172]/10 to-[#D01414]/10 rounded-full blur-3xl" />
+          <div className="absolute -bottom-1/2 -left-1/2 w-full h-full bg-gradient-to-tr from-[#D01414]/10 to-[#502172]/10 rounded-full blur-3xl" />
         </div>
 
-        <div className="container mx-auto px-6 py-12 md:py-20 relative z-10">
-          <div className="grid md:grid-cols-2 gap-12 items-center">
-            <div className="space-y-8">
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.7 }}
-              >
-                <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight">
-                  <span className="inline-block bg-clip-text text-transparent bg-[size:200%] bg-gradient-to-r from-white via-[#D01414] to-white animate-gradient">
-                    Plant Truck Visibility
-                  </span>
-                  <br />
-                  <span className="inline-block bg-clip-text text-transparent bg-[size:200%] bg-gradient-to-r from-[#502172] via-white to-[#D01414] animate-gradient">
-                    & Scheduling
-                  </span>{' '}
-                  <span className="inline-block bg-clip-text text-transparent bg-[size:200%] bg-gradient-to-r from-white via-[#502172] to-white animate-gradient">
-                    Platform
-                  </span>
-                </h1>
-                <p className="mt-6 text-lg md:text-xl text-white/90 max-w-lg leading-relaxed">
-                  Streamline your plant operations with end-to-end truck visibility from scheduling to exit. Optimize gate entry, weighbridge, and dock operations in one unified platform.
-                </p>
-              </motion.div>
+        <div className="container mx-auto px-6 py-20 relative z-10">
+          <div className="max-w-4xl mx-auto text-center space-y-8">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7 }}
+            >
+              <h1 className="text-4xl md:text-6xl font-bold leading-tight tracking-tight">
+                <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#502172] to-[#D01414]">
+                  Streamline Your Plant
+                </span>
+                <br />
+                <span className="text-foreground">
+                  Truck Operations
+                </span>
+              </h1>
               
-              <motion.div 
-                className="flex flex-wrap gap-4"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.7, delay: 0.3 }}
-              >
-                <Link href="/auth/signup" className="group relative px-8 py-3 bg-white text-[#502172] rounded-md font-medium overflow-hidden hover:scale-105 transition-all duration-300">
-                  <div className="absolute inset-0 w-0 bg-gradient-to-r from-[#502172] to-[#D01414] transition-all duration-[250ms] ease-out group-hover:w-full"></div>
-                  <div className="relative flex items-center gap-2 group-hover:text-white transition-colors duration-[250ms]">
-                    Get Started <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
-                  </div>
-                </Link>
-                <Link href="/auth/signin" className="px-8 py-3 bg-transparent border border-white/30 text-white rounded-md font-medium hover:bg-white/10 backdrop-blur-sm transition-all duration-300 hover:scale-105">
-                  Sign In
-                </Link>
-              </motion.div>
-            </div>
+              <p className="mt-6 text-lg text-muted-foreground max-w-2xl mx-auto">
+                A unified platform for end-to-end truck management. From scheduling to exit, optimize every step of your plant operations with real-time visibility.
+              </p>
+            </motion.div>
             
-            <div className="relative hidden md:block">
-              <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.7, delay: 0.2 }}
-                className="relative animate-float"
+            <motion.div 
+              className="flex flex-wrap justify-center gap-4"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, delay: 0.2 }}
+            >
+              <Link 
+                href="/auth/signup" 
+                className="inline-flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-[#502172] to-[#D01414] text-white rounded-lg font-medium hover:opacity-90 transition-all duration-200"
               >
-                <div className="bg-gradient-to-tr from-[#502172]/20 to-[#D01414]/20 rounded-2xl shadow-2xl overflow-hidden backdrop-blur-sm border border-white/10">
-                  <div className="bg-white/5 p-6">
-                    <div className="bg-gradient-to-b from-gray-900/90 to-gray-800/90 rounded-xl shadow-lg overflow-hidden border border-white/10">
-                      <div className="p-4 border-b border-gray-700/50 flex justify-between items-center bg-gradient-to-r from-gray-900 to-gray-800">
-                        <h3 className="font-medium text-gray-200">LPMS Dashboard</h3>
-                        <div className="flex space-x-2">
-                          <div className="w-3 h-3 rounded-full bg-red-400 animate-pulse"></div>
-                          <div className="w-3 h-3 rounded-full bg-yellow-400 animate-pulse animation-delay-2000"></div>
-                          <div className="w-3 h-3 rounded-full bg-green-400 animate-pulse animation-delay-4000"></div>
-                        </div>
-                      </div>
-                      
-                      <div className="relative">
-                        <Image
-                          src="/appscreen.png"
-                          alt="LPMS Application Screenshot"
-                          width={800}
-                          height={600}
-                          className="w-full h-auto"
-                          priority
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-gray-900/20 to-transparent"></div>
-                      </div>
+                Get Started <ArrowRight size={16} />
+              </Link>
+              <Link 
+                href="/auth/signin" 
+                className="px-8 py-3 border border-border bg-background/50 backdrop-blur-sm rounded-lg font-medium hover:bg-accent transition-all duration-200"
+              >
+                Sign In
+              </Link>
+            </motion.div>
+
+            {/* App Preview */}
+            <motion.div
+              initial={{ opacity: 0, y: 40 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, delay: 0.4 }}
+              className="relative mt-16"
+            >
+              <div className="relative mx-auto max-w-3xl">
+                <div className="bg-background rounded-xl shadow-2xl overflow-hidden border border-border">
+                  <div className="p-2 border-b border-border bg-muted/50">
+                    <div className="flex gap-1.5">
+                      <div className="w-2.5 h-2.5 rounded-full bg-red-500" />
+                      <div className="w-2.5 h-2.5 rounded-full bg-yellow-500" />
+                      <div className="w-2.5 h-2.5 rounded-full bg-green-500" />
                     </div>
                   </div>
+                  <Image
+                    src="/appscreen.png"
+                    alt="LPMS Dashboard Preview"
+                    width={1200}
+                    height={800}
+                    className="w-full h-auto"
+                    priority
+                  />
                 </div>
-                
-                {/* Decorative elements */}
-                <div className="absolute -top-4 -right-4 w-32 h-32 bg-[#D01414]/30 rounded-full blur-3xl animate-pulse"></div>
-                <div className="absolute -bottom-8 -left-8 w-48 h-48 bg-[#502172]/30 rounded-full blur-3xl animate-glow"></div>
-              </motion.div>
-            </div>
+              </div>
+            </motion.div>
           </div>
         </div>
       </section>
 
       {/* Key Metrics Section */}
-      <section className="bg-white dark:bg-gray-900 py-16 border-b border-gray-200 dark:border-gray-800">
+      <section className="bg-background border-t border-border py-20">
         <div className="container mx-auto px-6">
           <ScrollRevealSection>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
@@ -146,18 +126,20 @@ export default function Home() {
                   icon: <BarChart3 className="h-6 w-6 text-[#D01414]" /> 
                 }
               ].map((stat, i) => (
-                <div key={i} className="flex flex-col items-center text-center group hover:scale-105 transition-transform duration-200">
-                  <div className="mb-3 p-3 bg-gradient-to-br from-[#502172]/10 to-[#D01414]/10 rounded-full group-hover:from-[#502172]/20 group-hover:to-[#D01414]/20 transition-colors">
-                    {stat.icon}
-                  </div>
-                  <div className="text-3xl md:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-[#502172] to-[#D01414]">
-                    {stat.value}
-                  </div>
-                  <div className="mt-1 text-sm font-medium text-gray-900 dark:text-white">
-                    {stat.label}
-                  </div>
-                  <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                    {stat.subtext}
+                <div key={i} className="relative group p-6 bg-background rounded-xl border border-border hover:border-[#502172]/20 transition-all duration-300">
+                  <div className="flex flex-col items-center text-center">
+                    <div className="mb-4 p-3 bg-gradient-to-br from-[#502172]/5 to-[#D01414]/5 rounded-lg group-hover:from-[#502172]/10 group-hover:to-[#D01414]/10 transition-colors">
+                      {stat.icon}
+                    </div>
+                    <div className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-[#502172] to-[#D01414]">
+                      {stat.value}
+                    </div>
+                    <div className="mt-2 font-medium text-foreground">
+                      {stat.label}
+                    </div>
+                    <div className="mt-1 text-sm text-muted-foreground">
+                      {stat.subtext}
+                    </div>
                   </div>
                 </div>
               ))}
@@ -166,16 +148,18 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Enterprise Features Section */}
-      <section className="py-20 bg-gray-50 dark:bg-gray-800/50">
+      {/* Features Section */}
+      <section className="py-24 bg-muted/30">
         <div className="container mx-auto px-6">
           <ScrollRevealSection>
             <div className="text-center mb-16">
-              <h2 className="text-3xl md:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-[#502172] to-[#D01414] mb-4">
-                End-to-End Truck Management
+              <h2 className="text-3xl md:text-4xl font-bold mb-4">
+                <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#502172] to-[#D01414]">
+                  End-to-End Truck Management
+                </span>
               </h2>
-              <p className="text-lg text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-                Our comprehensive platform provides complete visibility and control over your plant's truck operations, from transporter scheduling to final exit
+              <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+                Our comprehensive platform provides complete visibility and control over your plant's truck operations
               </p>
             </div>
             
@@ -198,43 +182,22 @@ export default function Home() {
                   title: "Weighbridge Management",
                   description: "Automate weighing processes with digital records and real-time data synchronization.",
                   features: ["Automated Weight Recording", "Digital Receipts", "Weight Compliance"]
-                },
-                {
-                  icon: <Clock className="h-8 w-8" />,
-                  title: "Dock Operations",
-                  description: "Optimize loading/unloading with real-time dock availability and status tracking.",
-                  features: ["Dock Assignment", "Loading Status Tracking", "Turnaround Time Analytics"]
-                },
-                {
-                  icon: <FileText className="h-8 w-8" />,
-                  title: "Documentation Control",
-                  description: "Centralize all truck-related documentation with digital workflows and compliance tracking.",
-                  features: ["Paperless Processing", "Automated Approvals", "Audit Trails"]
-                },
-                {
-                  icon: <Settings className="h-8 w-8" />,
-                  title: "Real-time Visibility",
-                  description: "Track every truck's journey through your facility with live status updates and notifications.",
-                  features: ["Live Truck Tracking", "Status Notifications", "Plant-wide Visibility"]
                 }
               ].map((feature, i) => (
-                <div 
-                  key={i}
-                  className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100 dark:border-gray-700 group"
-                >
-                  <div className="mb-4 p-3 bg-gradient-to-br from-[#502172]/10 to-[#D01414]/10 rounded-lg inline-block group-hover:from-[#502172]/20 group-hover:to-[#D01414]/20 transition-colors">
+                <div key={i} className="group relative bg-background rounded-xl border border-border p-6 hover:border-[#502172]/20 transition-all duration-300">
+                  <div className="mb-4 p-3 inline-flex bg-gradient-to-br from-[#502172]/5 to-[#D01414]/5 rounded-lg group-hover:from-[#502172]/10 group-hover:to-[#D01414]/10 transition-colors">
                     {feature.icon}
                   </div>
-                  <h3 className="text-xl font-semibold mb-3 text-gray-900 dark:text-white group-hover:text-[#502172] dark:group-hover:text-[#D01414] transition-colors">
+                  <h3 className="text-xl font-semibold mb-3 text-foreground">
                     {feature.title}
                   </h3>
-                  <p className="text-gray-600 dark:text-gray-300 mb-4">
+                  <p className="text-muted-foreground mb-4">
                     {feature.description}
                   </p>
                   <ul className="space-y-2">
-                    {feature.features.map((item, index) => (
-                      <li key={index} className="flex items-center text-sm text-gray-500 dark:text-gray-400">
-                        <CheckCircle2 className="h-4 w-4 mr-2 text-[#502172] dark:text-[#D01414]" />
+                    {feature.features.map((item, j) => (
+                      <li key={j} className="flex items-center text-sm text-muted-foreground">
+                        <CheckCircle2 className="h-4 w-4 mr-2 text-[#502172]" />
                         {item}
                       </li>
                     ))}
@@ -326,65 +289,35 @@ export default function Home() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-[#502172] to-[#D01414] opacity-90"></div>
-        
-        {/* Animated Background Pattern */}
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute inset-0 animate-shift1">
-            <svg className="w-[200%] h-[200%]" viewBox="0 0 100 100" preserveAspectRatio="none">
-              <pattern id="grid1" width="10" height="10" patternUnits="userSpaceOnUse">
-                <path d="M 10 0 L 0 0 0 10" fill="none" stroke="white" strokeWidth="0.5"/>
-              </pattern>
-              <rect width="100" height="100" fill="url(#grid1)"/>
-            </svg>
-          </div>
-          <div className="absolute inset-0 animate-shift2">
-            <svg className="w-[200%] h-[200%]" viewBox="0 0 100 100" preserveAspectRatio="none">
-              <pattern id="grid2" width="15" height="15" patternUnits="userSpaceOnUse">
-                <path d="M 15 0 L 0 0 0 15" fill="none" stroke="white" strokeWidth="0.5"/>
-              </pattern>
-              <rect width="100" height="100" fill="url(#grid2)"/>
-            </svg>
-          </div>
-          <div className="absolute inset-0 animate-shift3">
-            <svg className="w-[200%] h-[200%]" viewBox="0 0 100 100" preserveAspectRatio="none">
-              <pattern id="grid3" width="20" height="20" patternUnits="userSpaceOnUse">
-                <path d="M 20 0 L 0 0 0 20" fill="none" stroke="white" strokeWidth="0.5"/>
-              </pattern>
-              <rect width="100" height="100" fill="url(#grid3)"/>
-            </svg>
-          </div>
-        </div>
-
+      <section className="py-20 bg-background relative overflow-hidden">
+        <div className="absolute inset-0 bg-grid-pattern opacity-[0.02] dark:opacity-[0.05]" />
         <div className="container mx-auto px-6 relative z-10">
-          <ScrollRevealSection direction="up">
-            <div className="max-w-4xl mx-auto text-center">
-              <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
-                Ready to transform your plant logistics?
+          <ScrollRevealSection>
+            <div className="max-w-3xl mx-auto text-center">
+              <h2 className="text-3xl md:text-4xl font-bold mb-6">
+                Ready to 
+                <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#502172] to-[#D01414] mx-2">
+                  Transform
+                </span>
+                Your Plant Operations?
               </h2>
-              <p className="text-xl text-white/90 mb-12 max-w-2xl mx-auto">
-                Join industry leaders who trust our platform to streamline truck scheduling, gate processing, weighbridge operations, and dock management.
+              <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
+                Join leading manufacturers who have optimized their operations with our comprehensive truck management platform.
               </p>
-              <div className="flex flex-wrap justify-center gap-6">
+              <div className="flex flex-wrap justify-center gap-4">
                 <Link 
                   href="/auth/signup" 
-                  className="px-8 py-4 bg-white text-[#502172] rounded-lg font-medium hover:bg-gray-50 transition-colors inline-flex items-center group"
+                  className="inline-flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-[#502172] to-[#D01414] text-white rounded-lg font-medium hover:opacity-90 transition-all duration-200"
                 >
-                  Get Started
-                  <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                  Get Started <ArrowRight size={16} />
                 </Link>
                 <Link 
                   href="/contact" 
-                  className="px-8 py-4 bg-transparent text-white border-2 border-white rounded-lg font-medium hover:bg-white/10 transition-colors inline-flex items-center group"
+                  className="px-8 py-3 border border-border bg-background rounded-lg font-medium hover:bg-accent transition-all duration-200"
                 >
                   Contact Sales
-                  <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
                 </Link>
               </div>
-              <p className="mt-8 text-white/80 text-sm">
-                Enterprise-grade security • 24/7 support • Custom solutions
-              </p>
             </div>
           </ScrollRevealSection>
         </div>
