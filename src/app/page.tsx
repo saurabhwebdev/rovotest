@@ -13,15 +13,83 @@ export default function Home() {
     <main className="px-0 py-0 mx-0 max-w-full overflow-hidden">
       {/* Hero Section - Minimal Design */}
       <section className="relative min-h-[calc(100vh-4rem)] bg-gradient-to-br from-background to-background/95 overflow-hidden">
-        {/* Subtle background pattern */}
-        <div className="absolute inset-0 bg-grid-pattern opacity-[0.02] dark:opacity-[0.05]" />
-        
-        {/* Minimal accent elements */}
+        {/* Animated background elements */}
         <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute -top-1/2 -right-1/2 w-full h-full bg-gradient-to-br from-[#502172]/10 to-[#D01414]/10 rounded-full blur-3xl" />
-          <div className="absolute -bottom-1/2 -left-1/2 w-full h-full bg-gradient-to-tr from-[#D01414]/10 to-[#502172]/10 rounded-full blur-3xl" />
+          {/* Primary gradient orbs */}
+          <div 
+            className="absolute -top-1/2 -right-1/2 w-[1000px] h-[1000px] rounded-full"
+            style={{
+              background: 'radial-gradient(circle at center, rgba(80, 33, 114, 0.15), transparent 70%)',
+              animation: 'float 20s ease-in-out infinite'
+            }}
+          />
+          <div 
+            className="absolute -bottom-1/2 -left-1/2 w-[1000px] h-[1000px] rounded-full"
+            style={{
+              background: 'radial-gradient(circle at center, rgba(208, 20, 20, 0.15), transparent 70%)',
+              animation: 'float 25s ease-in-out infinite reverse'
+            }}
+          />
+          
+          {/* Secondary floating elements */}
+          <div 
+            className="absolute top-1/4 left-1/4 w-[500px] h-[500px] rounded-full mix-blend-overlay"
+            style={{
+              background: 'radial-gradient(circle at center, rgba(80, 33, 114, 0.1), transparent 60%)',
+              animation: 'floatSmall 15s ease-in-out infinite'
+            }}
+          />
+          <div 
+            className="absolute bottom-1/4 right-1/4 w-[300px] h-[300px] rounded-full mix-blend-overlay"
+            style={{
+              background: 'radial-gradient(circle at center, rgba(208, 20, 20, 0.1), transparent 60%)',
+              animation: 'floatSmall 18s ease-in-out infinite reverse'
+            }}
+          />
+
+          {/* Subtle noise texture */}
+          <div 
+            className="absolute inset-0 opacity-[0.015] dark:opacity-[0.03]"
+            style={{
+              backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`,
+              transform: 'translate3d(0, 0, 0)',
+              backfaceVisibility: 'hidden'
+            }}
+          />
+
+          {/* Moving gradient lines */}
+          <div 
+            className="absolute inset-0 opacity-[0.05] dark:opacity-[0.07]"
+            style={{
+              background: 'linear-gradient(45deg, transparent 48%, rgba(80, 33, 114, 0.1) 50%, transparent 52%), linear-gradient(-45deg, transparent 48%, rgba(208, 20, 20, 0.1) 50%, transparent 52%)',
+              backgroundSize: '60px 60px',
+              animation: 'gradientMove 8s linear infinite'
+            }}
+          />
         </div>
 
+        <style jsx>{`
+          @keyframes float {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            25% { transform: translate(50px, 50px) rotate(2deg); }
+            50% { transform: translate(0, 100px) rotate(-1deg); }
+            75% { transform: translate(-50px, 50px) rotate(1deg); }
+          }
+
+          @keyframes floatSmall {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            25% { transform: translate(25px, -25px) scale(1.05); }
+            50% { transform: translate(0, -50px) scale(1); }
+            75% { transform: translate(-25px, -25px) scale(0.95); }
+          }
+
+          @keyframes gradientMove {
+            0% { background-position: 0 0; }
+            100% { background-position: 60px 60px; }
+          }
+        `}</style>
+
+        {/* Content */}
         <div className="container mx-auto px-6 py-20 relative z-10">
           <div className="max-w-4xl mx-auto text-center space-y-8">
             <motion.div
@@ -337,6 +405,39 @@ export default function Home() {
                   </div>
                 </div>
               ))}
+            </div>
+          </ScrollRevealSection>
+        </div>
+      </section>
+
+      {/* Company Logos Strip */}
+      <section className="py-16 bg-background border-t border-border">
+        <div className="container mx-auto px-6">
+          <ScrollRevealSection>
+            <div className="text-center mb-10">
+              <p className="text-sm font-medium text-muted-foreground">Trusted by Industry Leaders</p>
+            </div>
+            <div className="flex justify-center items-center gap-16 flex-wrap">
+              <div className="group relative">
+                <div className="absolute inset-0 bg-gradient-to-r from-[#502172]/10 to-[#D01414]/10 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                <Image
+                  src="/companyicon/blue-dart-express-logo-brandlogos.net_59eftdx92.svg"
+                  alt="Blue Dart Express"
+                  width={180}
+                  height={60}
+                  className="relative opacity-70 hover:opacity-100 transition-opacity duration-300 dark:invert dark:opacity-50 dark:hover:opacity-70"
+                />
+              </div>
+              <div className="group relative">
+                <div className="absolute inset-0 bg-gradient-to-r from-[#502172]/10 to-[#D01414]/10 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                <Image
+                  src="/companyicon/mondelez-international-logo-brandlogos.net_y90djgdu1.svg"
+                  alt="Mondelez International"
+                  width={180}
+                  height={60}
+                  className="relative opacity-70 hover:opacity-100 transition-opacity duration-300 dark:invert dark:opacity-50 dark:hover:opacity-70"
+                />
+              </div>
             </div>
           </ScrollRevealSection>
         </div>
