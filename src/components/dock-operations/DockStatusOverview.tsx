@@ -102,7 +102,15 @@ export default function DockStatusOverview() {
         }
       });
       
-      setDocks(docksWithStatus);
+      // Sort docks by name numerically
+      const sortedDocks = docksWithStatus.sort((a, b) => {
+        // Extract numbers from dock names for numeric sorting
+        const aNum = parseInt(a.name.replace(/\D/g, '')) || 0;
+        const bNum = parseInt(b.name.replace(/\D/g, '')) || 0;
+        return aNum - bNum;
+      });
+      
+      setDocks(sortedDocks);
       
       const totalDocks = docksData.length;
       const occupiedDocks = activeOpsSnapshot.size;
@@ -181,7 +189,7 @@ export default function DockStatusOverview() {
         return {
           bg: 'bg-blue-100 dark:bg-blue-900/30',
           border: 'border-blue-500',
-          text: 'text-blue-700 dark:text-blue-300',
+          text: 'text-blue-800 dark:text-blue-200',
           gradient: 'from-blue-500 to-cyan-500',
           icon: 'text-blue-500'
         };
@@ -420,10 +428,10 @@ export default function DockStatusOverview() {
                       <h4 className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Current Operation</h4>
                       <div className="flex items-center">
                         <Truck className="w-4 h-4 mr-1.5 text-blue-500" />
-                        <span className="text-sm font-medium text-gray-900 dark:text-white">{selectedDock.truckNumber}</span>
+                        <span className="text-sm font-medium text-blue-800 dark:text-blue-200">{selectedDock.truckNumber}</span>
                         <span className="mx-2 text-gray-300 dark:text-gray-600">|</span>
                         <Activity className="w-4 h-4 mr-1.5 text-blue-500" />
-                        <span className="text-sm text-gray-700 dark:text-gray-300">{selectedDock.operationType || 'Operation'}</span>
+                        <span className="text-sm font-medium text-blue-800 dark:text-blue-200">{selectedDock.operationType || 'Operation'}</span>
                       </div>
                     </div>
                   )}
@@ -469,7 +477,7 @@ export default function DockStatusOverview() {
                           
                           {/* Truck info if occupied - only show on larger cards or hover */}
                           {dock.status === 'OCCUPIED' && (
-                            <div className="flex items-center text-xs text-gray-600 dark:text-gray-400 mt-1 truncate">
+                            <div className="flex items-center text-xs text-blue-800 dark:text-blue-200 mt-1 truncate font-medium">
                               <Truck className="w-3 h-3 mr-1 flex-shrink-0" />
                               <span className="truncate text-[10px]" title={dock.truckNumber}>
                                 {dock.truckNumber}
