@@ -9,7 +9,7 @@ import TruckDetailsModal from '@/components/gate-guard/TruckDetailsModal';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/contexts/AuthContext';
 import { Timestamp } from 'firebase/firestore';
-import { Info, LogOut, CheckCircle } from 'lucide-react';
+import { Info, LogOut, CheckCircle, Archive } from 'lucide-react';
 
 interface Truck {
   id: string;
@@ -42,7 +42,12 @@ interface Truck {
   sealNumber?: string;
 }
 
-export default function TruckVerificationList() {
+interface TruckVerificationListProps {
+  showArchive?: boolean;
+  setShowArchive?: (show: boolean) => void;
+}
+
+export default function TruckVerificationList({ showArchive = false, setShowArchive }: TruckVerificationListProps) {
   const [trucks, setTrucks] = useState<Truck[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -57,7 +62,18 @@ export default function TruckVerificationList() {
   const [showExitConfirmModal, setShowExitConfirmModal] = useState(false);
   const [sealNumber, setSealNumber] = useState('');
   const [sealNumberError, setSealNumberError] = useState('');
+  const [internalShowArchive, setInternalShowArchive] = useState(showArchive);
   const { user } = useAuth();
+
+  // Use either the prop or internal state
+  const actualShowArchive = setShowArchive ? showArchive : internalShowArchive;
+  const toggleArchive = () => {
+    if (setShowArchive) {
+      setShowArchive(!showArchive);
+    } else {
+      setInternalShowArchive(!internalShowArchive);
+    }
+  };
 
   useEffect(() => {
     fetchTrucks();
@@ -228,9 +244,17 @@ export default function TruckVerificationList() {
       truck.driverName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       truck.transporterName.toLowerCase().includes(searchTerm.toLowerCase());
     
-    const matchesStatus = filterStatus === 'all' || truck.status === filterStatus;
-    
-    return matchesSearch && matchesStatus;
+    // Handle the interaction between archive toggle and status filter
+    if (filterStatus === 'exited') {
+      // If specifically filtering for exited trucks, show them regardless of archive toggle
+      return matchesSearch && truck.status === 'exited';
+    } else if (actualShowArchive) {
+      // In archive mode, only show exited trucks that match other filters
+      return matchesSearch && truck.status === 'exited' && (filterStatus === 'all' || truck.status === filterStatus);
+    } else {
+      // In normal mode, exclude exited trucks
+      return matchesSearch && truck.status !== 'exited' && (filterStatus === 'all' || truck.status === filterStatus);
+    }
   });
 
   const handleProcessExit = async (truck: Truck) => {
@@ -345,6 +369,16 @@ export default function TruckVerificationList() {
           }`}
         >
           Pending Approval
+        </button>
+        <button
+          onClick={() => setFilterStatus('exited')}
+          className={`px-3 py-1 text-xs font-medium rounded-full ${
+            filterStatus === 'exited'
+              ? 'bg-blue-600 text-white'
+              : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200'
+          }`}
+        >
+          Exited
         </button>
       </div>
     );
@@ -569,8 +603,36 @@ export default function TruckVerificationList() {
               className="w-full"
             />
           </div>
-          {renderStatusFilter()}
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
+            {!setShowArchive && (
+              <button
+                onClick={toggleArchive}
+                className={`flex items-center px-4 py-2 text-sm font-medium rounded-md ${
+                  actualShowArchive
+                    ? 'bg-purple-600 text-white'
+                    : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200'
+                }`}
+                title="Toggle between active trucks and exited trucks archive"
+              >
+                <Archive className="h-4 w-4 mr-2" />
+                {actualShowArchive ? 'View Active Trucks' : 'View Archive'}
+              </button>
+            )}
+            {renderStatusFilter()}
+          </div>
         </div>
+        
+        {actualShowArchive && (
+          <div className="bg-purple-50 dark:bg-purple-900/30 border border-purple-200 dark:border-purple-800 rounded-md p-3 mb-4 flex items-center">
+            <Archive className="h-5 w-5 text-purple-600 dark:text-purple-400 mr-2" />
+            <span className="text-sm text-purple-700 dark:text-purple-300">
+              You are viewing the archive of exited trucks. 
+              {filterStatus !== 'all' && filterStatus !== 'exited' && (
+                <span className="font-medium"> Note: Status filters may not apply to archived trucks.</span>
+              )}
+            </span>
+          </div>
+        )}
       </div>
 
       {filteredTrucks.length === 0 ? (
