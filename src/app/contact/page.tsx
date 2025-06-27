@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { addDocument } from '@/lib/firestore';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 
 export default function ContactPage() {
   const router = useRouter();
@@ -111,6 +112,111 @@ export default function ContactPage() {
                   <strong>Phone:</strong> +1 (555) 987-6543<br />
                   <strong>Hours:</strong> Monday-Friday, 9AM-5PM EST
                 </p>
+              </div>
+            </div>
+          </section>
+
+          {/* Company Logos Strip */}
+          <section className="pt-8 pb-2 overflow-hidden border-t border-gray-200 dark:border-gray-700">
+            <h3 className="font-medium text-gray-900 dark:text-white mb-4">Our Trusted Partners</h3>
+            <div className="relative w-full">
+              <div className="flex animate-scroll py-1">
+                {/* First set of logos */}
+                <div className="flex items-center gap-12 shrink-0">
+                  <div className="group">
+                    <Image
+                      src="/companyicon/blue-dart-express-logo-brandlogos.net_59eftdx92.svg"
+                      alt="Blue Dart Express"
+                      width={100}
+                      height={35}
+                      className="relative opacity-40 hover:opacity-60 transition-opacity duration-300 dark:invert dark:opacity-30 dark:hover:opacity-50"
+                    />
+                  </div>
+                  <div className="group">
+                    <Image
+                      src="/companyicon/mondelez-international-logo-brandlogos.net_y90djgdu1.svg"
+                      alt="Mondelez International"
+                      width={100}
+                      height={35}
+                      className="relative opacity-40 hover:opacity-60 transition-opacity duration-300 dark:invert dark:opacity-30 dark:hover:opacity-50"
+                    />
+                  </div>
+                  <div className="group">
+                    <Image
+                      src="/companyicon/blue-dart-express-logo-brandlogos.net_59eftdx92.svg"
+                      alt="Blue Dart Express"
+                      width={100}
+                      height={35}
+                      className="relative opacity-40 hover:opacity-60 transition-opacity duration-300 dark:invert dark:opacity-30 dark:hover:opacity-50"
+                    />
+                  </div>
+                  <div className="group">
+                    <Image
+                      src="/companyicon/mondelez-international-logo-brandlogos.net_y90djgdu1.svg"
+                      alt="Mondelez International"
+                      width={100}
+                      height={35}
+                      className="relative opacity-40 hover:opacity-60 transition-opacity duration-300 dark:invert dark:opacity-30 dark:hover:opacity-50"
+                    />
+                  </div>
+                  <div className="group">
+                    <Image
+                      src="/companyicon/blue-dart-express-logo-brandlogos.net_59eftdx92.svg"
+                      alt="Blue Dart Express"
+                      width={100}
+                      height={35}
+                      className="relative opacity-40 hover:opacity-60 transition-opacity duration-300 dark:invert dark:opacity-30 dark:hover:opacity-50"
+                    />
+                  </div>
+                </div>
+                {/* Duplicate set for seamless loop */}
+                <div className="flex items-center gap-12 shrink-0">
+                  <div className="group">
+                    <Image
+                      src="/companyicon/blue-dart-express-logo-brandlogos.net_59eftdx92.svg"
+                      alt="Blue Dart Express"
+                      width={100}
+                      height={35}
+                      className="relative opacity-40 hover:opacity-60 transition-opacity duration-300 dark:invert dark:opacity-30 dark:hover:opacity-50"
+                    />
+                  </div>
+                  <div className="group">
+                    <Image
+                      src="/companyicon/mondelez-international-logo-brandlogos.net_y90djgdu1.svg"
+                      alt="Mondelez International"
+                      width={100}
+                      height={35}
+                      className="relative opacity-40 hover:opacity-60 transition-opacity duration-300 dark:invert dark:opacity-30 dark:hover:opacity-50"
+                    />
+                  </div>
+                  <div className="group">
+                    <Image
+                      src="/companyicon/blue-dart-express-logo-brandlogos.net_59eftdx92.svg"
+                      alt="Blue Dart Express"
+                      width={100}
+                      height={35}
+                      className="relative opacity-40 hover:opacity-60 transition-opacity duration-300 dark:invert dark:opacity-30 dark:hover:opacity-50"
+                    />
+                  </div>
+                  <div className="group">
+                    <Image
+                      src="/companyicon/mondelez-international-logo-brandlogos.net_y90djgdu1.svg"
+                      alt="Mondelez International"
+                      width={100}
+                      height={35}
+                      className="relative opacity-40 hover:opacity-60 transition-opacity duration-300 dark:invert dark:opacity-30 dark:hover:opacity-50"
+                    />
+                  </div>
+                  <div className="group">
+                    <Image
+                      src="/companyicon/blue-dart-express-logo-brandlogos.net_59eftdx92.svg"
+                      alt="Blue Dart Express"
+                      width={100}
+                      height={35}
+                      className="relative opacity-40 hover:opacity-60 transition-opacity duration-300 dark:invert dark:opacity-30 dark:hover:opacity-50"
+                    />
+                  </div>
+                </div>
               </div>
             </div>
           </section>
