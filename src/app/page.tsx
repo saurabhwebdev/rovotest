@@ -155,11 +155,11 @@ export default function Home() {
             <div className="text-center mb-16">
               <h2 className="text-3xl md:text-4xl font-bold mb-4">
                 <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#502172] to-[#D01414]">
-                  End-to-End Truck Management
+                  Comprehensive Plant Management
                 </span>
               </h2>
               <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                Our comprehensive platform provides complete visibility and control over your plant's truck operations
+                A complete ecosystem of integrated modules designed to optimize every aspect of your plant's logistics operations
               </p>
             </div>
             
@@ -167,21 +167,75 @@ export default function Home() {
               {[
                 {
                   icon: <Truck className="h-8 w-8" />,
-                  title: "Transporter Scheduling",
-                  description: "Empower transporters to schedule truck arrivals, reducing congestion and optimizing plant operations.",
-                  features: ["Self-Service Scheduling", "Real-time Slot Availability", "Automated Notifications"]
+                  title: "Smart Scheduling",
+                  description: "Advanced truck scheduling and management system for transporters with real-time tracking.",
+                  features: [
+                    "Self-service scheduling portal",
+                    "Real-time slot availability",
+                    "Automated notifications",
+                    "Schedule history tracking",
+                    "Operational efficiency metrics"
+                  ]
                 },
                 {
                   icon: <Shield className="h-8 w-8" />,
-                  title: "Gate Guard Operations",
-                  description: "Streamline entry verification with digital documentation and automated compliance checks.",
-                  features: ["QR Code Verification", "Digital Documentation", "Compliance Checks"]
+                  title: "Gate Management",
+                  description: "Comprehensive gate security and verification system with digital documentation.",
+                  features: [
+                    "QR code verification",
+                    "Digital documentation",
+                    "Security compliance checks",
+                    "Plant tracking system",
+                    "Entry processing KPIs"
+                  ]
                 },
                 {
                   icon: <BarChart3 className="h-8 w-8" />,
-                  title: "Weighbridge Management",
-                  description: "Automate weighing processes with digital records and real-time data synchronization.",
-                  features: ["Automated Weight Recording", "Digital Receipts", "Weight Compliance"]
+                  title: "Weighbridge System",
+                  description: "Automated weighing operations with digital records and compliance tracking.",
+                  features: [
+                    "Automated weight recording",
+                    "Digital weight receipts",
+                    "Compliance verification",
+                    "Weight history tracking",
+                    "Performance analytics"
+                  ]
+                },
+                {
+                  icon: <Settings className="h-8 w-8" />,
+                  title: "Dock Operations",
+                  description: "Real-time dock management and operation tracking system.",
+                  features: [
+                    "Live dock status monitoring",
+                    "Loading/unloading tracking",
+                    "Dock utilization metrics",
+                    "Operation history logging",
+                    "Performance reporting"
+                  ]
+                },
+                {
+                  icon: <Globe className="h-8 w-8" />,
+                  title: "LED Display System",
+                  description: "Dynamic LED screen management for real-time status display across your facility.",
+                  features: [
+                    "Real-time status updates",
+                    "Customizable displays",
+                    "Multi-screen support",
+                    "Automated notifications",
+                    "Display configuration"
+                  ]
+                },
+                {
+                  icon: <FileText className="h-8 w-8" />,
+                  title: "Administration Hub",
+                  description: "Centralized administration and management tools for complete operational control.",
+                  features: [
+                    "Role-based access control",
+                    "Master data management",
+                    "Shift handover system",
+                    "Audit trail tracking",
+                    "KPI dashboards"
+                  ]
                 }
               ].map((feature, i) => (
                 <div key={i} className="group relative bg-background rounded-xl border border-border p-6 hover:border-[#502172]/20 transition-all duration-300">
