@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import DockOperationsList from '@/components/dock-operations/DockOperationsList';
+import DockStatusOverview from '@/components/dock-operations/DockStatusOverview';
 import NewDockOperationModal from '@/components/dock-operations/NewDockOperationModal';
 import HelpIcon from '@/components/ui/HelpIcon';
 import { dockOperationsHelp } from '@/lib/helpContent';
@@ -37,6 +38,7 @@ export default function DockOperationsPage() {
           </div>
         </div>
 
+        <DockStatusOverview />
         <DockOperationsList />
         
         <NewDockOperationModal

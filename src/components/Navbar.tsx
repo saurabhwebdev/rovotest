@@ -154,19 +154,30 @@ export default function Navbar() {
     fetchRegisterTemplates();
   }, []);
 
-  // Close dropdown when clicking outside
+  // Close mobile menu when clicking outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (isMobileMenuOpen) {
+      const target = event.target as Element;
+      // Don't close if clicking inside the mobile menu or the toggle button
+      if (isMobileMenuOpen && !target.closest('.mobile-menu-container') && !target.closest('.mobile-menu-button')) {
         setIsMobileMenuOpen(false);
       }
     }
     
-    document.addEventListener('mousedown', handleClickOutside);
+    // Add event listener only when mobile menu is open
+    if (isMobileMenuOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [isMobileMenuOpen]);
+
+  // Close mobile menu when route changes
+  useEffect(() => {
+    setIsMobileMenuOpen(false);
+  }, [pathname]);
 
   const handleLogout = async () => {
     try {
@@ -239,6 +250,7 @@ export default function Navbar() {
     <header className="sticky top-0 z-50 w-full border-b border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900 shadow-sm">
       <div className="container mx-auto px-4">
         <div className="flex h-16 items-center justify-between">
+          {/* Logo - always visible */}
           <div className="flex items-center">
             <Link href="/" className="flex items-center gap-3">
               <div className="w-8 h-8 md:w-10 md:h-10 relative">
@@ -259,27 +271,7 @@ export default function Navbar() {
             </Link>
           </div>
           
-          {/* Mobile menu button */}
-          <div className="md:hidden">
-            <button
-              type="button"
-              className="inline-flex items-center justify-center p-2 rounded-md text-gray-700 dark:text-gray-200 hover:text-indigo-500 dark:hover:text-indigo-400 focus:outline-none"
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            >
-              <span className="sr-only">Open main menu</span>
-              {isMobileMenuOpen ? (
-                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              ) : (
-                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
-                </svg>
-              )}
-            </button>
-          </div>
-          
-          {/* Desktop menu */}
+          {/* Desktop menu - hidden on mobile */}
           <nav className="hidden md:flex md:flex-1 md:items-center md:justify-center">
             {user && (
               <div className="flex space-x-1">
@@ -484,180 +476,265 @@ export default function Navbar() {
             )}
           </nav>
           
-          {/* User menu */}
-          <div className="flex items-center space-x-4">
-            {user ? (
+          {/* Right side menu with user controls */}
+          <div className="flex items-center">
+            {/* Theme toggle and display mode toggle - visible on both desktop and mobile */}
+            <div className="flex items-center">
+              {/* Display mode toggle */}
               <button
-                onClick={handleLogout}
-                className={`px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 ${isCompactMode ? 'tooltip-wrapper' : ''}`}
+                onClick={toggleDisplayMode}
+                className="p-2 rounded-md text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 tooltip-wrapper"
+                aria-label="Toggle display mode"
               >
                 {isCompactMode ? (
                   <>
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h6m4 0h6m-10 4h4" />
                     </svg>
-                    <span className="tooltip">Logout</span>
+                    <span className="tooltip">Switch to Text Mode</span>
                   </>
                 ) : (
-                  <>Logout</>
+                  <>
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16m-7 6h7" />
+                    </svg>
+                    <span className="tooltip">Switch to Icon Mode</span>
+                  </>
                 )}
               </button>
-            ) : (
-              <Link
-                href="/auth/signin"
-                className={`px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 ${isCompactMode ? 'tooltip-wrapper' : ''}`}
-              >
-                {isCompactMode ? (
-                  <>
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
-                    </svg>
-                    <span className="tooltip">Login</span>
-                  </>
-                ) : (
-                  <>Login</>
-                )}
-              </Link>
-            )}
+              
+              <ThemeToggle />
+            </div>
             
-            {/* Display mode toggle */}
-            <button
-              onClick={toggleDisplayMode}
-              className="p-2 rounded-md text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 tooltip-wrapper"
-              aria-label="Toggle display mode"
-            >
-              {isCompactMode ? (
-                <>
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h6m4 0h6m-10 4h4" />
-                  </svg>
-                  <span className="tooltip">Switch to Text Mode</span>
-                </>
+            {/* Login/Logout button - visible on desktop */}
+            <div className="hidden md:block ml-4">
+              {user ? (
+                <button
+                  onClick={handleLogout}
+                  className={`px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 ${isCompactMode ? 'tooltip-wrapper' : ''}`}
+                >
+                  {isCompactMode ? (
+                    <>
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+                      </svg>
+                      <span className="tooltip">Logout</span>
+                    </>
+                  ) : (
+                    <>Logout</>
+                  )}
+                </button>
               ) : (
-                <>
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16m-7 6h7" />
-                  </svg>
-                  <span className="tooltip">Switch to Icon Mode</span>
-                </>
+                <Link
+                  href="/auth/signin"
+                  className={`px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 ${isCompactMode ? 'tooltip-wrapper' : ''}`}
+                >
+                  {isCompactMode ? (
+                    <>
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+                      </svg>
+                      <span className="tooltip">Login</span>
+                    </>
+                  ) : (
+                    <>Login</>
+                  )}
+                </Link>
               )}
-            </button>
+            </div>
             
-            <ThemeToggle />
+            {/* Mobile menu button - only visible on mobile */}
+            <div className="md:hidden ml-4">
+              <button
+                type="button"
+                className="mobile-menu-button inline-flex items-center justify-center p-2 rounded-md text-gray-700 dark:text-gray-200 hover:text-indigo-500 dark:hover:text-indigo-400 focus:outline-none"
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              >
+                <span className="sr-only">Open main menu</span>
+                {isMobileMenuOpen ? (
+                  <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                ) : (
+                  <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
+                  </svg>
+                )}
+              </button>
+            </div>
           </div>
         </div>
       </div>
       
-      {/* Mobile menu */}
-      {isMobileMenuOpen && (
-        <div className="md:hidden">
-          <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-            {/* Filter mobile menu items based on permissions */}
-            {user ? (
-              <>
-                {accessibleMainPages.map(page => (
-                  <Link
-                    key={page.id}
-                    href={page.path}
-                    className={`block px-3 py-2 rounded-md text-base font-medium flex items-center ${
-                      isActive(page.path)
-                        ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-200'
-                        : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800'
-                    }`}
-                  >
-                    <span className="mr-2">{menuIcons[page.id]}</span>
-                    {page.name}
-                  </Link>
-                ))}
-
-                {/* Show register section header if user has register access */}
-                {showRegisterDropdown && (
-                  <div className="pt-4 pb-2">
-                    <div className="border-t border-gray-200 dark:border-gray-700"></div>
-                    <div className="mt-2 text-xs font-semibold text-gray-500 dark:text-gray-400 px-3">
-                      REGISTERS
-                    </div>
-                  </div>
-                )}
-
-                {/* Show register pages the user has access to */}
-                {accessibleRegisterPages.map(page => (
-                  <Link
-                    key={page.id}
-                    href={page.path}
-                    className={`block px-3 py-2 rounded-md text-base font-medium flex items-center ${
-                      isActive(page.path)
-                        ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-200'
-                        : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800'
-                    }`}
-                  >
-                    <span className="mr-2">{menuIcons['register']}</span>
-                    {page.name}
-                  </Link>
-                ))}
-
-                {/* Show admin section header if user has admin access */}
-                {showAdminDropdown && (
-                  <div className="pt-4 pb-2">
-                    <div className="border-t border-gray-200 dark:border-gray-700"></div>
-                    <div className="mt-2 text-xs font-semibold text-gray-500 dark:text-gray-400 px-3">
-                      ADMIN
-                    </div>
-                  </div>
-                )}
-
-                {/* Show admin pages the user has access to */}
-                {filteredAdminPages.map(page => (
-                  <Link
-                    key={page.id}
-                    href={page.path}
-                    className={`block px-3 py-2 rounded-md text-base font-medium flex items-center ${
-                      isActive(page.path)
-                        ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-200'
-                        : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800'
-                    }`}
-                  >
-                    <span className="mr-2">{menuIcons['admin']}</span>
-                    {page.name}
-                  </Link>
-                ))}
-
-                {/* Show audit section header if user has audit access */}
-                {(accessibleAuditPages.length > 0 || isAdminUser) && (
-                  <div className="pt-4 pb-2">
-                    <div className="border-t border-gray-200 dark:border-gray-700"></div>
-                    <div className="mt-2 text-xs font-semibold text-gray-500 dark:text-gray-400 px-3">
-                      AUDIT
-                    </div>
-                  </div>
-                )}
-
-                {/* Show audit pages the user has access to */}
-                {accessibleAuditPages.map(page => (
-                  <Link
-                    key={page.id}
-                    href={page.path}
-                    className={`block px-3 py-2 rounded-md text-base font-medium flex items-center ${
-                      isActive(page.path)
-                        ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-200'
-                        : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800'
-                    }`}
-                  >
-                    <span className="mr-2">{menuIcons['audit']}</span>
-                    {page.name}
-                  </Link>
-                ))}
-              </>
-            ) : (
-              <Link
-                href="/auth/signin"
-                className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
+      {/* Mobile menu - sliding sheet from the side */}
+      <div 
+        className={`md:hidden fixed inset-y-0 left-0 transform ${
+          isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
+        } w-64 z-50 bg-white dark:bg-gray-900 shadow-lg transition-transform duration-300 ease-in-out mobile-menu-container overflow-y-auto`}
+      >
+        <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-2">
+            <div className="w-8 h-8 relative">
+              <svg 
+                viewBox="0 0 24 24" 
+                fill="none" 
+                className="w-full h-full transition-colors"
               >
-                Login
-              </Link>
-            )}
-          </div>
+                <path 
+                  fillRule="evenodd" 
+                  clipRule="evenodd" 
+                  d="M8 3C6.89543 3 6 3.89543 6 5V7.35418C6.73294 6.52375 7.80531 6 9 6H15C16.1947 6 17.2671 6.52375 18 7.35418V5C18 3.89543 17.1046 3 16 3H8ZM18 13H6C5.44772 13 5 13.4477 5 14V17C5 17.5523 5.44772 18 6 18H18C18.5523 18 19 17.5523 19 17V14C19 13.4477 18.5523 13 18 13ZM17 11V10C17 8.89543 16.1046 8 15 8H9C7.89543 8 7 8.89543 7 10V11H17ZM4 5V11.7639L3.9768 11.7849C3.87839 11.336 3.47843 11 3 11H2C1.44772 11 1 11.4477 1 12C1 12.5523 1.44772 13 2 13H3C3.06013 13 3.11902 12.9947 3.17623 12.9845C3.06216 13.3017 3 13.6436 3 14V17C3 17.8885 3.38625 18.6868 4 19.2361V22C4 22.5523 4.44772 23 5 23H6C6.55228 23 7 22.5523 7 22V20H17V22C17 22.5523 17.4477 23 18 23H19C19.5523 23 20 22.5523 20 22V19.2361C20.6137 18.6868 21 17.8885 21 17V14C21 13.6436 20.9378 13.3017 20.8238 12.9845C20.881 12.9947 20.9399 13 21 13H22C22.5523 13 23 12.5523 23 12C23 11.4477 22.5523 11 22 11H21C20.5216 11 20.1216 11.336 20.0232 11.7849C20.0155 11.7778 20.0078 11.7708 20 11.7639V5C20 2.79086 18.2091 1 16 1H8C5.79086 1 4 2.79086 4 5ZM6 15.5C6 14.6716 6.67157 14 7.5 14C8.32843 14 9 14.6716 9 15.5C9 16.3284 8.32843 17 7.5 17C6.67157 17 6 16.3284 6 15.5ZM16.5 14C15.6716 14 15 14.6716 15 15.5C15 16.3284 15.6716 17 16.5 17C17.3284 17 18 16.3284 18 15.5C18 14.6716 17.3284 14 16.5 14Z" 
+                  className="fill-[#502172] dark:fill-[#D01414]"
+                />
+              </svg>
+            </div>
+            <span className="text-lg font-bold text-[#502172] dark:text-[#D01414]">LPMS</span>
+          </Link>
+          <button 
+            onClick={() => setIsMobileMenuOpen(false)}
+            className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+          >
+            <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
         </div>
+
+        <div className="px-2 py-3 space-y-1">
+          {/* Filter mobile menu items based on permissions */}
+          {user ? (
+            <>
+              {accessibleMainPages.map(page => (
+                <Link
+                  key={page.id}
+                  href={page.path}
+                  className={`block px-3 py-2 rounded-md text-base font-medium flex items-center ${
+                    isActive(page.path)
+                      ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-200'
+                      : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800'
+                  }`}
+                >
+                  <span className="mr-2">{menuIcons[page.id]}</span>
+                  {page.name}
+                </Link>
+              ))}
+
+              {/* Show register section header if user has register access */}
+              {showRegisterDropdown && (
+                <div className="pt-4 pb-2">
+                  <div className="border-t border-gray-200 dark:border-gray-700"></div>
+                  <div className="mt-2 text-xs font-semibold text-gray-500 dark:text-gray-400 px-3">
+                    REGISTERS
+                  </div>
+                </div>
+              )}
+
+              {/* Show register pages the user has access to */}
+              {accessibleRegisterPages.map(page => (
+                <Link
+                  key={page.id}
+                  href={page.path}
+                  className={`block px-3 py-2 rounded-md text-base font-medium flex items-center ${
+                    isActive(page.path)
+                      ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-200'
+                      : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800'
+                  }`}
+                >
+                  <span className="mr-2">{menuIcons['register']}</span>
+                  {page.name}
+                </Link>
+              ))}
+
+              {/* Show admin section header if user has admin access */}
+              {showAdminDropdown && (
+                <div className="pt-4 pb-2">
+                  <div className="border-t border-gray-200 dark:border-gray-700"></div>
+                  <div className="mt-2 text-xs font-semibold text-gray-500 dark:text-gray-400 px-3">
+                    ADMIN
+                  </div>
+                </div>
+              )}
+
+              {/* Show admin pages the user has access to */}
+              {filteredAdminPages.map(page => (
+                <Link
+                  key={page.id}
+                  href={page.path}
+                  className={`block px-3 py-2 rounded-md text-base font-medium flex items-center ${
+                    isActive(page.path)
+                      ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-200'
+                      : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800'
+                  }`}
+                >
+                  <span className="mr-2">{menuIcons['admin']}</span>
+                  {page.name}
+                </Link>
+              ))}
+
+              {/* Show audit section header if user has audit access */}
+              {(accessibleAuditPages.length > 0 || isAdminUser) && (
+                <div className="pt-4 pb-2">
+                  <div className="border-t border-gray-200 dark:border-gray-700"></div>
+                  <div className="mt-2 text-xs font-semibold text-gray-500 dark:text-gray-400 px-3">
+                    AUDIT
+                  </div>
+                </div>
+              )}
+
+              {/* Show audit pages the user has access to */}
+              {accessibleAuditPages.map(page => (
+                <Link
+                  key={page.id}
+                  href={page.path}
+                  className={`block px-3 py-2 rounded-md text-base font-medium flex items-center ${
+                    isActive(page.path)
+                      ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-200'
+                      : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800'
+                  }`}
+                >
+                  <span className="mr-2">{menuIcons['audit']}</span>
+                  {page.name}
+                </Link>
+              ))}
+              
+              {/* Logout button in mobile menu */}
+              <div className="pt-4 pb-2">
+                <div className="border-t border-gray-200 dark:border-gray-700"></div>
+              </div>
+              <button
+                onClick={handleLogout}
+                className="w-full text-left px-3 py-2 rounded-md text-base font-medium flex items-center text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
+              >
+                <span className="mr-2">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+                  </svg>
+                </span>
+                Logout
+              </button>
+            </>
+          ) : (
+            <Link
+              href="/auth/signin"
+              className="block px-3 py-2 rounded-md text-base font-medium flex items-center text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
+            >
+              <span className="mr-2">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+                </svg>
+              </span>
+              Login
+            </Link>
+          )}
+        </div>
+      </div>
+      
+      {/* Overlay when mobile menu is open */}
+      {isMobileMenuOpen && (
+        <div 
+          className="md:hidden fixed inset-0 bg-black bg-opacity-50 z-40"
+          onClick={() => setIsMobileMenuOpen(false)}
+        ></div>
       )}
     </header>
   );
