@@ -9,6 +9,7 @@ import TruckDetailsModal from '@/components/gate-guard/TruckDetailsModal';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/contexts/AuthContext';
 import { Timestamp } from 'firebase/firestore';
+import { Info, LogOut, CheckCircle } from 'lucide-react';
 
 interface Truck {
   id: string;
@@ -384,24 +385,33 @@ export default function TruckVerificationList() {
             <div className="flex justify-end space-x-2">
               <button
                 onClick={() => handleViewDetails(truck)}
-                className="px-3 py-1 text-xs font-medium text-blue-700 bg-blue-50 rounded hover:bg-blue-100 dark:bg-blue-900 dark:text-blue-200 dark:hover:bg-blue-800"
+                className="px-3 py-1 text-xs font-medium text-blue-700 bg-blue-50 rounded hover:bg-blue-100 dark:bg-blue-900 dark:text-blue-200 dark:hover:bg-blue-800 flex items-center"
+                aria-label="View Details"
+                title="View Details"
               >
-                View Details
+                <Info className="h-4 w-4 mr-1" />
+                <span>Details</span>
               </button>
               
               {truck.status === 'exit_ready' ? (
                 <button
                   onClick={() => openExitConfirmModal(truck)}
-                  className="px-3 py-1 text-xs font-medium text-amber-700 bg-amber-50 rounded hover:bg-amber-100 dark:bg-amber-900 dark:text-amber-200 dark:hover:bg-amber-800"
+                  className="px-3 py-1 text-xs font-medium text-amber-700 bg-amber-50 rounded hover:bg-amber-100 dark:bg-amber-900 dark:text-amber-200 dark:hover:bg-amber-800 flex items-center"
+                  aria-label="Process Exit"
+                  title="Process Exit"
                 >
-                  Process Exit
+                  <LogOut className="h-4 w-4 mr-1" />
+                  <span>Process Exit</span>
                 </button>
               ) : truck.status === 'scheduled' || truck.status === 'verified' ? (
                 <button
                   onClick={() => handleVerifyTruck(truck)}
-                  className="px-3 py-1 text-xs font-medium text-green-700 bg-green-50 rounded hover:bg-green-100 dark:bg-green-900 dark:text-green-200 dark:hover:bg-green-800"
+                  className="px-3 py-1 text-xs font-medium text-green-700 bg-green-50 rounded hover:bg-green-100 dark:bg-green-900 dark:text-green-200 dark:hover:bg-green-800 flex items-center"
+                  aria-label="Verify"
+                  title="Verify"
                 >
-                  Verify
+                  <CheckCircle className="h-4 w-4 mr-1" />
+                  <span>Verify</span>
                 </button>
               ) : null}
             </div>
@@ -496,23 +506,29 @@ export default function TruckVerificationList() {
                 <button
                   onClick={() => handleViewDetails(truck)}
                   className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 mr-3"
+                  aria-label="View Details"
+                  title="View Details"
                 >
-                  Details
+                  <Info className="h-5 w-5" />
                 </button>
                 
                 {truck.status === 'exit_ready' ? (
                   <button
                     onClick={() => openExitConfirmModal(truck)}
                     className="text-amber-600 hover:text-amber-900 dark:text-amber-400 dark:hover:text-amber-300"
+                    aria-label="Process Exit"
+                    title="Process Exit"
                   >
-                    Process Exit
+                    <LogOut className="h-5 w-5" />
                   </button>
                 ) : truck.status === 'scheduled' || truck.status === 'verified' ? (
                   <button
                     onClick={() => handleVerifyTruck(truck)}
                     className="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300"
+                    aria-label="Verify"
+                    title="Verify"
                   >
-                    Verify
+                    <CheckCircle className="h-5 w-5" />
                   </button>
                 ) : null}
               </td>
