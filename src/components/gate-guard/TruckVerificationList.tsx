@@ -2,11 +2,13 @@
 
 import { useState, useEffect } from 'react';
 import { getTrucksForGateGuard } from '@/lib/firestore';
-import { collection, getDocs, DocumentData } from 'firebase/firestore';
+import { collection, getDocs, DocumentData, doc, updateDoc, addDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import TruckVerificationModal from '@/components/gate-guard/TruckVerificationModal';
 import TruckDetailsModal from '@/components/gate-guard/TruckDetailsModal';
 import { Input } from '@/components/ui/input';
+import { useAuth } from '@/contexts/AuthContext';
+import { Timestamp } from 'firebase/firestore';
 
 interface Truck {
   id: string;
@@ -50,6 +52,8 @@ export default function TruckVerificationList() {
   const [sortField, setSortField] = useState<keyof Truck>('reportingDate');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const [isMobileView, setIsMobileView] = useState(false);
+  const [showExitConfirmModal, setShowExitConfirmModal] = useState(false);
+  const { user } = useAuth();
 
   useEffect(() => {
     fetchTrucks();
@@ -155,6 +159,10 @@ export default function TruckVerificationList() {
       case 'loading_completed':
       case 'unloading_completed':
         return 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200';
+      case 'exit_ready':
+        return 'bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200';
+      case 'exited':
+        return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200';
       default:
         return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200';
     }
@@ -187,6 +195,10 @@ export default function TruckVerificationList() {
         return 'Loading Completed';
       case 'unloading_completed':
         return 'Unloading Completed';
+      case 'exit_ready':
+        return 'Ready for Exit';
+      case 'exited':
+        return 'Exited Plant';
       default:
         return status.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
     }
@@ -216,6 +228,109 @@ export default function TruckVerificationList() {
     
     return matchesSearch && matchesStatus;
   });
+
+  const handleProcessExit = async (truck: Truck) => {
+    try {
+      // Update truck status to exited
+      const truckRef = doc(db, 'trucks', truck.id);
+      await updateDoc(truckRef, {
+        status: 'exited',
+        exitTime: Timestamp.now(),
+        exitProcessedBy: user?.uid || 'unknown',
+        currentLocation: 'Outside Plant'
+      });
+
+      // Create audit entry
+      await addDoc(collection(db, 'gateGuardAudit'), {
+        truckNumber: truck.vehicleNumber,
+        driverName: truck.driverName,
+        transporterName: truck.transporterName,
+        action: 'EXIT_PROCESSED',
+        timestamp: new Date(),
+        performedBy: user?.uid || 'unknown',
+        performedByName: user?.displayName || 'Unknown User',
+        details: {
+          exitTime: new Date(),
+          previousStatus: truck.status
+        }
+      });
+
+      // Close modal and refresh the list
+      setShowExitConfirmModal(false);
+      setSelectedTruck(null);
+      fetchTrucks();
+    } catch (error) {
+      console.error('Error processing truck exit:', error);
+    }
+  };
+
+  const openExitConfirmModal = (truck: Truck) => {
+    setSelectedTruck(truck);
+    setShowExitConfirmModal(true);
+  };
+
+  const closeExitConfirmModal = () => {
+    setSelectedTruck(null);
+    setShowExitConfirmModal(false);
+  };
+
+  // Add filter options for status
+  const renderStatusFilter = () => {
+    return (
+      <div className="mb-4 flex flex-wrap gap-2">
+        <button
+          onClick={() => setFilterStatus('all')}
+          className={`px-3 py-1 text-xs font-medium rounded-full ${
+            filterStatus === 'all'
+              ? 'bg-blue-600 text-white'
+              : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200'
+          }`}
+        >
+          All
+        </button>
+        <button
+          onClick={() => setFilterStatus('scheduled')}
+          className={`px-3 py-1 text-xs font-medium rounded-full ${
+            filterStatus === 'scheduled'
+              ? 'bg-blue-600 text-white'
+              : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200'
+          }`}
+        >
+          Scheduled
+        </button>
+        <button
+          onClick={() => setFilterStatus('exit_ready')}
+          className={`px-3 py-1 text-xs font-medium rounded-full ${
+            filterStatus === 'exit_ready'
+              ? 'bg-blue-600 text-white'
+              : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200'
+          }`}
+        >
+          Exit Ready
+        </button>
+        <button
+          onClick={() => setFilterStatus('verified')}
+          className={`px-3 py-1 text-xs font-medium rounded-full ${
+            filterStatus === 'verified'
+              ? 'bg-blue-600 text-white'
+              : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200'
+          }`}
+        >
+          Verified
+        </button>
+        <button
+          onClick={() => setFilterStatus('pending-approval')}
+          className={`px-3 py-1 text-xs font-medium rounded-full ${
+            filterStatus === 'pending-approval'
+              ? 'bg-blue-600 text-white'
+              : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200'
+          }`}
+        >
+          Pending Approval
+        </button>
+      </div>
+    );
+  };
 
   if (loading) {
     return (
@@ -248,58 +363,47 @@ export default function TruckVerificationList() {
             className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 border border-gray-200 dark:border-gray-700"
           >
             <div className="flex justify-between items-start mb-2">
-              <h3 className="font-medium text-sm">{truck.vehicleNumber}</h3>
-              <span className={`px-2 py-0.5 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusBadgeClass(truck.status)}`}>
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white">{truck.vehicleNumber}</h3>
+              <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusBadgeClass(truck.status)}`}>
                 {getStatusDisplay(truck.status)}
               </span>
             </div>
             
-            <div className="space-y-1 text-xs text-gray-600 dark:text-gray-300">
-              <div className="flex justify-between">
-                <span>Driver:</span>
-                <span className="font-medium">{truck.driverName}</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Mobile:</span>
-                <span>{truck.mobileNumber}</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Transporter:</span>
-                <span>{truck.transporterName}</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Date & Time:</span>
-                <span>{formatDate(truck.reportingDate)} {formatTime(truck.reportingTime)}</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Gate:</span>
-                <span>{truck.gate}</span>
-              </div>
+            <div className="space-y-2 mb-4">
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                <span className="font-medium">Driver:</span> {truck.driverName}
+              </p>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                <span className="font-medium">Transporter:</span> {truck.transporterName}
+              </p>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                <span className="font-medium">Reporting:</span> {formatDate(truck.reportingDate)} {formatTime(truck.reportingTime)}
+              </p>
             </div>
             
-            <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700 flex justify-end space-x-2">
+            <div className="flex justify-end space-x-2">
               <button
                 onClick={() => handleViewDetails(truck)}
-                className="px-3 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md text-xs flex items-center"
+                className="px-3 py-1 text-xs font-medium text-blue-700 bg-blue-50 rounded hover:bg-blue-100 dark:bg-blue-900 dark:text-blue-200 dark:hover:bg-blue-800"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                </svg>
-                Details
+                View Details
               </button>
               
-              {truck.status === 'scheduled' && (
+              {truck.status === 'exit_ready' ? (
+                <button
+                  onClick={() => openExitConfirmModal(truck)}
+                  className="px-3 py-1 text-xs font-medium text-amber-700 bg-amber-50 rounded hover:bg-amber-100 dark:bg-amber-900 dark:text-amber-200 dark:hover:bg-amber-800"
+                >
+                  Process Exit
+                </button>
+              ) : truck.status === 'scheduled' || truck.status === 'verified' ? (
                 <button
                   onClick={() => handleVerifyTruck(truck)}
-                  className="px-3 py-1 bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-md text-xs flex items-center"
+                  className="px-3 py-1 text-xs font-medium text-green-700 bg-green-50 rounded hover:bg-green-100 dark:bg-green-900 dark:text-green-200 dark:hover:bg-green-800"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
                   Verify
                 </button>
-              )}
+              ) : null}
             </div>
           </div>
         ))}
@@ -310,220 +414,129 @@ export default function TruckVerificationList() {
   // Desktop Table View
   const renderDesktopTable = () => {
     return (
-      <div className="overflow-x-auto">
-        <table className="min-w-full border-collapse">
-          <thead className="bg-gray-50 dark:bg-gray-800/50">
-            <tr>
-              <th 
-                className="px-2 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700/50"
-                onClick={() => handleSort('vehicleNumber')}
-              >
-                <div className="flex items-center">
-                  <span>Vehicle Number</span>
-                  {sortField === 'vehicleNumber' && (
-                    <svg xmlns="http://www.w3.org/2000/svg" className={`ml-1 h-3 w-3 ${sortDirection === 'desc' ? 'transform rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
-                    </svg>
-                  )}
-                </div>
-              </th>
-              <th 
-                className="px-2 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700/50"
-                onClick={() => handleSort('driverName')}
-              >
-                <div className="flex items-center">
-                  <span>Driver Name</span>
-                  {sortField === 'driverName' && (
-                    <svg xmlns="http://www.w3.org/2000/svg" className={`ml-1 h-3 w-3 ${sortDirection === 'desc' ? 'transform rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
-                    </svg>
-                  )}
-                </div>
-              </th>
-              <th 
-                className="px-2 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700/50"
-              >
-                <div className="flex items-center">
-                  <span>Mobile Number</span>
-                </div>
-              </th>
-              <th 
-                className="px-2 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700/50"
-                onClick={() => handleSort('transporterName')}
-              >
-                <div className="flex items-center">
-                  <span>Transporter</span>
-                  {sortField === 'transporterName' && (
-                    <svg xmlns="http://www.w3.org/2000/svg" className={`ml-1 h-3 w-3 ${sortDirection === 'desc' ? 'transform rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
-                    </svg>
-                  )}
-                </div>
-              </th>
-              <th 
-                className="px-2 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700/50"
-                onClick={() => handleSort('reportingDate')}
-              >
-                <div className="flex items-center">
-                  <span>Date</span>
-                  {sortField === 'reportingDate' && (
-                    <svg xmlns="http://www.w3.org/2000/svg" className={`ml-1 h-3 w-3 ${sortDirection === 'desc' ? 'transform rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
-                    </svg>
-                  )}
-                </div>
-              </th>
-              <th 
-                className="px-2 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700/50"
-                onClick={() => handleSort('reportingTime')}
-              >
-                <div className="flex items-center">
-                  <span>Time</span>
-                  {sortField === 'reportingTime' && (
-                    <svg xmlns="http://www.w3.org/2000/svg" className={`ml-1 h-3 w-3 ${sortDirection === 'desc' ? 'transform rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
-                    </svg>
-                  )}
-                </div>
-              </th>
-              <th 
-                className="px-2 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700/50"
-                onClick={() => handleSort('gate')}
-              >
-                <div className="flex items-center">
-                  <span>Gate</span>
-                  {sortField === 'gate' && (
-                    <svg xmlns="http://www.w3.org/2000/svg" className={`ml-1 h-3 w-3 ${sortDirection === 'desc' ? 'transform rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
-                    </svg>
-                  )}
-                </div>
-              </th>
-              <th 
-                className="px-2 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700/50"
-                onClick={() => handleSort('status')}
-              >
-                <div className="flex items-center">
-                  <span>Status</span>
-                  {sortField === 'status' && (
-                    <svg xmlns="http://www.w3.org/2000/svg" className={`ml-1 h-3 w-3 ${sortDirection === 'desc' ? 'transform rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
-                    </svg>
-                  )}
-                </div>
-              </th>
-              <th className="px-2 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-300">
-                Actions
-              </th>
+      <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+        <thead className="bg-gray-50 dark:bg-gray-700">
+          <tr>
+            <th 
+              scope="col" 
+              className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer"
+              onClick={() => handleSort('vehicleNumber')}
+            >
+              Truck Number
+              {sortField === 'vehicleNumber' && (
+                <span className="ml-1">{sortDirection === 'asc' ? '↑' : '↓'}</span>
+              )}
+            </th>
+            <th 
+              scope="col" 
+              className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer"
+              onClick={() => handleSort('driverName')}
+            >
+              Driver
+              {sortField === 'driverName' && (
+                <span className="ml-1">{sortDirection === 'asc' ? '↑' : '↓'}</span>
+              )}
+            </th>
+            <th 
+              scope="col" 
+              className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer"
+              onClick={() => handleSort('transporterName')}
+            >
+              Transporter
+              {sortField === 'transporterName' && (
+                <span className="ml-1">{sortDirection === 'asc' ? '↑' : '↓'}</span>
+              )}
+            </th>
+            <th 
+              scope="col" 
+              className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer"
+              onClick={() => handleSort('reportingDate')}
+            >
+              Reporting Time
+              {sortField === 'reportingDate' && (
+                <span className="ml-1">{sortDirection === 'asc' ? '↑' : '↓'}</span>
+              )}
+            </th>
+            <th 
+              scope="col" 
+              className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer"
+              onClick={() => handleSort('status')}
+            >
+              Status
+              {sortField === 'status' && (
+                <span className="ml-1">{sortDirection === 'asc' ? '↑' : '↓'}</span>
+              )}
+            </th>
+            <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+              Actions
+            </th>
+          </tr>
+        </thead>
+        <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+          {filteredTrucks.map((truck) => (
+            <tr key={truck.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
+                {truck.vehicleNumber}
+              </td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
+                {truck.driverName}
+              </td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
+                {truck.transporterName}
+              </td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
+                {formatDate(truck.reportingDate)} {formatTime(truck.reportingTime)}
+              </td>
+              <td className="px-6 py-4 whitespace-nowrap">
+                <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusBadgeClass(truck.status)}`}>
+                  {getStatusDisplay(truck.status)}
+                </span>
+              </td>
+              <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                <button
+                  onClick={() => handleViewDetails(truck)}
+                  className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 mr-3"
+                >
+                  Details
+                </button>
+                
+                {truck.status === 'exit_ready' ? (
+                  <button
+                    onClick={() => openExitConfirmModal(truck)}
+                    className="text-amber-600 hover:text-amber-900 dark:text-amber-400 dark:hover:text-amber-300"
+                  >
+                    Process Exit
+                  </button>
+                ) : truck.status === 'scheduled' || truck.status === 'verified' ? (
+                  <button
+                    onClick={() => handleVerifyTruck(truck)}
+                    className="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300"
+                  >
+                    Verify
+                  </button>
+                ) : null}
+              </td>
             </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-            {filteredTrucks.map(truck => (
-              <tr key={truck.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50">
-                <td className="px-2 py-1.5 whitespace-nowrap text-xs font-medium">{truck.vehicleNumber}</td>
-                <td className="px-2 py-1.5 whitespace-nowrap text-xs">{truck.driverName}</td>
-                <td className="px-2 py-1.5 whitespace-nowrap text-xs">{truck.mobileNumber}</td>
-                <td className="px-2 py-1.5 whitespace-nowrap text-xs">{truck.transporterName}</td>
-                <td className="px-2 py-1.5 whitespace-nowrap text-xs">{formatDate(truck.reportingDate)}</td>
-                <td className="px-2 py-1.5 whitespace-nowrap text-xs">{formatTime(truck.reportingTime)}</td>
-                <td className="px-2 py-1.5 whitespace-nowrap text-xs">{truck.gate}</td>
-                <td className="px-2 py-1.5 whitespace-nowrap text-xs">
-                  <span className={`px-2 py-0.5 rounded-full ${getStatusBadgeClass(truck.status)}`}>
-                    {getStatusDisplay(truck.status)}
-                  </span>
-                </td>
-                <td className="px-2 py-1.5 whitespace-nowrap text-xs">
-                  <div className="flex space-x-1">
-                    <button
-                      onClick={() => handleViewDetails(truck)}
-                      className="text-gray-500 hover:text-indigo-600 focus:outline-none"
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                      </svg>
-                    </button>
-                    
-                    <button
-                      onClick={() => handleVerifyTruck(truck)}
-                      className="text-gray-500 hover:text-green-600 focus:outline-none"
-                      disabled={truck.status !== 'scheduled'}
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+          ))}
+        </tbody>
+      </table>
     );
   };
 
   return (
     <div>
       <div className="p-4 border-b dark:border-gray-700 bg-white dark:bg-gray-800">
-        <div className="flex flex-col md:flex-row gap-4 justify-between items-center">
-          <div className="relative w-full md:w-64">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-2">
+          <div className="w-full sm:w-auto">
             <Input
               type="text"
-              placeholder="Search trucks..."
+              placeholder="Search by truck number, driver, or transporter..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full"
             />
-            <svg
-              className="absolute right-2 top-2.5 h-4 w-4 text-gray-400"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-              ></path>
-            </svg>
           </div>
-          
-          <div className="flex items-center w-full md:w-auto">
-            <label htmlFor="statusFilter" className="mr-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-              Status:
-            </label>
-            <select
-              id="statusFilter"
-              value={filterStatus}
-              onChange={(e) => setFilterStatus(e.target.value)}
-              className="px-3 py-2 text-sm border border-gray-300 dark:border-gray-700 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:bg-gray-800 flex-grow md:flex-grow-0"
-            >
-              <option value="all">All</option>
-              <option value="scheduled">Scheduled</option>
-              <option value="pending-approval">Pending Approval</option>
-              <option value="verified">Verified</option>
-              <option value="at_parking">At Parking</option>
-              <option value="at_weighbridge">At Weighbridge</option>
-              <option value="at_loading">At Loading</option>
-              <option value="at_unloading">At Unloading</option>
-              <option value="at_dock">At Dock</option>
-              <option value="rejected">Rejected</option>
-              <option value="in-process">In Process</option>
-            </select>
-            
-            <button 
-              className="ml-2 px-3 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded border border-gray-300 dark:border-gray-600"
-              title="Refresh List"
-              onClick={fetchTrucks}
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-              </svg>
-            </button>
-          </div>
+          {renderStatusFilter()}
         </div>
       </div>
 
@@ -560,6 +573,37 @@ export default function TruckVerificationList() {
           truck={selectedTruck}
           onClose={() => setShowDetailsModal(false)}
         />
+      )}
+
+      {/* Exit Confirmation Modal */}
+      {selectedTruck && showExitConfirmModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full">
+            <div className="p-6">
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
+                Confirm Truck Exit
+              </h3>
+              <p className="text-gray-600 dark:text-gray-400 mb-6">
+                Are you sure you want to process the exit for truck <span className="font-semibold">{selectedTruck.vehicleNumber}</span>?
+                This will mark the truck as exited from the plant.
+              </p>
+              <div className="flex justify-end space-x-3">
+                <button
+                  onClick={closeExitConfirmModal}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600 rounded-md"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => handleProcessExit(selectedTruck)}
+                  className="px-4 py-2 text-sm font-medium text-white bg-amber-600 hover:bg-amber-700 dark:bg-amber-500 dark:hover:bg-amber-600 rounded-md"
+                >
+                  Confirm Exit
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
