@@ -19,12 +19,12 @@ interface Truck {
   sourceLocation?: string;
   destination?: string;
   status: string;
-  createdAt: string;
-  updatedAt: string;
+  createdAt: string | { seconds: number, nanoseconds: number };
+  updatedAt: string | { seconds: number, nanoseconds: number };
   approvalStatus?: string;
   userId: string;
-  actualArrivalTime?: string;
-  exitTime?: string;
+  actualArrivalTime?: string | { seconds: number, nanoseconds: number };
+  exitTime?: string | { seconds: number, nanoseconds: number };
 }
 
 interface TruckScheduleHistoryProps {
@@ -34,7 +34,7 @@ interface TruckScheduleHistoryProps {
 
 const TruckCard = ({ truck, formatDate, getStatusColor, getStatusLabel }: { 
   truck: Truck; 
-  formatDate: (date: string) => string;
+  formatDate: (date: string | { seconds: number, nanoseconds: number }) => string;
   getStatusColor: (status: string, approvalStatus?: string) => string;
   getStatusLabel: (truck: Truck) => string;
 }) => {
@@ -82,18 +82,48 @@ const TruckCard = ({ truck, formatDate, getStatusColor, getStatusLabel }: {
           {truck.actualArrivalTime && (
             <div className="flex justify-between">
               <span className="text-gray-500 dark:text-gray-400">Actual Arrival:</span>
-              <span>{format(new Date(truck.actualArrivalTime), 'MMM dd, yyyy HH:mm')}</span>
+              <span>{(() => {
+                try {
+                  if (typeof truck.actualArrivalTime === 'object' && truck.actualArrivalTime !== null && 'seconds' in truck.actualArrivalTime) {
+                    // Handle Firestore timestamp
+                    return format(new Date((truck.actualArrivalTime as any).seconds * 1000), 'MMM dd, yyyy HH:mm');
+                  }
+                  return format(new Date(truck.actualArrivalTime), 'MMM dd, yyyy HH:mm');
+                } catch (err) {
+                  return String(truck.actualArrivalTime) || 'N/A';
+                }
+              })()}</span>
             </div>
           )}
           {truck.exitTime && (
             <div className="flex justify-between">
               <span className="text-gray-500 dark:text-gray-400">Exit Time:</span>
-              <span>{format(new Date(truck.exitTime), 'MMM dd, yyyy HH:mm')}</span>
+              <span>{(() => {
+                try {
+                  if (typeof truck.exitTime === 'object' && truck.exitTime !== null && 'seconds' in truck.exitTime) {
+                    // Handle Firestore timestamp
+                    return format(new Date((truck.exitTime as any).seconds * 1000), 'MMM dd, yyyy HH:mm');
+                  }
+                  return format(new Date(truck.exitTime), 'MMM dd, yyyy HH:mm');
+                } catch (err) {
+                  return String(truck.exitTime) || 'N/A';
+                }
+              })()}</span>
             </div>
           )}
           <div className="flex justify-between">
             <span className="text-gray-500 dark:text-gray-400">Created:</span>
-            <span>{format(new Date(truck.createdAt), 'MMM dd, yyyy HH:mm')}</span>
+            <span>{(() => {
+              try {
+                if (typeof truck.createdAt === 'object' && truck.createdAt !== null && 'seconds' in truck.createdAt) {
+                  // Handle Firestore timestamp
+                  return format(new Date((truck.createdAt as any).seconds * 1000), 'MMM dd, yyyy HH:mm');
+                }
+                return format(new Date(truck.createdAt), 'MMM dd, yyyy HH:mm');
+              } catch (err) {
+                return String(truck.createdAt) || 'N/A';
+              }
+            })()}</span>
           </div>
         </div>
       </div>
@@ -148,13 +178,23 @@ export default function TruckScheduleHistory({ trucks, loading }: TruckScheduleH
   });
 
   const sortedTrucks = [...filteredTrucks].sort((a, b) => {
-    let valueA = a[sortField];
-    let valueB = b[sortField];
+    let valueA: any = a[sortField];
+    let valueB: any = b[sortField];
 
     // Handle dates specially
     if (sortField === 'reportingDate' || sortField === 'createdAt' || sortField === 'updatedAt') {
-      valueA = new Date(valueA).getTime();
-      valueB = new Date(valueB).getTime();
+      // Handle Firestore timestamps
+      if (typeof valueA === 'object' && valueA !== null && 'seconds' in valueA) {
+        valueA = valueA.seconds * 1000;
+      } else {
+        valueA = new Date(valueA as string).getTime();
+      }
+      
+      if (typeof valueB === 'object' && valueB !== null && 'seconds' in valueB) {
+        valueB = valueB.seconds * 1000;
+      } else {
+        valueB = new Date(valueB as string).getTime();
+      }
     }
 
     if (valueA < valueB) return sortDirection === 'asc' ? -1 : 1;
@@ -162,11 +202,15 @@ export default function TruckScheduleHistory({ trucks, loading }: TruckScheduleH
     return 0;
   });
 
-  const formatDate = (dateString: string) => {
+  const formatDate = (dateString: string | { seconds: number, nanoseconds: number }) => {
     try {
+      if (typeof dateString === 'object' && dateString !== null && 'seconds' in dateString) {
+        // Handle Firestore timestamp
+        return format(new Date(dateString.seconds * 1000), 'MMM dd, yyyy');
+      }
       return format(new Date(dateString), 'MMM dd, yyyy');
     } catch (err) {
-      return dateString;
+      return String(dateString) || 'N/A';
     }
   };
 
@@ -425,7 +469,17 @@ export default function TruckScheduleHistory({ trucks, loading }: TruckScheduleH
                     {truck.gate}
                   </td>
                   <td className="px-2 py-1.5 whitespace-nowrap text-xs">
-                    {format(new Date(truck.updatedAt), 'MMM dd, yyyy HH:mm')}
+                    {(() => {
+                      try {
+                        if (typeof truck.updatedAt === 'object' && truck.updatedAt !== null && 'seconds' in truck.updatedAt) {
+                          // Handle Firestore timestamp
+                          return format(new Date((truck.updatedAt as any).seconds * 1000), 'MMM dd, yyyy HH:mm');
+                        }
+                        return format(new Date(truck.updatedAt), 'MMM dd, yyyy HH:mm');
+                      } catch (err) {
+                        return String(truck.updatedAt) || 'N/A';
+                      }
+                    })()}
                   </td>
                 </tr>
               ))}
