@@ -252,7 +252,7 @@ export default function LEDScreen() {
     const fetchTrucks = () => {
       const q = query(
         collection(db, 'plantTracking'),
-        where('status', '!=', 'EXITED'),
+        where('status', 'not-in', ['EXITED', 'exited']), // Handle both formats
         orderBy('status'),
         orderBy('lastUpdated', 'desc')
       );
@@ -260,12 +260,14 @@ export default function LEDScreen() {
       return onSnapshot(q, (snapshot) => {
         const truckData = snapshot.docs.map(doc => {
           const data = doc.data();
+          // Normalize the status to uppercase for consistency
+          const normalizedStatus = data.status?.toUpperCase().replace(/-/g, '_') || 'UNKNOWN';
           return {
             id: doc.id,
-            truckNumber: data.truckNumber,
+            truckNumber: data.truckNumber || data.vehicleNumber, // Handle both field names
             transporterName: data.transporterName,
-            status: data.status,
-            location: data.location || 'Unknown',
+            status: normalizedStatus,
+            location: data.location || data.currentLocation || 'Unknown', // Handle both field names
             lastUpdated: data.lastUpdated?.toDate() || new Date(),
             dockName: data.dockName,
             weighbridgeEntryId: data.weighbridgeEntryId,
@@ -354,17 +356,40 @@ export default function LEDScreen() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'LOADING_IN_PROGRESS':
-      case 'UNLOADING_IN_PROGRESS':
+      case 'AT_LOADING':
+      case 'LOADING':
         return 'text-yellow-400';
+      
+      case 'UNLOADING_IN_PROGRESS':
+      case 'AT_UNLOADING':
+      case 'UNLOADING':
+        return 'text-orange-400';
+      
       case 'WEIGHED':
+      case 'AT_WEIGHBRIDGE':
       case 'READY_FOR_DOCK':
         return 'text-green-400';
+      
       case 'PENDING_WEIGHING':
+      case 'VERIFIED':
         return 'text-blue-400';
+      
       case 'PARKED':
+      case 'AT_PARKING':
+      case 'IN_PARKING':
         return 'text-purple-400';
+      
+      case 'AT_DOCK':
+      case 'IN_DOCK':
+        return 'text-indigo-400';
+      
+      case 'INSIDE_PLANT':
+      case 'IN_PLANT':
+        return 'text-cyan-400';
+      
       case 'REJECTED':
         return 'text-red-400';
+      
       default:
         return 'text-white';
     }
@@ -372,7 +397,30 @@ export default function LEDScreen() {
 
   // Format the status for display
   const formatStatus = (status: string) => {
-    return status.replace(/_/g, ' ');
+    // First replace underscores with spaces
+    let formatted = status.replace(/_/g, ' ');
+    
+    // Handle special cases
+    switch (status) {
+      case 'AT_WEIGHBRIDGE':
+        return 'At Weighbridge';
+      case 'AT_PARKING':
+        return 'At Parking';
+      case 'AT_LOADING':
+        return 'At Loading Bay';
+      case 'AT_UNLOADING':
+        return 'At Unloading Bay';
+      case 'AT_DOCK':
+        return 'At Dock';
+      case 'INSIDE_PLANT':
+      case 'IN_PLANT':
+        return 'Inside Plant';
+      default:
+        // Capitalize each word for other statuses
+        return formatted.split(' ')
+          .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+          .join(' ');
+    }
   };
 
   if (loading) {
