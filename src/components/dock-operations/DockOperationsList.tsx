@@ -222,6 +222,11 @@ export default function DockOperationsList() {
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                 {showCompleted ? 'End Time' : 'Duration'}
               </th>
+              {showCompleted && (
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                  Time Taken
+                </th>
+              )}
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                 Status
               </th>
@@ -250,6 +255,13 @@ export default function DockOperationsList() {
                     ? operation.endTime.toDate().toLocaleString()
                     : getDuration(operation.startTime.toDate(), currentTime)}
                 </td>
+                {showCompleted && (
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
+                    {operation.endTime 
+                      ? getDuration(operation.startTime.toDate(), operation.endTime.toDate())
+                      : 'N/A'}
+                  </td>
+                )}
                 <td className="px-6 py-4 whitespace-nowrap">
                   <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${
                     operation.status === 'COMPLETED'
