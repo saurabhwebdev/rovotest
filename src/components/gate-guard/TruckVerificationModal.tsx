@@ -1,9 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { updateTruckStatus, sendTruckForApproval, updateTruckLocation } from '@/lib/firestore';
+import { updateTruckStatus, sendTruckForApproval } from '@/lib/firestore';
 import { useAuth } from '@/contexts/AuthContext';
-import { collection, query, onSnapshot, doc, updateDoc, addDoc, Timestamp } from 'firebase/firestore';
+import { collection, query, onSnapshot, doc, updateDoc, addDoc, Timestamp, getDocs, where } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 
 interface Truck {
@@ -232,6 +232,8 @@ export default function TruckVerificationModal({ truck, onClose, onVerificationC
         status: selectedLocation === 'weighbridge' ? 'at_weighbridge' : 'at_' + selectedLocation
       };
 
+      let weighbridgeEntryId: string | undefined;
+
       if (selectedLocation === 'weighbridge') {
         updateData.weighbridgeId = selectedWeighbridge;
         updateData.source = 'gate';
@@ -255,11 +257,50 @@ export default function TruckVerificationModal({ truck, onClose, onVerificationC
         };
         
         const weighbridgeEntryRef = await addDoc(collection(db, 'weighbridgeEntries'), weighbridgeEntry);
-        updateData.weighbridgeEntryId = weighbridgeEntryRef.id;
+        weighbridgeEntryId = weighbridgeEntryRef.id;
+        updateData.weighbridgeEntryId = weighbridgeEntryId;
       }
 
+      // Update the truck document
       const truckRef = doc(db, 'trucks', truck.id);
       await updateDoc(truckRef, updateData);
+      
+      // Create or update entry in plantTracking collection
+      const plantTrackingData = {
+        truckNumber: truck.vehicleNumber,
+        transporterName: truck.transporterName,
+        driverName: truck.driverName,
+        mobileNumber: truck.mobileNumber,
+        status: updateData.status.toUpperCase(), // Convert to uppercase for LED screen
+        location: selectedLocation,
+        lastUpdated: Timestamp.now(),
+        updatedBy: user.uid,
+        truckId: truck.id,
+        notes: locationNotes || '',
+        weighbridgeId: selectedLocation === 'weighbridge' ? selectedWeighbridge : null,
+        weighbridgeEntryId: weighbridgeEntryId || null,
+        dockName: null // Will be updated when assigned to a dock
+      };
+
+      // Check if an entry already exists
+      const plantTrackingQuery = query(
+        collection(db, 'plantTracking'),
+        where('truckNumber', '==', truck.vehicleNumber),
+        where('status', '!=', 'EXITED')
+      );
+      
+      const plantTrackingSnapshot = await getDocs(plantTrackingQuery);
+      
+      if (plantTrackingSnapshot.empty) {
+        // Create new entry
+        await addDoc(collection(db, 'plantTracking'), {
+          ...plantTrackingData,
+          createdAt: Timestamp.now()
+        });
+      } else {
+        // Update existing entry
+        await updateDoc(plantTrackingSnapshot.docs[0].ref, plantTrackingData);
+      }
       
       // Create audit entry for location assignment
       const actionType = selectedLocation === 'weighbridge' 
