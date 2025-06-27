@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { getDocumentsWhere } from '@/lib/firestore';
 import TruckList from '@/components/transporter/TruckList';
+import TruckScheduleHistory from '@/components/transporter/TruckScheduleHistory';
 import TruckSchedulingForm from '@/components/transporter/TruckSchedulingForm';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import HelpIcon from '@/components/ui/HelpIcon';
@@ -16,6 +17,7 @@ export default function TransporterPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [showScheduleModal, setShowScheduleModal] = useState(false);
+  const [activeTab, setActiveTab] = useState("active");
   
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -46,6 +48,10 @@ export default function TransporterPage() {
     }
   }, [user, authLoading]);
   
+  // Filter trucks based on status
+  const activeTrucks = trucks.filter(truck => truck.status === 'scheduled');
+  const historyTrucks = trucks.filter(truck => truck.status !== 'scheduled');
+  
   if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -66,56 +72,96 @@ export default function TransporterPage() {
             <h1 className="text-xl sm:text-2xl font-bold">Transporter Dashboard</h1>
             <HelpIcon moduleHelp={transporterHelp} />
           </div>
-          <button
-            onClick={() => setShowScheduleModal(true)}
-            className="px-3 sm:px-4 py-1.5 sm:py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md transition-colors duration-200 flex items-center justify-center sm:justify-start text-sm sm:text-base w-full sm:w-auto"
-          >
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 sm:h-5 sm:w-5 mr-1.5 sm:mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-          </svg>
-          Schedule New Truck
-        </button>
-      </div>
-      
-      {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-3 sm:px-4 py-2 sm:py-3 rounded mb-4 sm:mb-6 text-sm sm:text-base">
-          {error}
-        </div>
-      )}
-      
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden">
-        <TruckList 
-          trucks={trucks} 
-          loading={loading} 
-        />
-      </div>
-      
-      {/* Schedule Truck Modal */}
-      {showScheduleModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-3 sm:p-4 z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-5xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-center p-3 sm:p-4 border-b dark:border-gray-700">
-              <h2 className="text-lg sm:text-xl font-bold">Schedule New Truck</h2>
-              <button 
-                onClick={() => setShowScheduleModal(false)}
-                className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 sm:h-6 sm:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-            <div className="p-3 sm:p-6">
-              <TruckSchedulingForm 
-                onSuccess={() => {
-                  setShowScheduleModal(false);
-                  fetchTrucks();
-                }}
-              />
-            </div>
+          <div className="flex space-x-2">
+            <button
+              onClick={() => setShowScheduleModal(true)}
+              className="px-3 sm:px-4 py-1.5 sm:py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md transition-colors duration-200 flex items-center justify-center sm:justify-start text-sm sm:text-base w-full sm:w-auto"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 sm:h-5 sm:w-5 mr-1.5 sm:mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+              </svg>
+              Schedule New Truck
+            </button>
           </div>
         </div>
-      )}
+      
+        {error && (
+          <div className="bg-red-50 border border-red-200 text-red-700 px-3 sm:px-4 py-2 sm:py-3 rounded mb-4 sm:mb-6 text-sm sm:text-base">
+            {error}
+          </div>
+        )}
+      
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden">
+          <Tabs defaultValue="active" onValueChange={setActiveTab}>
+            <div className="border-b border-gray-200 dark:border-gray-700 px-4 py-2">
+              <TabsList className="grid grid-cols-2 w-full max-w-md">
+                <TabsTrigger 
+                  value="active" 
+                  className="data-[state=active]:bg-indigo-600 data-[state=active]:text-white"
+                >
+                  Active Schedules
+                  {activeTrucks.length > 0 && (
+                    <span className="ml-2 bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200 text-xs px-2 py-0.5 rounded-full">
+                      {activeTrucks.length}
+                    </span>
+                  )}
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="history" 
+                  className="data-[state=active]:bg-indigo-600 data-[state=active]:text-white"
+                >
+                  History
+                  {historyTrucks.length > 0 && (
+                    <span className="ml-2 bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200 text-xs px-2 py-0.5 rounded-full">
+                      {historyTrucks.length}
+                    </span>
+                  )}
+                </TabsTrigger>
+              </TabsList>
+            </div>
+            
+            <TabsContent value="active">
+              <TruckList 
+                trucks={activeTrucks} 
+                loading={loading} 
+              />
+            </TabsContent>
+            
+            <TabsContent value="history">
+              <TruckScheduleHistory 
+                trucks={historyTrucks} 
+                loading={loading} 
+              />
+            </TabsContent>
+          </Tabs>
+        </div>
+      
+        {/* Schedule Truck Modal */}
+        {showScheduleModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-3 sm:p-4 z-50">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-5xl w-full max-h-[90vh] overflow-y-auto">
+              <div className="flex justify-between items-center p-3 sm:p-4 border-b dark:border-gray-700">
+                <h2 className="text-lg sm:text-xl font-bold">Schedule New Truck</h2>
+                <button 
+                  onClick={() => setShowScheduleModal(false)}
+                  className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 sm:h-6 sm:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+              <div className="p-3 sm:p-6">
+                <TruckSchedulingForm 
+                  onSuccess={() => {
+                    setShowScheduleModal(false);
+                    fetchTrucks();
+                  }}
+                />
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </PagePermissionWrapper>
   );

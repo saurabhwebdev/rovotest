@@ -11,11 +11,15 @@ export const transporterHelp: HelpContent = {
   sections: [
     {
       heading: "Overview",
-      content: "The Transporter Dashboard allows you to manage all your truck scheduling activities. From this page, you can schedule new trucks, view existing schedules, update truck details, and cancel or reschedule trucks as needed."
+      content: "The Transporter Dashboard allows you to manage all your truck scheduling activities. From this page, you can schedule new trucks, view existing schedules, update truck details, and cancel or reschedule trucks as needed. The dashboard is organized into two tabs: Active Schedules and History."
+    },
+    {
+      heading: "Active Schedules and History",
+      content: "The dashboard has two main tabs:\n\n• Active Schedules: Shows currently scheduled trucks that haven't yet been processed\n• History: Shows all trucks that have been processed at the gate, completed their journey, or been cancelled\n\nUse these tabs to easily track both your upcoming deliveries and past operations."
     },
     {
       heading: "Scheduling a New Truck",
-      content: "To schedule a new truck:\n\n1. Click the 'Schedule New Truck' button in the top-right corner\n2. Fill in all required details including truck number, driver information, and scheduled arrival time\n3. Select the appropriate material type and quantity\n4. Click 'Submit' to complete the scheduling process\n\nOnce scheduled, the truck will appear in your list and be visible to gate guards upon arrival."
+      content: "To schedule a new truck:\n\n1. Click the 'Schedule New Truck' button in the top-right corner\n2. Fill in all required details including truck number, driver information, and scheduled arrival time\n3. Select the appropriate material type and quantity\n4. Click 'Submit' to complete the scheduling process\n\nOnce scheduled, the truck will appear in your Active Schedules list and be visible to gate guards upon arrival."
     },
     {
       heading: "Managing Existing Schedules",

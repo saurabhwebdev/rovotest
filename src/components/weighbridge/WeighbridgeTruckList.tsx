@@ -23,6 +23,8 @@ interface WeighbridgeEntry {
   dockId?: string;
   dockName?: string;
   rejectionRemarks?: string;
+  materialType?: string;
+  orderNumber?: string;
 }
 
 interface Dock {
@@ -43,6 +45,8 @@ export default function WeighbridgeTruckList() {
   const [docks, setDocks] = useState<Dock[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [showPrintModal, setShowPrintModal] = useState(false);
+  const [printEntryId, setPrintEntryId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchEntries();
@@ -216,6 +220,209 @@ export default function WeighbridgeTruckList() {
     }
   };
 
+  // Function to handle printing weight slip
+  const handlePrintWeightSlip = (entry: WeighbridgeEntry) => {
+    setSelectedEntry(entry);
+    setPrintEntryId(entry.id);
+    setShowPrintModal(true);
+  };
+
+  // Function to actually print the weight slip
+  const printWeightSlip = () => {
+    if (!selectedEntry) return;
+    
+    // Create a new window for printing
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) {
+      alert('Please allow pop-ups for this website to print weight slips.');
+      return;
+    }
+    
+    // Generate the content for the print window
+    const printContent = `
+      <html>
+        <head>
+          <title>Weight Slip - ${selectedEntry.truckNumber}</title>
+          <style>
+            body {
+              font-family: Arial, sans-serif;
+              line-height: 1.6;
+              margin: 0;
+              padding: 20px;
+            }
+            .weight-slip {
+              max-width: 800px;
+              margin: 0 auto;
+              border: 1px solid #ccc;
+              padding: 20px;
+            }
+            .header {
+              text-align: center;
+              border-bottom: 2px solid #333;
+              padding-bottom: 10px;
+              margin-bottom: 20px;
+            }
+            .header h1 {
+              margin: 0;
+              font-size: 24px;
+            }
+            .header p {
+              margin: 5px 0 0;
+              font-size: 14px;
+            }
+            .slip-info {
+              display: grid;
+              grid-template-columns: 1fr 1fr;
+              gap: 10px;
+              margin-bottom: 20px;
+            }
+            .slip-info div {
+              margin-bottom: 10px;
+            }
+            .slip-info label {
+              font-weight: bold;
+              display: block;
+              font-size: 14px;
+              color: #555;
+            }
+            .slip-info span {
+              font-size: 16px;
+            }
+            .weights {
+              border-top: 1px solid #eee;
+              border-bottom: 1px solid #eee;
+              padding: 15px 0;
+              margin-bottom: 20px;
+            }
+            .weight-row {
+              display: flex;
+              justify-content: space-between;
+              margin-bottom: 10px;
+            }
+            .weight-row label {
+              font-weight: bold;
+            }
+            .weight-row.net {
+              font-size: 18px;
+              font-weight: bold;
+              border-top: 1px dashed #ccc;
+              padding-top: 10px;
+            }
+            .footer {
+              display: flex;
+              justify-content: space-between;
+              margin-top: 40px;
+              padding-top: 20px;
+              border-top: 1px solid #eee;
+            }
+            .signature {
+              width: 45%;
+            }
+            .signature p {
+              margin-top: 50px;
+              border-top: 1px solid #333;
+              padding-top: 5px;
+              text-align: center;
+            }
+            @media print {
+              body {
+                padding: 0;
+              }
+              .weight-slip {
+                border: none;
+              }
+              .no-print {
+                display: none;
+              }
+            }
+          </style>
+        </head>
+        <body>
+          <div class="weight-slip">
+            <div class="header">
+              <h1>WEIGHT SLIP</h1>
+              <p>Weighbridge Measurement Certificate</p>
+            </div>
+            
+            <div class="slip-info">
+              <div>
+                <label>Truck Number</label>
+                <span>${selectedEntry.truckNumber}</span>
+              </div>
+              <div>
+                <label>Transporter</label>
+                <span>${selectedEntry.transporterName}</span>
+              </div>
+              <div>
+                <label>Date</label>
+                <span>${selectedEntry.weighingTime?.toDate().toLocaleDateString() || new Date().toLocaleDateString()}</span>
+              </div>
+              <div>
+                <label>Time</label>
+                <span>${selectedEntry.weighingTime?.toDate().toLocaleTimeString() || new Date().toLocaleTimeString()}</span>
+              </div>
+              <div>
+                <label>Slip No.</label>
+                <span>WB-${selectedEntry.id.substring(0, 8).toUpperCase()}</span>
+              </div>
+              <div>
+                <label>Material Type</label>
+                <span>${selectedEntry.materialType || 'N/A'}</span>
+              </div>
+            </div>
+            
+            <div class="weights">
+              <div class="weight-row">
+                <label>Gross Weight</label>
+                <span>${selectedEntry.grossWeight} kg</span>
+              </div>
+              <div class="weight-row">
+                <label>Tare Weight</label>
+                <span>${selectedEntry.tareWeight} kg</span>
+              </div>
+              <div class="weight-row net">
+                <label>NET WEIGHT</label>
+                <span>${selectedEntry.netWeight} kg</span>
+              </div>
+            </div>
+            
+            <div class="footer">
+              <div class="signature">
+                <p>Weighbridge Operator</p>
+              </div>
+              <div class="signature">
+                <p>Driver's Signature</p>
+              </div>
+            </div>
+            
+            <div class="no-print" style="text-align: center; margin-top: 30px;">
+              <button onclick="window.print()" style="padding: 10px 20px; background: #4f46e5; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 16px;">
+                Print Weight Slip
+              </button>
+            </div>
+          </div>
+        </body>
+      </html>
+    `;
+    
+    // Write content to the new window, then print
+    printWindow.document.open();
+    printWindow.document.write(printContent);
+    printWindow.document.close();
+    
+    // Create audit trail entry for printing
+    createAuditEntry(selectedEntry, 'PRINTED_WEIGHT_SLIP', {
+      milestone: selectedEntry.currentMilestone,
+      printedAt: new Date().toISOString(),
+      printedBy: user?.displayName || user?.email || 'Unknown User'
+    });
+    
+    // Close the modal
+    setShowPrintModal(false);
+    setSelectedEntry(null);
+    setPrintEntryId(null);
+  };
+
   if (loading) {
     return <div>Loading...</div>;
   }
@@ -387,6 +594,23 @@ export default function WeighbridgeTruckList() {
                       </svg>
                     </button>
                   )}
+                  
+                  {/* Print Weight Slip Button - only enabled for weighed entries with valid weights */}
+                  {entry.grossWeight && entry.tareWeight && entry.netWeight && 
+                   entry.status !== 'PENDING_APPROVAL' && 
+                   (entry.currentMilestone === 'WEIGHED' || 
+                    entry.currentMilestone === 'AT_PARKING' || 
+                    entry.currentMilestone === 'AT_DOCK') && (
+                    <button
+                      onClick={() => handlePrintWeightSlip(entry)}
+                      className="text-gray-500 hover:text-green-600 focus:outline-none ml-1"
+                      title="Print Weight Slip"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                      </svg>
+                    </button>
+                  )}
                 </div>
               </td>
             </tr>
@@ -434,6 +658,76 @@ export default function WeighbridgeTruckList() {
           onMoveToPark={handleMoveToPark}
           onMoveToDock={handleMoveToDock}
         />
+      )}
+
+      {/* Print Weight Slip Confirmation Modal */}
+      {showPrintModal && selectedEntry && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+                Print Weight Slip
+              </h2>
+              <button
+                onClick={() => {
+                  setShowPrintModal(false);
+                  setSelectedEntry(null);
+                }}
+                className="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300"
+              >
+                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            
+            <div className="py-4">
+              <p className="text-gray-700 dark:text-gray-300">
+                Are you sure you want to print the weight slip for truck <span className="font-semibold">{selectedEntry.truckNumber}</span>?
+              </p>
+              
+              <div className="mt-6 bg-gray-50 dark:bg-gray-700 p-4 rounded-md">
+                <div className="grid grid-cols-2 gap-2 text-sm">
+                  <div>
+                    <span className="text-gray-500 dark:text-gray-400">Gross Weight:</span>
+                    <span className="ml-2 font-medium">{selectedEntry.grossWeight} kg</span>
+                  </div>
+                  <div>
+                    <span className="text-gray-500 dark:text-gray-400">Tare Weight:</span>
+                    <span className="ml-2 font-medium">{selectedEntry.tareWeight} kg</span>
+                  </div>
+                  <div className="col-span-2 pt-2 mt-2 border-t border-gray-200 dark:border-gray-600">
+                    <span className="text-gray-500 dark:text-gray-400">Net Weight:</span>
+                    <span className="ml-2 font-semibold">{selectedEntry.netWeight} kg</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+              <button
+                type="button"
+                onClick={() => {
+                  setShowPrintModal(false);
+                  setSelectedEntry(null);
+                }}
+                className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 rounded-md"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={printWeightSlip}
+                className="px-4 py-2 text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed rounded-md flex items-center"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                </svg>
+                Print
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
