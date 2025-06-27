@@ -52,6 +52,9 @@ export default function NextMilestoneModal({
 
   if (!isOpen) return null;
 
+  // Sort docks alphabetically by name
+  const sortedDocks = [...docks].sort((a, b) => a.name.localeCompare(b.name));
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -160,7 +163,7 @@ export default function NextMilestoneModal({
                   required={selectedAction === 'dock'}
                 >
                   <option value="">Select a dock</option>
-                  {docks.map(dock => (
+                  {sortedDocks.map(dock => (
                     <option key={dock.id} value={dock.id}>
                       {dock.name} ({dock.type})
                     </option>
