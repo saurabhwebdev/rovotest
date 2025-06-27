@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
-import { Timestamp } from 'firebase/firestore';
+import { useState, useEffect } from 'react';
+import { Timestamp, collection, query, where, getDocs } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 
 interface WeighbridgeEntry {
   id: string;
@@ -25,6 +26,7 @@ interface Dock {
   isActive: boolean;
   capacity: number;
   location: string;
+  isFree?: boolean;
 }
 
 interface NextMilestoneModalProps {
@@ -49,11 +51,50 @@ export default function NextMilestoneModal({
     entry.currentMilestone === 'WEIGHED' ? 'parking' : 'dock'
   );
   const [loading, setLoading] = useState(false);
+  const [availableDocks, setAvailableDocks] = useState<Dock[]>([]);
+  const [checkingDocks, setCheckingDocks] = useState(true);
+
+  useEffect(() => {
+    if (isOpen) {
+      checkDockAvailability();
+    }
+  }, [isOpen, docks]);
+
+  const checkDockAvailability = async () => {
+    try {
+      setCheckingDocks(true);
+      
+      // Get active dock operations
+      const activeOpsQuery = query(
+        collection(db, 'dockOperations'),
+        where('status', '==', 'IN_PROGRESS')
+      );
+      const activeOpsSnapshot = await getDocs(activeOpsQuery);
+      
+      // Create set of occupied dock IDs
+      const occupiedDockIds = new Set();
+      activeOpsSnapshot.forEach(doc => {
+        const data = doc.data();
+        occupiedDockIds.add(data.dockId);
+      });
+      
+      // Filter docks to only include active and free docks
+      const freeDocks = docks
+        .filter(dock => dock.isActive && !occupiedDockIds.has(dock.id))
+        .map(dock => ({...dock, isFree: true}));
+      
+      // Sort by name
+      const sortedFreeDocks = [...freeDocks].sort((a, b) => a.name.localeCompare(b.name));
+      
+      setAvailableDocks(sortedFreeDocks);
+    } catch (error) {
+      console.error('Error checking dock availability:', error);
+    } finally {
+      setCheckingDocks(false);
+    }
+  };
 
   if (!isOpen) return null;
-
-  // Sort docks alphabetically by name
-  const sortedDocks = [...docks].sort((a, b) => a.name.localeCompare(b.name));
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -156,19 +197,36 @@ export default function NextMilestoneModal({
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Select Dock
                 </label>
-                <select
-                  value={selectedDockId}
-                  onChange={(e) => setSelectedDockId(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700"
-                  required={selectedAction === 'dock'}
-                >
-                  <option value="">Select a dock</option>
-                  {sortedDocks.map(dock => (
-                    <option key={dock.id} value={dock.id}>
-                      {dock.name} ({dock.type})
-                    </option>
-                  ))}
-                </select>
+                {checkingDocks ? (
+                  <div className="text-sm text-gray-500 dark:text-gray-400 py-2">
+                    Checking dock availability...
+                  </div>
+                ) : (
+                  <>
+                    <select
+                      value={selectedDockId}
+                      onChange={(e) => setSelectedDockId(e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700"
+                      required={selectedAction === 'dock'}
+                    >
+                      <option value="">Select a dock</option>
+                      {availableDocks.length > 0 ? (
+                        availableDocks.map(dock => (
+                          <option key={dock.id} value={dock.id}>
+                            {dock.name} ({dock.type})
+                          </option>
+                        ))
+                      ) : (
+                        <option value="" disabled>No available docks</option>
+                      )}
+                    </select>
+                    {availableDocks.length === 0 && !checkingDocks && (
+                      <p className="mt-1 text-sm text-amber-600 dark:text-amber-400">
+                        All docks are currently occupied. Please try again later.
+                      </p>
+                    )}
+                  </>
+                )}
               </div>
             )}
           </div>
@@ -183,7 +241,7 @@ export default function NextMilestoneModal({
             </button>
             <button
               type="submit"
-              disabled={loading || (selectedAction === 'dock' && !selectedDockId)}
+              disabled={loading || (selectedAction === 'dock' && !selectedDockId) || (selectedAction === 'dock' && availableDocks.length === 0)}
               className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed rounded-md"
             >
               {loading ? 'Processing...' : 'Confirm'}
