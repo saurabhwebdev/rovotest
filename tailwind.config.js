@@ -98,6 +98,10 @@ module.exports = {
           '0%': { backgroundPosition: '0% 50%' },
           '50%': { backgroundPosition: '100% 50%' },
           '100%': { backgroundPosition: '0% 50%' },
+        },
+        scroll: {
+          '0%': { transform: 'translateX(0)' },
+          '100%': { transform: 'translateX(-50%)' }
         }
       },
       animation: {
@@ -109,7 +113,8 @@ module.exports = {
         "float": "float 6s ease-in-out infinite",
         "pulse": "pulse 4s ease-in-out infinite",
         "glow": "glow 8s ease-in-out infinite",
-        "gradient": "gradient 8s ease infinite"
+        "gradient": "gradient 8s ease infinite",
+        'scroll': 'scroll 30s linear infinite'
       },
       backgroundSize: {
         '200%': '200%',

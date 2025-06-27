@@ -411,35 +411,106 @@ export default function Home() {
       </section>
 
       {/* Company Logos Strip */}
-      <section className="py-16 bg-background border-t border-border">
-        <div className="container mx-auto px-6">
-          <ScrollRevealSection>
-            <div className="text-center mb-10">
-              <p className="text-sm font-medium text-muted-foreground">Trusted by Industry Leaders</p>
-            </div>
-            <div className="flex justify-center items-center gap-16 flex-wrap">
-              <div className="group relative">
-                <div className="absolute inset-0 bg-gradient-to-r from-[#502172]/10 to-[#D01414]/10 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+      <section className="py-6 bg-background border-t border-border overflow-hidden">
+        <div className="relative w-full">
+          <div className="flex animate-scroll py-2">
+            {/* First set of logos */}
+            <div className="flex items-center gap-12 shrink-0">
+              <div className="group">
                 <Image
                   src="/companyicon/blue-dart-express-logo-brandlogos.net_59eftdx92.svg"
                   alt="Blue Dart Express"
-                  width={180}
-                  height={60}
-                  className="relative opacity-70 hover:opacity-100 transition-opacity duration-300 dark:invert dark:opacity-50 dark:hover:opacity-70"
+                  width={100}
+                  height={35}
+                  className="relative opacity-40 hover:opacity-60 transition-opacity duration-300 dark:invert dark:opacity-30 dark:hover:opacity-50"
                 />
               </div>
-              <div className="group relative">
-                <div className="absolute inset-0 bg-gradient-to-r from-[#502172]/10 to-[#D01414]/10 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              <div className="group">
                 <Image
                   src="/companyicon/mondelez-international-logo-brandlogos.net_y90djgdu1.svg"
                   alt="Mondelez International"
-                  width={180}
-                  height={60}
-                  className="relative opacity-70 hover:opacity-100 transition-opacity duration-300 dark:invert dark:opacity-50 dark:hover:opacity-70"
+                  width={100}
+                  height={35}
+                  className="relative opacity-40 hover:opacity-60 transition-opacity duration-300 dark:invert dark:opacity-30 dark:hover:opacity-50"
+                />
+              </div>
+              <div className="group">
+                <Image
+                  src="/companyicon/blue-dart-express-logo-brandlogos.net_59eftdx92.svg"
+                  alt="Blue Dart Express"
+                  width={100}
+                  height={35}
+                  className="relative opacity-40 hover:opacity-60 transition-opacity duration-300 dark:invert dark:opacity-30 dark:hover:opacity-50"
+                />
+              </div>
+              <div className="group">
+                <Image
+                  src="/companyicon/mondelez-international-logo-brandlogos.net_y90djgdu1.svg"
+                  alt="Mondelez International"
+                  width={100}
+                  height={35}
+                  className="relative opacity-40 hover:opacity-60 transition-opacity duration-300 dark:invert dark:opacity-30 dark:hover:opacity-50"
+                />
+              </div>
+              <div className="group">
+                <Image
+                  src="/companyicon/blue-dart-express-logo-brandlogos.net_59eftdx92.svg"
+                  alt="Blue Dart Express"
+                  width={100}
+                  height={35}
+                  className="relative opacity-40 hover:opacity-60 transition-opacity duration-300 dark:invert dark:opacity-30 dark:hover:opacity-50"
                 />
               </div>
             </div>
-          </ScrollRevealSection>
+            {/* Duplicate set for seamless loop */}
+            <div className="flex items-center gap-12 shrink-0">
+              <div className="group">
+                <Image
+                  src="/companyicon/blue-dart-express-logo-brandlogos.net_59eftdx92.svg"
+                  alt="Blue Dart Express"
+                  width={100}
+                  height={35}
+                  className="relative opacity-40 hover:opacity-60 transition-opacity duration-300 dark:invert dark:opacity-30 dark:hover:opacity-50"
+                />
+              </div>
+              <div className="group">
+                <Image
+                  src="/companyicon/mondelez-international-logo-brandlogos.net_y90djgdu1.svg"
+                  alt="Mondelez International"
+                  width={100}
+                  height={35}
+                  className="relative opacity-40 hover:opacity-60 transition-opacity duration-300 dark:invert dark:opacity-30 dark:hover:opacity-50"
+                />
+              </div>
+              <div className="group">
+                <Image
+                  src="/companyicon/blue-dart-express-logo-brandlogos.net_59eftdx92.svg"
+                  alt="Blue Dart Express"
+                  width={100}
+                  height={35}
+                  className="relative opacity-40 hover:opacity-60 transition-opacity duration-300 dark:invert dark:opacity-30 dark:hover:opacity-50"
+                />
+              </div>
+              <div className="group">
+                <Image
+                  src="/companyicon/mondelez-international-logo-brandlogos.net_y90djgdu1.svg"
+                  alt="Mondelez International"
+                  width={100}
+                  height={35}
+                  className="relative opacity-40 hover:opacity-60 transition-opacity duration-300 dark:invert dark:opacity-30 dark:hover:opacity-50"
+                />
+              </div>
+              <div className="group">
+                <Image
+                  src="/companyicon/blue-dart-express-logo-brandlogos.net_59eftdx92.svg"
+                  alt="Blue Dart Express"
+                  width={100}
+                  height={35}
+                  className="relative opacity-40 hover:opacity-60 transition-opacity duration-300 dark:invert dark:opacity-30 dark:hover:opacity-50"
+                />
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
