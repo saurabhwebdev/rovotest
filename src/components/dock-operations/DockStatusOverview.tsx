@@ -187,11 +187,11 @@ export default function DockStatusOverview() {
         };
       case 'OCCUPIED':
         return {
-          bg: 'bg-blue-100 dark:bg-blue-900/30',
+          bg: 'bg-blue-600 dark:bg-blue-700',
           border: 'border-blue-500',
-          text: 'text-blue-800 dark:text-blue-200',
+          text: 'text-white dark:text-white',
           gradient: 'from-blue-500 to-cyan-500',
-          icon: 'text-blue-500'
+          icon: 'text-white'
         };
       default:
         return {
@@ -428,10 +428,10 @@ export default function DockStatusOverview() {
                       <h4 className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Current Operation</h4>
                       <div className="flex items-center">
                         <Truck className="w-4 h-4 mr-1.5 text-blue-500" />
-                        <span className="text-sm font-medium text-blue-800 dark:text-blue-200">{selectedDock.truckNumber}</span>
+                        <span className="text-sm font-medium text-white dark:text-white">{selectedDock.truckNumber}</span>
                         <span className="mx-2 text-gray-300 dark:text-gray-600">|</span>
                         <Activity className="w-4 h-4 mr-1.5 text-blue-500" />
-                        <span className="text-sm font-medium text-blue-800 dark:text-blue-200">{selectedDock.operationType || 'Operation'}</span>
+                        <span className="text-sm font-medium text-white dark:text-white">{selectedDock.operationType || 'Operation'}</span>
                       </div>
                     </div>
                   )}
@@ -463,22 +463,22 @@ export default function DockStatusOverview() {
                         <div className="p-2">
                           {/* Dock name and status */}
                           <div className="flex justify-between items-start mb-1">
-                            <h3 className="text-xs font-semibold text-gray-900 dark:text-gray-100 truncate pr-1" title={dock.name}>
+                            <h3 className={`text-xs font-semibold ${dock.status === 'OCCUPIED' ? 'text-white dark:text-white' : 'text-gray-900 dark:text-gray-100'} truncate pr-1`} title={dock.name}>
                               {dock.name}
                             </h3>
                             <div className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${
                               dock.status === 'FREE' 
                                 ? 'bg-emerald-500' 
                                 : dock.status === 'OCCUPIED' 
-                                  ? 'bg-blue-500 animate-pulse' 
+                                  ? 'bg-white animate-pulse' 
                                   : 'bg-gray-400'
                             }`}></div>
                           </div>
                           
                           {/* Truck info if occupied - only show on larger cards or hover */}
                           {dock.status === 'OCCUPIED' && (
-                            <div className="flex items-center text-xs text-blue-800 dark:text-blue-200 mt-1 truncate font-medium">
-                              <Truck className="w-3 h-3 mr-1 flex-shrink-0" />
+                            <div className="flex items-center text-xs text-white dark:text-white mt-1 truncate font-medium">
+                              <Truck className="w-3 h-3 mr-1 flex-shrink-0 text-white" />
                               <span className="truncate text-[10px]" title={dock.truckNumber}>
                                 {dock.truckNumber}
                               </span>
