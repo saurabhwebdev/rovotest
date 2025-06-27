@@ -30,6 +30,7 @@ interface User {
   roleId?: string;
   roleName?: string;
   createdAt?: any;
+  provider?: string;
 }
 
 interface Role {
@@ -37,6 +38,18 @@ interface Role {
   name: string;
   description: string;
   permissions: string[];
+}
+
+interface FirebaseAuthUser {
+  email: string;
+  uid: string;
+  displayName: string | null;
+  metadata: {
+    creationTime: string;
+  };
+  providerData: Array<{
+    providerId: string;
+  }>;
 }
 
 export default function UserManagement() {
@@ -66,16 +79,40 @@ export default function UserManagement() {
   const fetchUsers = async () => {
     setIsLoading(true);
     try {
+      // Get all users from Firestore
       const usersCollection = collection(db, 'users');
       const usersSnapshot = await getDocs(usersCollection);
-      const usersList = usersSnapshot.docs.map(doc => ({
+      const firestoreUsers = usersSnapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
       } as User));
       
+      // Get all users from Firebase Auth
+      const auth = getAuth();
+      const listUsersPage = await fetch('/api/list-users', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+      const authUsers = await listUsersPage.json();
+
+      // Merge users from both sources
+      const mergedUsers = authUsers.users.map((authUser: FirebaseAuthUser) => {
+        const firestoreUser = firestoreUsers.find(fu => fu.email === authUser.email);
+        return {
+          id: firestoreUser?.id || authUser.uid,
+          email: authUser.email,
+          displayName: authUser.displayName || firestoreUser?.displayName || '',
+          roleId: firestoreUser?.roleId || '',
+          provider: authUser.providerData[0]?.providerId || 'email',
+          createdAt: firestoreUser?.createdAt || authUser.metadata.creationTime
+        };
+      });
+
       // Fetch role names for each user
       const usersWithRoles = await Promise.all(
-        usersList.map(async (user) => {
+        mergedUsers.map(async (user) => {
           if (user.roleId) {
             try {
               const roleDoc = await getDoc(doc(db, 'roles', user.roleId));
@@ -228,6 +265,42 @@ export default function UserManagement() {
     setIsEditingUser(false);
   };
 
+  const handleUpdateUserRole = async (userId: string, email: string, newRoleId: string) => {
+    try {
+      setError('');
+      setSuccessMessage('');
+
+      // Check if user already has a Firestore record
+      const usersRef = collection(db, 'users');
+      const q = query(usersRef, where("email", "==", email));
+      const querySnapshot = await getDocs(q);
+
+      if (querySnapshot.empty) {
+        // Create new user record in Firestore
+        await addDoc(collection(db, 'users'), {
+          email: email,
+          roleId: newRoleId,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          createdBy: user?.email || 'admin'
+        });
+      } else {
+        // Update existing user record
+        const userDoc = querySnapshot.docs[0];
+        await updateDoc(doc(db, 'users', userDoc.id), {
+          roleId: newRoleId,
+          updatedAt: new Date()
+        });
+      }
+
+      setSuccessMessage('User role updated successfully');
+      fetchUsers(); // Refresh the users list
+    } catch (error) {
+      console.error('Error updating user role:', error);
+      setError('Failed to update user role');
+    }
+  };
+
   return (
     <PagePermissionWrapper pageId="admin-user-management">
       <div className="container mx-auto px-4 py-8">
@@ -364,6 +437,9 @@ export default function UserManagement() {
                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                       Role
                     </th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                      Provider
+                    </th>
                     <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                       Actions
                     </th>
@@ -380,6 +456,9 @@ export default function UserManagement() {
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
                         {user.roleName || 'No role assigned'}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
+                        {user.provider || 'email'}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <button
