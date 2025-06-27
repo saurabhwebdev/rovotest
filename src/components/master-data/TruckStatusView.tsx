@@ -1,8 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { collection, query, onSnapshot } from 'firebase/firestore';
+import { collection, query, onSnapshot, deleteDoc, doc, writeBatch, getDocs, where } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
+import { Trash2, AlertTriangle } from 'lucide-react';
 
 interface Truck {
   id: string;
@@ -20,6 +21,8 @@ export default function TruckStatusView() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     const q = query(collection(db, 'trucks'));
@@ -46,6 +49,153 @@ export default function TruckStatusView() {
 
     return () => unsubscribe();
   }, []);
+
+  const deleteAllTrucks = async () => {
+    if (trucks.length === 0) {
+      setError('No trucks to delete');
+      setIsDeleteModalOpen(false);
+      return;
+    }
+
+    try {
+      setIsDeleting(true);
+      
+      // Step 1: Collect all truck IDs and vehicle numbers
+      const truckIds = trucks.map(truck => truck.id);
+      const vehicleNumbers = trucks.map(truck => truck.vehicleNumber);
+      
+      // Step 2: Delete related entries in weighbridgeEntries collection
+      const weighbridgeQuery = query(
+        collection(db, 'weighbridgeEntries'),
+        where('truckNumber', 'in', vehicleNumbers)
+      );
+      
+      const weighbridgeSnapshot = await getDocs(weighbridgeQuery);
+      if (!weighbridgeSnapshot.empty) {
+        const weighbridgeBatch = writeBatch(db);
+        weighbridgeSnapshot.docs.forEach(doc => {
+          weighbridgeBatch.delete(doc.ref);
+        });
+        await weighbridgeBatch.commit();
+        console.log(`Deleted ${weighbridgeSnapshot.size} weighbridge entries`);
+      }
+      
+      // Step 3: Delete related entries in dockOperations collection
+      const dockOperationsQuery = query(
+        collection(db, 'dockOperations'),
+        where('truckNumber', 'in', vehicleNumbers)
+      );
+      
+      const dockOperationsSnapshot = await getDocs(dockOperationsQuery);
+      if (!dockOperationsSnapshot.empty) {
+        const dockOperationsBatch = writeBatch(db);
+        dockOperationsSnapshot.docs.forEach(doc => {
+          dockOperationsBatch.delete(doc.ref);
+        });
+        await dockOperationsBatch.commit();
+        console.log(`Deleted ${dockOperationsSnapshot.size} dock operations`);
+      }
+      
+      // Step 4: Delete related entries in plantTracking collection
+      const plantTrackingQuery = query(
+        collection(db, 'plantTracking'),
+        where('truckNumber', 'in', vehicleNumbers)
+      );
+      
+      const plantTrackingSnapshot = await getDocs(plantTrackingQuery);
+      if (!plantTrackingSnapshot.empty) {
+        const plantTrackingBatch = writeBatch(db);
+        plantTrackingSnapshot.docs.forEach(doc => {
+          plantTrackingBatch.delete(doc.ref);
+        });
+        await plantTrackingBatch.commit();
+        console.log(`Deleted ${plantTrackingSnapshot.size} plant tracking entries`);
+      }
+      
+      // Step 5: Delete related entries in audit collections
+      const auditCollections = [
+        'weighbridgeAudit',
+        'gateGuardAudit',
+        'truckSchedulingAudit',
+        'dockOperationsAudit'
+      ];
+      
+      for (const auditCollection of auditCollections) {
+        // Try by truckNumber first
+        const auditByTruckNumberQuery = query(
+          collection(db, auditCollection),
+          where('truckNumber', 'in', vehicleNumbers)
+        );
+        
+        const auditByTruckNumberSnapshot = await getDocs(auditByTruckNumberQuery);
+        if (!auditByTruckNumberSnapshot.empty) {
+          const auditBatch = writeBatch(db);
+          auditByTruckNumberSnapshot.docs.forEach(doc => {
+            auditBatch.delete(doc.ref);
+          });
+          await auditBatch.commit();
+          console.log(`Deleted ${auditByTruckNumberSnapshot.size} entries from ${auditCollection} by truckNumber`);
+        }
+        
+        // Try by truckId as well (some collections might use truckId instead of truckNumber)
+        const auditByTruckIdQuery = query(
+          collection(db, auditCollection),
+          where('truckId', 'in', truckIds)
+        );
+        
+        const auditByTruckIdSnapshot = await getDocs(auditByTruckIdQuery);
+        if (!auditByTruckIdSnapshot.empty) {
+          const auditBatch = writeBatch(db);
+          auditByTruckIdSnapshot.docs.forEach(doc => {
+            auditBatch.delete(doc.ref);
+          });
+          await auditBatch.commit();
+          console.log(`Deleted ${auditByTruckIdSnapshot.size} entries from ${auditCollection} by truckId`);
+        }
+        
+        // Try by vehicleNumber as well (some collections might use vehicleNumber instead of truckNumber)
+        const auditByVehicleNumberQuery = query(
+          collection(db, auditCollection),
+          where('vehicleNumber', 'in', vehicleNumbers)
+        );
+        
+        const auditByVehicleNumberSnapshot = await getDocs(auditByVehicleNumberQuery);
+        if (!auditByVehicleNumberSnapshot.empty) {
+          const auditBatch = writeBatch(db);
+          auditByVehicleNumberSnapshot.docs.forEach(doc => {
+            auditBatch.delete(doc.ref);
+          });
+          await auditBatch.commit();
+          console.log(`Deleted ${auditByVehicleNumberSnapshot.size} entries from ${auditCollection} by vehicleNumber`);
+        }
+      }
+      
+      // Step 6: Delete the trucks themselves using batched writes
+      const batchSize = 500; // Firestore batch limit is 500 operations
+      const batches = Math.ceil(trucks.length / batchSize);
+      
+      for (let i = 0; i < batches; i++) {
+        const batch = writeBatch(db);
+        const start = i * batchSize;
+        const end = Math.min(trucks.length, (i + 1) * batchSize);
+        
+        trucks.slice(start, end).forEach(truck => {
+          const truckRef = doc(db, 'trucks', truck.id);
+          batch.delete(truckRef);
+        });
+        
+        await batch.commit();
+      }
+      
+      console.log(`Deleted ${trucks.length} trucks`);
+      setIsDeleting(false);
+      setIsDeleteModalOpen(false);
+    } catch (err) {
+      console.error('Error deleting trucks:', err);
+      setError('Failed to delete trucks');
+      setIsDeleting(false);
+    }
+  };
 
   const getStatusDisplay = (status: string) => {
     switch (status) {
@@ -130,14 +280,26 @@ export default function TruckStatusView() {
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm">
       <div className="p-4">
-        <div className="mb-4">
-          <input
-            type="text"
-            placeholder="Search trucks..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-          />
+        <div className="flex flex-wrap justify-between items-center mb-4">
+          <div className="w-full md:w-1/2 mb-2 md:mb-0">
+            <input
+              type="text"
+              placeholder="Search trucks..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+            />
+          </div>
+          <div className="w-full md:w-auto flex justify-end">
+            <button
+              onClick={() => setIsDeleteModalOpen(true)}
+              disabled={trucks.length === 0 || isDeleting}
+              className="flex items-center px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:bg-red-300 disabled:cursor-not-allowed transition-colors"
+            >
+              <Trash2 className="w-4 h-4 mr-2" />
+              Delete All Trucks
+            </button>
+          </div>
         </div>
 
         <div className="overflow-x-auto">
@@ -165,10 +327,49 @@ export default function TruckStatusView() {
                   <td className="px-3 py-2 whitespace-nowrap text-xs">{truck.gate || '-'}</td>
                 </tr>
               ))}
+              {filteredTrucks.length === 0 && (
+                <tr>
+                  <td colSpan={5} className="px-3 py-4 text-center text-sm text-gray-500 dark:text-gray-400">
+                    No trucks found
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
       </div>
+
+      {/* Delete All Trucks Confirmation Modal */}
+      {isDeleteModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full p-6">
+            <div className="flex items-center justify-center text-red-600 mb-4">
+              <AlertTriangle size={48} />
+            </div>
+            <h3 className="text-lg font-bold text-center text-gray-900 dark:text-white mb-2">
+              Delete All Trucks
+            </h3>
+            <p className="text-center text-gray-700 dark:text-gray-300 mb-6">
+              Are you sure you want to delete all {trucks.length} trucks from the system? This action cannot be undone.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-2 justify-center">
+              <button
+                onClick={() => setIsDeleteModalOpen(false)}
+                className="px-4 py-2 bg-gray-300 text-gray-800 rounded-md hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={deleteAllTrucks}
+                disabled={isDeleting}
+                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:bg-red-300 disabled:cursor-not-allowed transition-colors"
+              >
+                {isDeleting ? 'Deleting...' : 'Yes, Delete All'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 } 
